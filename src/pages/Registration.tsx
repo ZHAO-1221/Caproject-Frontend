@@ -10,6 +10,7 @@ interface RegistrationForm {
   email: string;
   password: string;
   confirmPassword: string;
+  phone: string;
 }
 
 const Registration: React.FC = () => {
@@ -18,7 +19,8 @@ const Registration: React.FC = () => {
     username: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    phone: ''
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -38,7 +40,7 @@ const Registration: React.FC = () => {
     e.preventDefault();
     
     // Validation
-    if (!formData.username.trim() || !formData.email.trim() || !formData.password || !formData.confirmPassword) {
+    if (!formData.username.trim() || !formData.email.trim() || !formData.password || !formData.confirmPassword || !formData.phone.trim()) {
       setError('Please fill in all fields');
       return;
     }
@@ -70,7 +72,8 @@ const Registration: React.FC = () => {
       const response = await registrationService.register({
         username: formData.username,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        phone: formData.phone
       });
 
       if (response.success) {
@@ -130,6 +133,22 @@ const Registration: React.FC = () => {
                 onChange={handleInputChange}
                 className="input-value"
                 placeholder="Enter your email"
+                required
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <div className="input-field">
+            <div className="label">Phone Number</div>
+            <div className="input">
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                className="input-value"
+                placeholder="Enter your phone number"
                 required
                 disabled={loading}
               />
