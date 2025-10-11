@@ -64,6 +64,12 @@
   height: 44px;
   overflow: hidden;
   cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.shopping-cart:hover {
+  background-color: rgba(255, 121, 38, 0.1);
 }
 
 .div-icon {

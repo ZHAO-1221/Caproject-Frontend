@@ -15,7 +15,7 @@ const Header: React.FC = () => {
       <div className="home" onClick={() => navigate('/')}>
         <img className="icon" src="/images/home-icon.svg" alt="Home" />
       </div>
-      <div className="shopping-cart">
+      <div className="shopping-cart" onClick={() => navigate('/cart')}>
         <img className="div-icon" src="/images/cart-icon.svg" alt="Shopping Cart" />
       </div>
       <a href="/login" style={{ textDecoration: 'none' }}>
