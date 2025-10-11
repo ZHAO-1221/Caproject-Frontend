@@ -188,7 +188,7 @@ const AddressManagement: React.FC = () => {
             <button className="nav-item" onClick={() => navigate('/personal-info')}>
               Account
             </button>
-            <button className="nav-item">Orders</button>
+            <button className="nav-item" onClick={() => navigate('/order-history')}>Orders</button>
             <button className="nav-item active">Manage Addresses</button>
             <button className="nav-item">Favourites</button>
             <button className="nav-item">My Coupons</button>

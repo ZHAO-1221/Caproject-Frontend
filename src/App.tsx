@@ -9,6 +9,8 @@ import AddressManagement from './pages/AddressManagement';
 import AdminLogin from './pages/AdminLogin';
 import LogoutSuccess from './pages/LogoutSuccess';
 import EasterEgg from './pages/EasterEgg';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
 import './App.css';
 
 function App() {
@@ -25,6 +27,8 @@ function App() {
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/logout-success" element={<LogoutSuccess />} />
           <Route path="/easter-egg" element={<EasterEgg />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </div>

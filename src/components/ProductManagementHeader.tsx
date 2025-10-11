@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Header.css';
 
-const Header: React.FC = () => {
+const ProductManagementHeader: React.FC = () => {
   const navigate = useNavigate();
 
   return (
@@ -14,9 +14,6 @@ const Header: React.FC = () => {
       </a>
       <div className="home" onClick={() => navigate('/')}>
         <img className="icon" src="/images/home-icon.svg" alt="Home" />
-      </div>
-      <div className="shopping-cart" onClick={() => navigate('/cart')}>
-        <img className="div-icon" src="/images/cart-icon.svg" alt="Shopping Cart" />
       </div>
       <a href="/login" style={{ textDecoration: 'none' }}>
         <img className="account-circle-icon" src="/images/user-icon.svg" alt="User Account" />
@@ -33,5 +30,4 @@ const Header: React.FC = () => {
   );
 };
 
-export default Header;
-
+export default ProductManagementHeader;
