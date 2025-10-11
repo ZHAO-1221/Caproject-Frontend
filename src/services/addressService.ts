@@ -1,6 +1,7 @@
 import axios from 'axios';
+import authService from './authService';
 
-const API_BASE_URL = 'http://localhost:8080/api/address';
+const API_BASE_URL = '/api';
 
 export interface Address {
   id: number;
@@ -30,9 +31,25 @@ class AddressService {
    */
   async getAddresses(username: string): Promise<AddressResponse> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/list`, {
-        params: { username }
+      const headers = {
+        'Content-Type': 'application/json',
+        ...authService.getAuthHeaders()
+      };
+      
+      console.log('=== AddressService.getAddresses 调试信息 ===');
+      console.log('请求参数:', { username });
+      console.log('请求头:', headers);
+      console.log('完整URL:', `${API_BASE_URL}/location/getLocation`);
+      
+      const response = await axios.get(`${API_BASE_URL}/location/getLocation`, {
+        params: { username },
+        headers
       });
+      
+      console.log('响应状态:', response.status);
+      console.log('响应头:', response.headers);
+      console.log('响应数据:', response.data);
+      
       return response.data;
     } catch (error: any) {
       if (error.response) {
@@ -47,7 +64,12 @@ class AddressService {
    */
   async addAddress(data: AddAddressRequest): Promise<AddressResponse> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/add`, data);
+      const response = await axios.post(`${API_BASE_URL}/add`, data, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...authService.getAuthHeaders()
+        }
+      });
       return response.data;
     } catch (error: any) {
       if (error.response) {
@@ -62,7 +84,12 @@ class AddressService {
    */
   async updateAddress(id: number, data: UpdateAddressRequest): Promise<AddressResponse> {
     try {
-      const response = await axios.put(`${API_BASE_URL}/update/${id}`, data);
+      const response = await axios.put(`${API_BASE_URL}/update/${id}`, data, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...authService.getAuthHeaders()
+        }
+      });
       return response.data;
     } catch (error: any) {
       if (error.response) {
@@ -77,7 +104,12 @@ class AddressService {
    */
   async deleteAddress(id: number): Promise<AddressResponse> {
     try {
-      const response = await axios.delete(`${API_BASE_URL}/delete/${id}`);
+      const response = await axios.delete(`${API_BASE_URL}/delete/${id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...authService.getAuthHeaders()
+        }
+      });
       return response.data;
     } catch (error: any) {
       if (error.response) {
@@ -92,8 +124,12 @@ class AddressService {
    */
   async setDefaultAddress(id: number, username: string): Promise<AddressResponse> {
     try {
-      const response = await axios.put(`${API_BASE_URL}/set-default/${id}`, null, {
-        params: { username }
+      const response = await axios.put(`${API_BASE_URL}/setDefault/${id}`, null, {
+        params: { username },
+        headers: {
+          'Content-Type': 'application/json',
+          ...authService.getAuthHeaders()
+        }
       });
       return response.data;
     } catch (error: any) {
@@ -104,22 +140,6 @@ class AddressService {
     }
   }
 
-  /**
-   * 获取默认地址
-   */
-  async getDefaultAddress(username: string): Promise<AddressResponse> {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/default`, {
-        params: { username }
-      });
-      return response.data;
-    } catch (error: any) {
-      if (error.response) {
-        return error.response.data;
-      }
-      throw new Error('网络错误，请稍后重试');
-    }
-  }
 
   /**
    * 获取当前登录用户的用户名
