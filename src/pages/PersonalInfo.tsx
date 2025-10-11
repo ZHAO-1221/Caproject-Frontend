@@ -255,7 +255,7 @@ const PersonalInfo: React.FC = () => {
           </div>
           <div className="nav-menu">
             <button className="nav-item active">Account</button>
-            <button className="nav-item">Orders</button>
+            <button className="nav-item" onClick={() => navigate('/order-history')}>Orders</button>
             <button className="nav-item" onClick={() => navigate('/address-management')}>
               Manage Addresses
             </button>

@@ -6,27 +6,32 @@ import ForgotPassword from '../pages/ForgotPassword';
 import PasswordResetConfirmation from '../pages/PasswordResetConfirmation';
 import PersonalInfo from '../pages/PersonalInfo';
 import AddressManagement from '../pages/AddressManagement';
+import OrderHistory from '../pages/OrderHistory';
+import OrderDetails from '../pages/OrderDetails';
+import ProductReview from '../pages/ProductReview';
+import DebugLogin from '../pages/DebugLogin';
 import AdminLogin from '../pages/AdminLogin';
 import LogoutSuccess from '../pages/LogoutSuccess';
 import EasterEgg from '../pages/EasterEgg';
 
 // 路由保护组件 - 检查用户是否已登录
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/login" replace />;
+  const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+  return isLoggedIn ? children : <Navigate to="/login" replace />;
 };
 
 // 管理员路由保护组件
 const AdminRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('userRole');
-  return token && userRole === 'admin' ? children : <Navigate to="/login" replace />;
+  const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+  const user = sessionStorage.getItem('user');
+  const userRole = user ? JSON.parse(user).role : null;
+  return isLoggedIn && userRole === 'admin' ? children : <Navigate to="/login" replace />;
 };
 
 // 已登录用户重定向组件
 const PublicRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  return token ? <Navigate to="/personal-info" replace /> : children;
+  const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+  return isLoggedIn ? <Navigate to="/personal-info" replace /> : children;
 };
 
 const AppRoutes = () => {
@@ -93,10 +98,35 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/order-history" 
+        element={
+          <ProtectedRoute>
+            <OrderHistory />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/order-details/:orderId" 
+        element={
+          <ProtectedRoute>
+            <OrderDetails />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/product-review/:productId" 
+        element={
+          <ProtectedRoute>
+            <ProductReview />
+          </ProtectedRoute>
+        } 
+      />
       
       {/* 特殊路由 */}
       <Route path="/logout-success" element={<LogoutSuccess />} />
       <Route path="/easter-egg" element={<EasterEgg />} />
+      <Route path="/debug-login" element={<DebugLogin />} />
       
       {/* 默认路由 */}
       <Route path="/" element={<Navigate to="/login" replace />} />
