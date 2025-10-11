@@ -1,0 +1,256 @@
+.registration-page {
+  width: 100%;
+  position: relative;
+  background-color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  text-align: left;
+  font-size: 16px;
+  color: #1e1e1e;
+  font-family: Inter;
+}
+
+/* 消息提示样式 */
+.error-message {
+  padding: 12px 20px;
+  margin: 16px 0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #fee;
+  color: #c33;
+  border: 1px solid #fcc;
+  text-align: center;
+  width: 100%;
+  max-width: 500px;
+}
+
+.success-message {
+  padding: 12px 20px;
+  margin: 16px 0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #efe;
+  color: #3c3;
+  border: 1px solid #cfc;
+  text-align: center;
+  width: 100%;
+  max-width: 500px;
+}
+
+.registration-container {
+  position: relative;
+  margin: 80px auto 0;
+  width: 820px;
+  min-height: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 96px 32px;
+  box-sizing: border-box;
+  gap: 16px;
+}
+
+.create-account-title {
+  width: 581px;
+  position: relative;
+  text-align: center;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 107px;
+  flex-shrink: 0;
+  font-size: 48px;
+  color: #ff751f;
+}
+
+.create-account-text {
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 120%;
+  font-weight: 600;
+}
+
+.quick-easy-text {
+  margin: 0;
+  font-size: 24px;
+  line-height: 140%;
+  color: #757575;
+}
+
+.registration-container .input-field {
+  width: 640px;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.registration-container .label {
+  align-self: stretch;
+  position: relative;
+  line-height: 140%;
+}
+
+.registration-container .input {
+  align-self: stretch;
+  border-radius: 12px;
+  background-color: rgba(255, 121, 38, 0.12);
+  border: 1px solid #ffd7bf;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 20px 18px;
+  min-width: 240px;
+  color: #b3b3b3;
+  min-height: 24px;
+}
+
+.registration-container .input-value {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 16px;
+  color: #1e1e1e;
+  font-family: Inter;
+  width: 100%;
+}
+
+.registration-container .input-value::placeholder {
+  color: #b3b3b3;
+}
+
+.registration-container .header-auth {
+  width: 100%;
+  max-width: 260px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin: 8px auto 0;
+}
+
+.registration-container .button {
+  flex: 1;
+  border-radius: 99px;
+  background-color: #ffa065;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  box-shadow: 0 4px 10px rgba(255,118,30,0.25);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.registration-container .button:hover {
+  background-color: #ff8f4d;
+}
+
+.registration-container .button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.registration-container .div-button {
+  position: relative;
+  font-weight: 500;
+  color: #fff;
+}
+
+.registration-container .button2 {
+  width: 200px;
+  border-radius: 99px;
+  background-color: #ff751f;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  color: #f5f5f5;
+  box-shadow: 0 6px 14px rgba(255,118,30,0.35);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.registration-container .button2:hover {
+  background-color: #e6640c;
+}
+
+.registration-container .button2:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.already-have-account {
+  width: 334px;
+  position: relative;
+  font-size: 14px;
+  line-height: 140%;
+  color: rgba(0, 0, 0, 0.25);
+  display: inline-block;
+  height: 25px;
+  flex-shrink: 0;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.registration-container .div-header-auth {
+  width: 100%;
+  max-width: 225px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #f5f5f5;
+  margin: 8px auto 0;
+}
+
+.registration-container .button4 {
+  width: 200px;
+  border-radius: 99px;
+  background-color: #ff751f;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  color: #f5f5f5;
+  box-shadow: 0 6px 14px rgba(255,118,30,0.35);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.registration-container .button4:hover {
+  background-color: #e6640c;
+}
+
+.registration-container .button4:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  width: 100%;
+  max-width: 640px;
+  padding: 12px;
+  background-color: #fee;
+  color: #c33;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+  margin-top: 8px;
+}
+

@@ -1,0 +1,148 @@
+.footer {
+  position: static;
+  width: 100%;
+  min-height: 240px;
+  margin-top: 64px;
+}
+
+.div-footer {
+  position: relative;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  background-color: rgba(255, 121, 38, 0.18);
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+  box-sizing: border-box;
+  /* 移除 max-width 限制，使其像 Header 一样占据全屏宽度 */
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr;
+  column-gap: 80px;
+  row-gap: 20px;
+  padding: 40px 60px;
+  align-items: start;
+}
+
+.title { 
+  width: 100%; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: flex-start; 
+  gap: 12px; 
+  grid-column: 1;
+}
+
+.footer-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255,121,38,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.footer-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.button-list {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.x-logo-icon { 
+  width: 20px; 
+  height: 20px; 
+  opacity: 0.85; 
+}
+
+.text-link-list {
+  width: 100%;
+  position: relative;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  grid-column: 2;
+}
+
+.div-title {
+  position: static;
+  width: 301px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px 0px 8px;
+  box-sizing: border-box;
+}
+
+.text-strong {
+  align-self: stretch;
+  display: flex;
+  align-items: flex-start;
+}
+
+.div-text-strong {
+  position: relative;
+  line-height: 140%;
+  font-weight: 600;
+}
+
+.text-link-list-item {
+  position: static;
+  width: auto;
+  height: auto;
+}
+
+.list-item {
+  position: static;
+  line-height: 160%;
+}
+
+.blank-line {
+  margin: 0;
+}
+
+.div-text-link-list {
+  width: 100%;
+  position: relative;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  grid-column: 3;
+}
+
+.title2 {
+  position: static;
+  width: 262px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px 0px 8px;
+  box-sizing: border-box;
+}
+
+.text-link-list2 {
+  width: 100%;
+  position: relative;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  grid-column: 4;
+}
+
+.list-item12 { 
+  position: static; 
+  line-height: 160%; 
+  font-weight: 600; 
+  margin-top: 12px; 
+}
+
