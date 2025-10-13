@@ -58,18 +58,18 @@ const AddressManagement: React.FC = () => {
         });
         setAddresses(addressList);
       } else {
-        setError(response.message || '加载地址失败');
+        setError(response.message || 'Failed to load addresses');
       }
     } catch (error: any) {
       console.error('Load addresses error:', error);
-      setError(error.message || '加载地址失败');
+      setError(error.message || 'Failed to load addresses');
     } finally {
       setLoading(false);
     }
   };
 
   const handleLogout = async () => {
-    if (window.confirm('确定要退出登录吗？')) {
+    if (window.confirm('Are you sure you want to logout?')) {
       sessionStorage.removeItem('user');
       sessionStorage.removeItem('isLoggedIn');
       navigate('/logout-success');
@@ -77,7 +77,7 @@ const AddressManagement: React.FC = () => {
   };
 
   const handleDeleteAddress = async (id: number) => {
-    if (window.confirm('确定要删除这个地址吗？')) {
+    if (window.confirm('Are you sure you want to delete this address?')) {
       try {
         setError('');
         setSuccess('');
@@ -190,7 +190,6 @@ const AddressManagement: React.FC = () => {
             </button>
             <button className="nav-item" onClick={() => navigate('/order-history')}>Orders</button>
             <button className="nav-item active">Manage Addresses</button>
-            <button className="nav-item">Favourites</button>
             <button className="nav-item">My Coupons</button>
             <button className="nav-item" onClick={handleLogout}>Sign out</button>
           </div>

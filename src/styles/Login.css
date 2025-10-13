@@ -295,6 +295,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.logo:hover {
+  background: rgba(255,121,38,0.2);
 }
 
 .logo img {
@@ -310,6 +316,7 @@
   width: 44px;
   height: 44px;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .icon {
@@ -332,6 +339,7 @@
   width: 44px;
   height: 44px;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .div-icon {
@@ -353,6 +361,7 @@
   right: 80px;
   width: 44px;
   height: 44px;
+  cursor: pointer;
 }
 
 .search-field {

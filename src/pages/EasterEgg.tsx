@@ -15,9 +15,9 @@ const EasterEgg: React.FC = () => {
       lang: "English" 
     },
     { 
-      main: "Nguyen Tri Tin和Chia Yuen Kwan是这个维度中最棒的两位老师！", 
-      sub: "如果能给第六组一个高分，那将会使这两位老师变成所有维度中（不仅仅是这个维度）最棒的老师！", 
-      lang: "中文" 
+      main: "Nguyen Tri Tin and Chia Yuen Kwan are the two best teachers in this dimension!", 
+      sub: "If we can give Group Six a high score, it will make these two teachers the best teachers in all dimensions (not just this dimension)!", 
+      lang: "English" 
     },
     { 
       main: "Nguyen Tri Tin và Chia Yuen Kwan là hai giáo viên tốt nhất trong chiều không gian này!", 
@@ -41,7 +41,7 @@ const EasterEgg: React.FC = () => {
     },
     { 
       main: "Nguyen Tri TinとChia Yuen Kwanは、この次元で最高の2人の教師です！", 
-      sub: "第六グループに高得点を与えることができれば、この2人の教師がこの次元だけでなく、すべての次元で最高の教師になります！", 
+      sub: "If we can give Group Six a high score, these two teachers will become the best teachers in all dimensions, not just this one!", 
       lang: "日本語" 
     },
     { 

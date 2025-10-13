@@ -1,16 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import cartService, { CartItem } from '../services/cartService';
+import productService from '../services/productService';
 import '../styles/Cart.css';
-
-type CartItem = {
-  id: number;
-  name: string;
-  price: number; // 单价
-  qty: number;   // 数量
-  selected: boolean;
-};
 
 const CURRENCY = '$';
 
@@ -20,10 +14,13 @@ function formatMoney(value: number): string {
 
 const Cart: React.FC = () => {
   const navigate = useNavigate();
-  const [items, setItems] = useState<CartItem[]>([
-    { id: 1, name: 'product', price: 10, qty: 1, selected: true },
-    { id: 2, name: 'product', price: 10, qty: 1, selected: true }
-  ]);
+  const [items, setItems] = useState<CartItem[]>([]);
+
+  // Load cart items from cartService
+  useEffect(() => {
+    const cartItems = cartService.getCartItems();
+    setItems(cartItems);
+  }, []);
 
   const allSelected = useMemo(() => items.length > 0 && items.every(i => i.selected), [items]);
 
@@ -33,19 +30,28 @@ const Cart: React.FC = () => {
   const grandTotal = useMemo(() => subtotal + shipping + tax, [subtotal, shipping, tax]);
 
   const toggleAll = (checked: boolean) => {
-    setItems(prev => prev.map(i => ({ ...i, selected: checked })));
+    cartService.toggleAllSelection(checked);
+    setItems(cartService.getCartItems());
   };
 
   const toggleOne = (id: number, checked: boolean) => {
-    setItems(prev => prev.map(i => (i.id === id ? { ...i, selected: checked } : i)));
+    cartService.toggleItemSelection(id, checked);
+    setItems(cartService.getCartItems());
   };
 
   const changeQty = (id: number, delta: number) => {
-    setItems(prev => prev.map(i => (i.id === id ? { ...i, qty: Math.max(1, i.qty + delta) } : i)));
+    const item = items.find(i => i.id === id);
+    if (item) {
+      const stockQuantity = productService.getStockQuantity(id);
+      const newQty = Math.max(1, Math.min(stockQuantity, item.qty + delta));
+      cartService.updateQuantity(id, newQty);
+      setItems(cartService.getCartItems());
+    }
   };
 
   const removeItem = (id: number) => {
-    setItems(prev => prev.filter(i => i.id !== id));
+    cartService.removeFromCart(id);
+    setItems(cartService.getCartItems());
   };
 
   return (
@@ -65,7 +71,7 @@ const Cart: React.FC = () => {
                   onChange={(e) => toggleAll(e.target.checked)}
                 />
               </label>
-              <span className="select-all-text">全选</span>
+              <span className="select-all-text">Select All</span>
             </div>
 
             {items.length === 0 && (
@@ -82,7 +88,7 @@ const Cart: React.FC = () => {
                   />
                 </label>
                 <div className="cart-item-thumb">
-                  <img src="/images/placeholder.svg" alt="product" />
+                  <img src={item.image || "/images/placeholder.svg"} alt={item.name} />
                 </div>
                 <div className="cart-item-info">
                   <div className="cart-item-name">{item.name}</div>
@@ -91,7 +97,12 @@ const Cart: React.FC = () => {
                 <div className="cart-item-actions">
                   <button className="qty-btn" aria-label="decrease" onClick={() => changeQty(item.id, -1)} disabled={item.qty <= 1}>-</button>
                   <div className="qty-value">{item.qty}</div>
-                  <button className="qty-btn" aria-label="increase" onClick={() => changeQty(item.id, 1)}>+</button>
+                  <button 
+                    className="qty-btn" 
+                    aria-label="increase" 
+                    onClick={() => changeQty(item.id, 1)}
+                    disabled={item.qty >= productService.getStockQuantity(item.id)}
+                  >+</button>
                   <div className="cart-item-subtotal">{formatMoney(item.price * item.qty)}</div>
                   <button className="delete-btn" aria-label="delete" title="Delete" onClick={() => removeItem(item.id)}>
                     🗑

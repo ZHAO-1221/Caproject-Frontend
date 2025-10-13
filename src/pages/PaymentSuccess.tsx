@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import '../styles/LogoutSuccess.css';
+import '../styles/PaymentSuccess.css';
 
-const LogoutSuccess: React.FC = () => {
+const PaymentSuccess: React.FC = () => {
   const navigate = useNavigate();
   const [countdown, setCountdown] = useState(5);
 
@@ -13,7 +13,7 @@ const LogoutSuccess: React.FC = () => {
       setCountdown(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          navigate('/login');
+          navigate('/home');
           return 0;
         }
         return prev - 1;
@@ -23,15 +23,15 @@ const LogoutSuccess: React.FC = () => {
     return () => clearInterval(timer);
   }, [navigate]);
 
-  const handleLoginClick = () => {
-    navigate('/login');
+  const handleHomeClick = () => {
+    navigate('/home');
   };
 
   return (
-    <div className="logout-success-page">
+    <div className="payment-success-page">
       <Header />
       
-      <div className="logout-success-container">
+      <div className="payment-success-container">
         <div className="success-icon-container">
           <div className="success-icon">
             <div className="checkmark"></div>
@@ -39,16 +39,16 @@ const LogoutSuccess: React.FC = () => {
         </div>
 
         <div className="title-container">
-          <h1 className="main-title">Log out success</h1>
+          <h1 className="main-title">Payment Success</h1>
         </div>
 
         <div className="button-container">
-          <button onClick={handleLoginClick} className="homepage-button">
-            Back to Login
+          <button onClick={handleHomeClick} className="homepage-button">
+            Back to Homepage
           </button>
           
           <div className="auto-redirect-message">
-            Page will automatically redirect to login page in <span className="countdown">{countdown}</span> seconds
+            Page will automatically redirect to homepage in <span className="countdown">{countdown}</span> seconds
           </div>
         </div>
       </div>
@@ -58,5 +58,4 @@ const LogoutSuccess: React.FC = () => {
   );
 };
 
-export default LogoutSuccess;
-
+export default PaymentSuccess;

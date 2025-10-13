@@ -1,0 +1,236 @@
+.payment-page {
+  width: 100%;
+  position: relative;
+  background-color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  text-align: left;
+  font-size: 16px;
+  color: #1e1e1e;
+  font-family: Inter;
+  display: flex;
+  flex-direction: column;
+}
+
+.payment-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px 40px;
+  min-height: calc(100vh - 160px);
+}
+
+.payment-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+}
+
+/* 图标样式 */
+.payment-icon {
+  margin-bottom: 32px;
+}
+
+.icon-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 失败图标样式 - 图2样式 */
+.failed-circle {
+  background: #f44336; /* 纯红色背景，无渐变 */
+  border: none;
+}
+
+.x-mark {
+  color: white;
+  font-size: 60px; /* 与 checkmark 相同的字体大小 */
+  font-weight: 900; /* 超粗字重 */
+  line-height: 1;
+  text-shadow: none;
+}
+
+/* 消息样式 */
+.payment-message {
+  margin-bottom: 40px;
+}
+
+.payment-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #F58220;
+  margin: 0;
+  text-align: center;
+}
+
+/* 按钮样式 */
+.payment-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.payment-btn {
+  padding: 14px 32px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  min-height: 48px;
+}
+
+.secondary-btn {
+  background: #ff8a33;
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 118, 30, 0.2);
+}
+
+.secondary-btn:hover {
+  background: #e6731a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 118, 30, 0.3);
+}
+
+/* 支付失败页面的双按钮布局 */
+.payment-failed .payment-actions {
+  flex-direction: row;
+  gap: 20px;
+  max-width: 400px;
+}
+
+.payment-failed .payment-btn {
+  flex: 1;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .payment-container {
+    padding: 60px 16px 30px;
+  }
+
+  .payment-content {
+    max-width: 100%;
+  }
+
+  .icon-circle {
+    width: 100px;
+    height: 100px;
+  }
+
+  .x-mark {
+    font-size: 40px;
+  }
+
+  .payment-title {
+    font-size: 28px;
+  }
+
+  .payment-actions {
+    max-width: 280px;
+  }
+
+  .payment-failed .payment-actions {
+    flex-direction: column;
+    max-width: 280px;
+  }
+
+  .payment-failed .payment-btn {
+    flex: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-container {
+    padding: 40px 12px 20px;
+  }
+
+  .icon-circle {
+    width: 80px;
+    height: 80px;
+  }
+
+  .x-mark {
+    font-size: 32px;
+  }
+
+  .payment-title {
+    font-size: 24px;
+  }
+
+  .payment-actions {
+    max-width: 240px;
+  }
+
+  .payment-failed .payment-actions {
+    max-width: 240px;
+  }
+}
+
+/* 动画效果 */
+.payment-icon {
+  animation: fadeInScale 0.6s ease-out;
+}
+
+.payment-message {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.payment-actions {
+  animation: fadeInUp 1s ease-out 0.4s both;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 失败页面的特殊样式 */
+.payment-failed .failed-circle {
+  animation: failedShake 0.5s ease-in-out;
+}
+
+@keyframes failedShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}

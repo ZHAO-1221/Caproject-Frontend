@@ -9,7 +9,13 @@ import AddressManagement from '../pages/AddressManagement';
 import OrderHistory from '../pages/OrderHistory';
 import OrderDetails from '../pages/OrderDetails';
 import ProductReview from '../pages/ProductReview';
-import DebugLogin from '../pages/DebugLogin';
+import ProductBrowse from '../pages/ProductBrowse';
+import ProductDetail from '../pages/ProductDetail';
+import Cart from '../pages/Cart';
+import Checkout from '../pages/Checkout';
+import PaymentSuccess from '../pages/PaymentSuccess';
+import PaymentFailed from '../pages/PaymentFailed';
+import HomePage from '../pages/HomePage';
 import AdminLogin from '../pages/AdminLogin';
 import LogoutSuccess from '../pages/LogoutSuccess';
 import EasterEgg from '../pages/EasterEgg';
@@ -122,14 +128,48 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/cart" 
+        element={
+          <ProtectedRoute>
+            <Cart />
+          </ProtectedRoute>
+        } 
+      />
+      <Route
+        path="/products"
+        element={<ProductBrowse />}
+      />
+      <Route
+        path="/product/:productId"
+        element={<ProductDetail />}
+      />
+      <Route 
+        path="/checkout" 
+        element={
+          <ProtectedRoute>
+            <Checkout />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/payment-success" 
+        element={<PaymentSuccess />} 
+      />
+      <Route 
+        path="/payment-failed" 
+        element={<PaymentFailed />} 
+      />
       
       {/* 特殊路由 */}
       <Route path="/logout-success" element={<LogoutSuccess />} />
       <Route path="/easter-egg" element={<EasterEgg />} />
-      <Route path="/debug-login" element={<DebugLogin />} />
+      
+      {/* 主页路由 */}
+      <Route path="/home" element={<HomePage />} />
       
       {/* 默认路由 */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Navigate to="/home" replace />} />
       
       {/* 404 路由 */}
       <Route path="*" element={<Navigate to="/login" replace />} />
