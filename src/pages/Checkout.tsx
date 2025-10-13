@@ -54,12 +54,18 @@ const Checkout: React.FC = () => {
         return;
       }
 
-      const response = await addressService.getDefaultAddress(username);
+      const response = await addressService.getAddresses(username);
 
       if (response.success && response.data) {
-        const locationText = (response.data as any).locationText;
-        const parsedAddress = addressService.parseAddressText(locationText);
-        setDefaultAddress(parsedAddress);
+        const addresses = Array.isArray(response.data) ? response.data : [response.data];
+        const defaultAddr = addresses.find(addr => addr.isDefault);
+        
+        if (defaultAddr) {
+          const parsedAddress = addressService.parseAddressText(defaultAddr.locationText);
+          setDefaultAddress(parsedAddress);
+        } else {
+          setError('暂无默认地址');
+        }
       } else {
         setError('无法加载默认地址');
       }

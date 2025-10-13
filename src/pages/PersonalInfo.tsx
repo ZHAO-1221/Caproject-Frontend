@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import userService, { UserProfile } from '../services/userService';
 import addressService from '../services/addressService';
 import authService from '../services/authService';
+import { logNetworkRequest, logNetworkResponse, logNetworkError } from '../utils/networkDebug';
 import '../styles/PersonalInfo.css';
 
 interface UserInfo {
@@ -50,10 +51,10 @@ const PersonalInfo: React.FC = () => {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
 
-  // 加载用户信息和默认地址
+  // 加载用户信息和第一条地址作为默认地址
   useEffect(() => {
     loadUserProfile();
-    loadDefaultAddress();
+    loadFirstAddress();
   }, []);
 
   const loadUserProfile = async () => {
@@ -67,18 +68,27 @@ const PersonalInfo: React.FC = () => {
         return;
       }
 
+      console.log('=== 获取用户个人信息 ===');
+      console.log('前端发送给后端的数据:', { username });
+      console.log('请求URL:', `/api/users/me?username=${username}`);
+      
       const response = await userService.getUserProfile(username);
+      
+      console.log('后端返回给前端的数据:', response);
       
       if (response.success && response.data) {
         const profile = response.data;
+        console.log('=== 处理用户信息数据 ===');
+        console.log('原始后端数据:', profile);
+        
         setUserInfo({
-          name: profile.username,
-          email: profile.email,
+          name: profile.userName || '',
+          email: profile.userEmail || '',
           password: '************',
-          phone: profile.phone,
-          gender: profile.gender || 'Unknown',
-          avatar: profile.profileUrl || '/images/user-avatar.svg',
-          introduce: profile.introduce || '',
+          phone: profile.userPhone || '',
+          gender: profile.userGender || 'Unknown',
+          avatar: profile.userProfileUrl || '/images/user-avatar.svg',
+          introduce: profile.userIntroduce || '',
           wallet: profile.wallet || 0,
           address: {
             street: '',
@@ -87,29 +97,58 @@ const PersonalInfo: React.FC = () => {
             country: ''
           }
         });
+        
+        console.log('=== 映射后的用户信息 ===');
+        console.log('用户名:', profile.userName);
+        console.log('邮箱:', profile.userEmail);
+        console.log('电话:', profile.userPhone);
+        console.log('性别:', profile.userGender);
+        console.log('头像:', profile.userProfileUrl);
+        console.log('介绍:', profile.userIntroduce);
+        console.log('钱包:', profile.wallet);
       } else {
-        setError(response.message || 'Failed to load user profile');
+        setError(response.message || '加载用户信息失败');
       }
     } catch (error: any) {
-      console.error('Load profile error:', error);
-      setError(error.message || 'Failed to load user profile');
+      console.log('=== 获取用户信息错误 ===');
+      console.log('错误对象:', error);
+      console.log('错误消息:', error.message);
+      console.log('错误响应:', error.response);
+      if (error.response) {
+        console.log('错误状态码:', error.response.status);
+        console.log('错误响应数据:', error.response.data);
+        console.log('错误响应头:', error.response.headers);
+      }
+      setError(error.message || '加载用户信息失败');
     } finally {
       setLoading(false);
     }
   };
 
-  const loadDefaultAddress = async () => {
+  const loadFirstAddress = async () => {
     try {
       const username = userService.getCurrentUsername();
       if (!username) {
         return;
       }
 
-      const response = await addressService.getDefaultAddress(username);
+      console.log('=== 获取用户地址信息 ===');
+      console.log('前端发送给后端的数据:', { username });
+      console.log('请求URL:', `/api/location/getLocation/?username=${username}`);
+      
+      const response = await addressService.getAddresses(username);
+      
+      console.log('后端返回给前端的数据:', response);
 
-      if (response.success && response.data) {
-        const loc: any = response.data;
-        const parsed = addressService.parseAddressText(loc.locationText);
+      if (response.success && response.data && Array.isArray(response.data) && response.data.length > 0) {
+        // 获取第一条地址作为默认地址
+        const firstAddress: any = response.data[0];
+        console.log('=== 处理地址数据 ===');
+        console.log('第一条地址数据:', firstAddress);
+        
+        const parsed = addressService.parseAddressText(firstAddress.locationText);
+        console.log('解析后的地址:', parsed);
+        
         setUserInfo(prev => ({
           ...prev,
           address: {
@@ -119,14 +158,36 @@ const PersonalInfo: React.FC = () => {
             country: parsed.city
           }
         }));
+        
+        console.log('=== 地址设置完成 ===');
+        console.log('设置的地址信息:', {
+          street: parsed.street,
+          building: parsed.building,
+          postal: parsed.postal,
+          country: parsed.city
+        });
+      } else {
+        console.log('=== 地址数据为空 ===');
+        console.log('响应成功:', response.success);
+        console.log('响应数据:', response.data);
+        console.log('是否为数组:', Array.isArray(response.data));
+        console.log('数组长度:', response.data && Array.isArray(response.data) ? response.data.length : 0);
       }
     } catch (error: any) {
-      console.error('Load default address error:', error);
+      console.log('=== 获取地址信息错误 ===');
+      console.log('错误对象:', error);
+      console.log('错误消息:', error.message);
+      console.log('错误响应:', error.response);
+      if (error.response) {
+        console.log('错误状态码:', error.response.status);
+        console.log('错误响应数据:', error.response.data);
+        console.log('错误响应头:', error.response.headers);
+      }
     }
   };
 
   const handleLogout = async () => {
-    if (window.confirm('Are you sure you want to logout?')) {
+    if (window.confirm('确定要退出登录吗？')) {
       sessionStorage.removeItem('user');
       sessionStorage.removeItem('isLoggedIn');
       navigate('/logout-success');
@@ -259,6 +320,7 @@ const PersonalInfo: React.FC = () => {
             <button className="nav-item" onClick={() => navigate('/address-management')}>
               Manage Addresses
             </button>
+            <button className="nav-item">Favourites</button>
             <button className="nav-item">My Coupons</button>
             <button className="nav-item" onClick={handleLogout}>Sign out</button>
           </div>
