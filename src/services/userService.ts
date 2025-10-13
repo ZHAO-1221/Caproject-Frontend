@@ -74,12 +74,22 @@ class UserService {
       console.log('响应头:', response.headers);
       console.log('响应数据:', response.data);
       
-      return response.data;
+      // 后端直接返回 User 对象，这里规范为 { success, data }
+      const user = response.data as UserProfile;
+      return {
+        success: true,
+        data: user
+      };
     } catch (error: any) {
       if (error.response) {
-        return error.response.data;
+        // 尝试从后端错误中提取 message
+        const backend = error.response.data;
+        return {
+          success: false,
+          message: (backend && (backend.message || backend.error)) || '加载用户信息失败'
+        };
       }
-      throw new Error('网络错误，请稍后重试');
+      return { success: false, message: '网络错误，请稍后重试' };
     }
   }
 
