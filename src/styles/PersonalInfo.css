@@ -11,6 +11,23 @@
   font-family: Inter;
 }
 
+/* 确保PersonalInfo页面水平布局的强制样式 */
+.personal-info-page .main-content {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+}
+
+.personal-info-page .sidebar {
+  width: 280px !important;
+  flex-shrink: 0 !important;
+}
+
+.personal-info-page .content-area {
+  flex: 1 !important;
+  margin-left: 40px !important;
+}
+
 /* 消息提示样式 */
 .message {
   padding: 12px 20px;
@@ -44,14 +61,15 @@
   width: 100%;
   max-width: 1400px;
   min-height: 640px;
-  display: flex;
+  display: flex !important;
+  flex-direction: row !important;
   padding: 40px;
   box-sizing: border-box;
   gap: 40px;
 }
 
 .sidebar {
-  width: 280px;
+  width: 280px !important;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -167,7 +185,7 @@
 }
 
 .content-area {
-  flex: 1;
+  flex: 1 !important;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -281,5 +299,77 @@
   font-size: 14px;
   color: #1e1e1e;
   line-height: 1.4;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .main-content {
+    padding: 30px;
+    gap: 30px;
+  }
+  
+  .sidebar {
+    width: 260px;
+  }
+}
+
+@media (max-width: 900px) {
+  .main-content {
+    padding: 20px;
+    gap: 20px;
+  }
+  
+  .sidebar {
+    width: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column !important;
+    padding: 20px;
+    gap: 20px;
+  }
+  
+  .sidebar {
+    width: 100% !important;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .profile-section {
+    flex-direction: row;
+    gap: 12px;
+  }
+  
+  .profile-picture {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .nav-menu {
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+  }
+  
+  .nav-item {
+    white-space: nowrap;
+    min-width: fit-content;
+  }
+  
+  .info-item {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .info-content {
+    width: 100%;
+  }
+  
+  .edit-button {
+    align-self: flex-start;
+  }
 }
 

@@ -88,11 +88,11 @@ const PersonalInfo: React.FC = () => {
           }
         });
       } else {
-        setError(response.message || '加载用户信息失败');
+        setError(response.message || 'Failed to load user profile');
       }
     } catch (error: any) {
       console.error('Load profile error:', error);
-      setError(error.message || '加载用户信息失败');
+      setError(error.message || 'Failed to load user profile');
     } finally {
       setLoading(false);
     }
@@ -126,7 +126,7 @@ const PersonalInfo: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    if (window.confirm('确定要退出登录吗？')) {
+    if (window.confirm('Are you sure you want to logout?')) {
       sessionStorage.removeItem('user');
       sessionStorage.removeItem('isLoggedIn');
       navigate('/logout-success');
@@ -259,7 +259,6 @@ const PersonalInfo: React.FC = () => {
             <button className="nav-item" onClick={() => navigate('/address-management')}>
               Manage Addresses
             </button>
-            <button className="nav-item">Favourites</button>
             <button className="nav-item">My Coupons</button>
             <button className="nav-item" onClick={handleLogout}>Sign out</button>
           </div>

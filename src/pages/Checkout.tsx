@@ -1,16 +1,18 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import addressService from '../services/addressService';
+import cartService, { CartItem } from '../services/cartService';
+import productService from '../services/productService';
 import '../styles/Checkout.css';
 
-type CartItem = {
-  id: number;
-  name: string;
-  price: number;
-  qty: number;
-  selected: boolean;
-};
+interface DefaultAddress {
+  street: string;
+  building: string;
+  postal: string;
+  city: string;
+}
 
 const CURRENCY = '$';
 
@@ -22,34 +24,104 @@ const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // 从购物车传递的选中商品数据，如果没有则使用默认数据
-  const selectedItems = location.state?.selectedItems || [
-    { id: 1, name: 'product', price: 10, qty: 1, selected: true },
-    { id: 2, name: 'product', price: 10, qty: 1, selected: true }
-  ];
-  
-  const [items, setItems] = useState<CartItem[]>(selectedItems);
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [defaultAddress, setDefaultAddress] = useState<DefaultAddress | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
+
+  // 加载默认地址和购物车数据
+  useEffect(() => {
+    loadDefaultAddress();
+    loadCartItems();
+  }, []);
+
+  const loadCartItems = () => {
+    // 从cartService获取选中的商品
+    const allCartItems = cartService.getCartItems();
+    const selectedItems = allCartItems.filter(item => item.selected);
+    setItems(selectedItems);
+  };
+
+  const loadDefaultAddress = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      const username = addressService.getCurrentUsername();
+      if (!username) {
+        navigate('/login');
+        return;
+      }
+
+      const response = await addressService.getDefaultAddress(username);
+
+      if (response.success && response.data) {
+        const locationText = (response.data as any).locationText;
+        const parsedAddress = addressService.parseAddressText(locationText);
+        setDefaultAddress(parsedAddress);
+      } else {
+        setError('无法加载默认地址');
+      }
+    } catch (error: any) {
+      console.error('Load default address error:', error);
+      setError('加载地址失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePaymentMethodSelect = (method: string) => {
+    setSelectedPaymentMethod(method);
+  };
+
+  const handlePayment = async () => {
+    if (!selectedPaymentMethod) {
+      alert('Please select a payment method first');
+      return;
+    }
+
+    try {
+      console.log('Processing payment with method:', selectedPaymentMethod);
+      // 模拟支付处理过程
+      // 在实际应用中，这里会调用支付API
+      
+      // 模拟支付成功（90%概率成功）
+      const isPaymentSuccessful = Math.random() > 0.1;
+      
+      if (isPaymentSuccessful) {
+        // 支付成功，跳转到成功页面
+        navigate('/payment-success');
+      } else {
+        // 支付失败，跳转到失败页面
+        navigate('/payment-failed');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      // 支付出错，跳转到失败页面
+      navigate('/payment-failed');
+    }
+  };
 
   // 增加商品数量
   const increaseQuantity = (itemId: number) => {
-    setItems(prevItems => 
-      prevItems.map(item => 
-        item.id === itemId 
-          ? { ...item, qty: item.qty + 1 }
-          : item
-      )
-    );
+    const stockQuantity = productService.getStockQuantity(itemId);
+    const currentItem = items.find(item => item.id === itemId);
+    
+    if (currentItem && currentItem.qty < stockQuantity) {
+      cartService.updateQuantity(itemId, currentItem.qty + 1);
+      loadCartItems(); // 重新加载购物车数据
+    }
   };
 
   // 减少商品数量
   const decreaseQuantity = (itemId: number) => {
-    setItems(prevItems => 
-      prevItems.map(item => 
-        item.id === itemId && item.qty > 1
-          ? { ...item, qty: item.qty - 1 }
-          : item
-      )
-    );
+    const currentItem = items.find(item => item.id === itemId);
+    
+    if (currentItem && currentItem.qty > 1) {
+      cartService.updateQuantity(itemId, currentItem.qty - 1);
+      loadCartItems(); // 重新加载购物车数据
+    }
   };
 
   const subtotal = useMemo(() => items.reduce((sum, i) => sum + i.price * i.qty, 0), [items]);
@@ -65,11 +137,30 @@ const Checkout: React.FC = () => {
         <div className="checkout-grid">
           <section className="address-section">
             <div className="section-title center">确认收货地址</div>
-            <button className="manage-btn">Manage Addresses</button>
+            <button className="manage-btn" onClick={() => navigate('/address-management')}>Manage Addresses</button>
             <div className="address-list">
-              <div className="address-card">地址1</div>
-              <div className="address-card">地址2</div>
-              <div className="address-card">地址3</div>
+              {loading ? (
+                <div className="address-card loading">加载地址中...</div>
+              ) : error ? (
+                <div className="address-card error">{error}</div>
+              ) : defaultAddress ? (
+                <div className="address-card default-address">
+                  <div className="address-label">默认地址</div>
+                  <div className="address-details">
+                    <div className="address-line">{defaultAddress.street}</div>
+                    <div className="address-line">{defaultAddress.building}</div>
+                    <div className="address-line">{defaultAddress.postal}</div>
+                    <div className="address-line">{defaultAddress.city}</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="address-card no-address">
+                  <div className="no-address-text">暂无默认地址</div>
+                  <button className="add-address-btn" onClick={() => navigate('/address-management')}>
+                    添加地址
+                  </button>
+                </div>
+              )}
             </div>
           </section>
 
@@ -78,7 +169,9 @@ const Checkout: React.FC = () => {
             <div className="order-wrapper">
               {items.map(item => (
                 <div key={item.id} className="order-card">
-                  <div className="order-thumb" />
+                  <div className="order-thumb">
+                    <img src={item.image || "/images/placeholder.svg"} alt={item.name} />
+                  </div>
                   <div className="order-info">
                     <div className="order-name">{item.name}</div>
                     <div className="order-price">{formatMoney(item.price)}</div>
@@ -95,6 +188,7 @@ const Checkout: React.FC = () => {
                     <button 
                       className="qty-btn" 
                       onClick={() => increaseQuantity(item.id)}
+                      disabled={item.qty >= productService.getStockQuantity(item.id)}
                     >
                       +
                     </button>
@@ -117,15 +211,37 @@ const Checkout: React.FC = () => {
               <div className="pay-methods">
                 <div className="pay-title">select payment method</div>
                 <div className="pay-icons">
-                  <span className="pm visa">VISA</span>
-                  <span className="pm mc">MC</span>
-                  <span className="pm alipay">Alipay</span>
-                  <span className="pm gpay">GPay</span>
-                  <span className="pm apple">Apple</span>
-                  <span className="pm wechat">WeChat</span>
+                  <span 
+                    className={`pm visa ${selectedPaymentMethod === 'visa' ? 'selected' : ''}`}
+                    onClick={() => handlePaymentMethodSelect('visa')}
+                  >VISA</span>
+                  <span 
+                    className={`pm mc ${selectedPaymentMethod === 'mc' ? 'selected' : ''}`}
+                    onClick={() => handlePaymentMethodSelect('mc')}
+                  >MC</span>
+                  <span 
+                    className={`pm alipay ${selectedPaymentMethod === 'alipay' ? 'selected' : ''}`}
+                    onClick={() => handlePaymentMethodSelect('alipay')}
+                  >Alipay</span>
+                  <span 
+                    className={`pm gpay ${selectedPaymentMethod === 'gpay' ? 'selected' : ''}`}
+                    onClick={() => handlePaymentMethodSelect('gpay')}
+                  >GPay</span>
+                  <span 
+                    className={`pm apple ${selectedPaymentMethod === 'apple' ? 'selected' : ''}`}
+                    onClick={() => handlePaymentMethodSelect('apple')}
+                  >Apple</span>
+                  <span 
+                    className={`pm wechat ${selectedPaymentMethod === 'wechat' ? 'selected' : ''}`}
+                    onClick={() => handlePaymentMethodSelect('wechat')}
+                  >WeChat</span>
                 </div>
               </div>
-              <button className="pay-btn">Pay</button>
+              <button 
+                className="pay-btn" 
+                onClick={handlePayment}
+                disabled={!selectedPaymentMethod}
+              >Pay</button>
             </div>
           </aside>
         </div>

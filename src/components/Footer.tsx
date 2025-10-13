@@ -70,7 +70,7 @@ const Footer: React.FC = () => {
             <div className="list-item">Since 1888</div>
           </div>
           <div className="text-link-list-item">
-            <div className="list-item">Centry-old shop</div>
+            <div className="list-item">Century-old shop</div>
           </div>
           <div className="text-link-list-item">
             <div className="list-item">Development features</div>
@@ -79,7 +79,7 @@ const Footer: React.FC = () => {
             <div className="list-item">Quality choice</div>
           </div>
           <div className="text-link-list-item">
-            <div className="list-item">Intergrity managment</div>
+            <div className="list-item">Integrity management</div>
           </div>
         </div>
         <div className="text-link-list2">
