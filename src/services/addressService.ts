@@ -64,7 +64,7 @@ class AddressService {
    */
   async addAddress(data: AddAddressRequest): Promise<AddressResponse> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/add`, data, {
+      const response = await axios.post(`${API_BASE_URL}/location/addLocation`, data, {
         headers: {
           'Content-Type': 'application/json',
           ...authService.getAuthHeaders()
@@ -84,7 +84,7 @@ class AddressService {
    */
   async updateAddress(id: number, data: UpdateAddressRequest): Promise<AddressResponse> {
     try {
-      const response = await axios.put(`${API_BASE_URL}/update/${id}`, data, {
+      const response = await axios.put(`${API_BASE_URL}/location/updateLocation/${id}`, data, {
         headers: {
           'Content-Type': 'application/json',
           ...authService.getAuthHeaders()
@@ -104,7 +104,7 @@ class AddressService {
    */
   async deleteAddress(id: number): Promise<AddressResponse> {
     try {
-      const response = await axios.delete(`${API_BASE_URL}/delete/${id}`, {
+      const response = await axios.delete(`${API_BASE_URL}/location/deleteLocation/${id}`, {
         headers: {
           'Content-Type': 'application/json',
           ...authService.getAuthHeaders()
@@ -124,7 +124,7 @@ class AddressService {
    */
   async setDefaultAddress(id: number, username: string): Promise<AddressResponse> {
     try {
-      const response = await axios.put(`${API_BASE_URL}/setDefault/${id}`, null, {
+      const response = await axios.put(`${API_BASE_URL}/location/set-default/${id}`, null, {
         params: { username },
         headers: {
           'Content-Type': 'application/json',

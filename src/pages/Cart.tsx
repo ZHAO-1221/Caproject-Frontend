@@ -42,7 +42,7 @@ const Cart: React.FC = () => {
   const changeQty = (id: number, delta: number) => {
     const item = items.find(i => i.id === id);
     if (item) {
-      const stockQuantity = productService.getStockQuantity(id);
+      const stockQuantity = productService.getStockQuantityById(id);
       const newQty = Math.max(1, Math.min(stockQuantity, item.qty + delta));
       cartService.updateQuantity(id, newQty);
       setItems(cartService.getCartItems());
@@ -101,7 +101,7 @@ const Cart: React.FC = () => {
                     className="qty-btn" 
                     aria-label="increase" 
                     onClick={() => changeQty(item.id, 1)}
-                    disabled={item.qty >= productService.getStockQuantity(item.id)}
+                    disabled={item.qty >= productService.getStockQuantityById(item.id)}
                   >+</button>
                   <div className="cart-item-subtotal">{formatMoney(item.price * item.qty)}</div>
                   <button className="delete-btn" aria-label="delete" title="Delete" onClick={() => removeItem(item.id)}>

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import cartService from '../services/cartService';
+import productService, { Product as ApiProduct } from '../services/productService';
 import '../styles/ProductDetail.css';
 
 interface Product {
@@ -60,32 +61,65 @@ const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  // Mock product data
+  // Load product data from API
   useEffect(() => {
-    // Mock products data
-    const mockProducts: { [key: number]: Product } = {
-      1: {
-        id: 1,
-        name: 'Text Heading',
-        price: 50,
-        image: '/images/placeholder.svg',
-        description: 'Description',
-        inStock: false, // 库存不足
-        stockQuantity: 0,
-      },
-      2: {
-        id: 2,
-        name: 'hajimi',
-        price: 20,
-        image: '/images/hajimi.png',
-        description: 'A special product for testing purposes',
-        inStock: true, // 有库存，库存为2
-        stockQuantity: 2,
+    const loadProduct = async () => {
+      try {
+        setLoading(true);
+        const currentProductId = parseInt(productId || '1');
+        const response = await productService.getProductById(currentProductId);
+        
+        if (response.success && response.data) {
+          const apiProduct = response.data as any;
+          // Convert absolute image URL to relative URL for proxy access
+          const imageUrl = apiProduct.imageUrl ? 
+            apiProduct.imageUrl.replace('http://192.168.81.86:8080', '') : 
+            '/images/placeholder.svg';
+          
+          const transformedProduct = {
+            id: apiProduct.productId,
+            name: apiProduct.productName,
+            price: apiProduct.productPrice,
+            image: imageUrl,
+            description: apiProduct.productDescription,
+            inStock: apiProduct.productStockQuantity > 0,
+            stockQuantity: apiProduct.productStockQuantity,
+          };
+          
+          setProduct(transformedProduct);
+        } else {
+          console.error('Failed to load product:', response.message);
+          // Fallback to mock data
+          const mockProduct = {
+            id: currentProductId,
+            name: 'Product Not Found',
+            price: 0,
+            image: '/images/placeholder.svg',
+            description: 'This product could not be loaded.',
+            inStock: false,
+            stockQuantity: 0,
+          };
+          setProduct(mockProduct);
+        }
+      } catch (error) {
+        console.error('Error loading product:', error);
+        // Fallback to mock data
+        const mockProduct = {
+          id: parseInt(productId || '1'),
+          name: 'Product Not Found',
+          price: 0,
+          image: '/images/placeholder.svg',
+          description: 'This product could not be loaded.',
+          inStock: false,
+          stockQuantity: 0,
+        };
+        setProduct(mockProduct);
+      } finally {
+        setLoading(false);
       }
     };
-    
-    const currentProductId = parseInt(productId || '1');
-    const mockProduct = mockProducts[currentProductId] || mockProducts[1];
+
+    loadProduct();
     
     const mockReviews: Review[] = [
       {
@@ -117,24 +151,9 @@ const ProductDetail: React.FC = () => {
       }
     ];
     
-    setProduct(mockProduct);
     setReviews(mockReviews);
     
-    // Set filter based on product category
-    if (mockProduct) {
-      const categoryKey = getProductCategoryKey(mockProduct.id);
-      setFilters(prev => ({
-        ...prev,
-        categories: {
-          dailyNecessities: categoryKey === 'dailyNecessities',
-          homeKitchen: categoryKey === 'homeKitchen',
-          fashionApparel: categoryKey === 'fashionApparel',
-          sportsOutdoors: categoryKey === 'sportsOutdoors',
-          electronics: categoryKey === 'electronics',
-          personalCare: categoryKey === 'personalCare',
-        }
-      }));
-    }
+    // Set filter based on product category - this will be handled in the product loading effect
     
     setLoading(false);
   }, [productId]);

@@ -2,16 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import productService, { Product } from '../services/productService';
 import '../styles/ProductBrowse.css';
 
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  rating?: number;
-  category?: string;
-}
+// Product interface is imported from productService
 
 interface FilterState {
   priceRange: [number, number];
@@ -35,7 +29,7 @@ const ProductBrowse: React.FC = () => {
   
   // Filter states
   const [filters, setFilters] = useState<FilterState>({
-    priceRange: [0, 100],
+    priceRange: [0, 20000], // 增加价格范围以适应所有商品
     categories: {
       dailyNecessities: categoryParam === 'dailyNecessities' || !categoryParam,
       homeKitchen: categoryParam === 'homeKitchen' || !categoryParam,
@@ -55,18 +49,30 @@ const ProductBrowse: React.FC = () => {
   // Handle URL parameter changes
   useEffect(() => {
     if (categoryParam) {
-      // If there's a specific category, filter by that category
-      setFilters(prev => ({
-        ...prev,
-        categories: {
-          dailyNecessities: categoryParam === 'dailyNecessities',
-          homeKitchen: categoryParam === 'homeKitchen',
-          fashionApparel: categoryParam === 'fashionApparel',
-          sportsOutdoors: categoryParam === 'sportsOutdoors',
-          electronics: categoryParam === 'electronics',
-          personalCare: categoryParam === 'personalCare',
-        }
-      }));
+      // Map URL category parameters to API categories
+      const categoryMapping: { [key: string]: string } = {
+        'dailyNecessities': 'daily necessities',
+        'homeKitchen': 'home&kitchen',
+        'fashionApparel': 'fashion&apparel',
+        'sportsOutdoors': 'sports&outdoors',
+        'electronics': 'electronics',
+        'personalCare': 'personal care'
+      };
+      
+      const apiCategory = categoryMapping[categoryParam];
+      if (apiCategory) {
+        setFilters(prev => ({
+          ...prev,
+          categories: {
+            dailyNecessities: categoryParam === 'dailyNecessities',
+            homeKitchen: categoryParam === 'homeKitchen',
+            fashionApparel: categoryParam === 'fashionApparel',
+            sportsOutdoors: categoryParam === 'sportsOutdoors',
+            electronics: categoryParam === 'electronics',
+            personalCare: categoryParam === 'personalCare',
+          }
+        }));
+      }
     } else if (searchQuery) {
       // If there's a search query but no specific category, show all categories
       setFilters(prev => ({
@@ -83,81 +89,56 @@ const ProductBrowse: React.FC = () => {
     }
   }, [categoryParam, searchQuery]);
 
-  // Mock products data
+  // Load products from API
   useEffect(() => {
-    // Create mock products for different categories
-    const mockProducts: Product[] = [
-      // Daily Necessities products
-      {
-        id: 2,
-        name: 'hajimi',
-        price: 20,
-        image: '/images/hajimi.png',
-        rating: 5,
-        category: 'dailyNecessities'
-      },
-      ...Array.from({ length: 9 }, (_, index) => ({
-        id: index + 3,
-        name: `Daily Product ${index + 1}`,
-        price: Math.floor(Math.random() * 50) + 10,
-        image: '/images/placeholder.svg',
-        rating: Math.floor(Math.random() * 5) + 1,
-        category: 'dailyNecessities'
-      })),
-      
-      // Home & Kitchen products
-      ...Array.from({ length: 10 }, (_, index) => ({
-        id: index + 13,
-        name: `Kitchen Product ${index + 1}`,
-        price: Math.floor(Math.random() * 100) + 20,
-        image: '/images/placeholder.svg',
-        rating: Math.floor(Math.random() * 5) + 1,
-        category: 'homeKitchen'
-      })),
-      
-      // Fashion & Apparel products
-      ...Array.from({ length: 10 }, (_, index) => ({
-        id: index + 23,
-        name: `Fashion Item ${index + 1}`,
-        price: Math.floor(Math.random() * 80) + 15,
-        image: '/images/placeholder.svg',
-        rating: Math.floor(Math.random() * 5) + 1,
-        category: 'fashionApparel'
-      })),
-      
-      // Sports & Outdoors products
-      ...Array.from({ length: 10 }, (_, index) => ({
-        id: index + 33,
-        name: `Sports Gear ${index + 1}`,
-        price: Math.floor(Math.random() * 120) + 25,
-        image: '/images/placeholder.svg',
-        rating: Math.floor(Math.random() * 5) + 1,
-        category: 'sportsOutdoors'
-      })),
-      
-      // Electronics products
-      ...Array.from({ length: 10 }, (_, index) => ({
-        id: index + 43,
-        name: `Electronics ${index + 1}`,
-        price: Math.floor(Math.random() * 200) + 50,
-        image: '/images/placeholder.svg',
-        rating: Math.floor(Math.random() * 5) + 1,
-        category: 'electronics'
-      })),
-      
-      // Personal Care products
-      ...Array.from({ length: 10 }, (_, index) => ({
-        id: index + 53,
-        name: `Personal Care ${index + 1}`,
-        price: Math.floor(Math.random() * 40) + 5,
-        image: '/images/placeholder.svg',
-        rating: Math.floor(Math.random() * 5) + 1,
-        category: 'personalCare'
-      }))
-    ];
-    
-    setProducts(mockProducts);
-    setLoading(false);
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await productService.getVisibleProducts();
+        
+        if (response.success && Array.isArray(response.data)) {
+          // Transform API data to match our interface
+          const transformedProducts = response.data.map((product: any) => {
+            // Convert absolute image URL to relative URL for proxy access
+            const imageUrl = product.imageUrl ? 
+              product.imageUrl.replace('http://192.168.81.86:8080', '') : 
+              '/images/placeholder.svg';
+            
+            return {
+              productId: product.productId,
+              productName: product.productName,
+              productPrice: product.productPrice,
+              imageUrl: imageUrl,
+              productDescription: product.productDescription,
+              productStockQuantity: product.productStockQuantity,
+              productCategory: product.productCategory,
+              isVisible: product.isVisible,
+              // Add compatibility fields for existing code
+              id: product.productId,
+              name: product.productName,
+              price: product.productPrice,
+              image: imageUrl,
+              description: product.productDescription,
+              inStock: product.productStockQuantity > 0,
+              stockQuantity: product.productStockQuantity,
+              category: product.productCategory
+            };
+          });
+          
+          setProducts(transformedProducts);
+        } else {
+          console.error('Failed to load products:', response.message);
+          setProducts([]);
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
   }, []);
 
   // Handle price range change
@@ -193,13 +174,37 @@ const ProductBrowse: React.FC = () => {
   const getFilteredProducts = () => {
     let filtered = products.filter(product => {
       // Filter by price range
-      const inPriceRange = product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1];
+      const inPriceRange = product.productPrice >= filters.priceRange[0] && product.productPrice <= filters.priceRange[1];
       
-      // Filter by category
-      const categoryMatch = product.category && filters.categories[product.category as keyof typeof filters.categories];
+      // Filter by category - map API categories to our filter categories
+      let categoryMatch = false;
+      if (product.productCategory) {
+        switch (product.productCategory) {
+          case 'daily necessities':
+            categoryMatch = filters.categories.dailyNecessities;
+            break;
+          case 'home&kitchen':
+            categoryMatch = filters.categories.homeKitchen;
+            break;
+          case 'fashion&apparel':
+            categoryMatch = filters.categories.fashionApparel;
+            break;
+          case 'sports&outdoors':
+            categoryMatch = filters.categories.sportsOutdoors;
+            break;
+          case 'electronics':
+            categoryMatch = filters.categories.electronics;
+            break;
+          case 'personal care':
+            categoryMatch = filters.categories.personalCare;
+            break;
+          default:
+            categoryMatch = true; // Show unknown categories
+        }
+      }
       
       // Filter by search query
-      const searchMatch = !searchQuery || product.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const searchMatch = !searchQuery || product.productName.toLowerCase().includes(searchQuery.toLowerCase());
       
       return inPriceRange && categoryMatch && searchMatch;
     });
@@ -207,13 +212,14 @@ const ProductBrowse: React.FC = () => {
     // Sort products
     switch (sortBy) {
       case 'priceAsc':
-        filtered.sort((a, b) => a.price - b.price);
+        filtered.sort((a, b) => a.productPrice - b.productPrice);
         break;
       case 'priceDesc':
-        filtered.sort((a, b) => b.price - a.price);
+        filtered.sort((a, b) => b.productPrice - a.productPrice);
         break;
       case 'rating':
-        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        // Note: API doesn't provide rating, so we'll sort by name for now
+        filtered.sort((a, b) => a.productName.localeCompare(b.productName));
         break;
       default:
         // Keep original order for 'new'
@@ -262,7 +268,7 @@ const ProductBrowse: React.FC = () => {
                 <input
                   type="range"
                   min="0"
-                  max="100"
+                  max="20000"
                   value={filters.priceRange[0]}
                   onChange={(e) => handlePriceRangeChange([parseInt(e.target.value), filters.priceRange[1]])}
                   className="price-slider price-slider-min"
@@ -270,7 +276,7 @@ const ProductBrowse: React.FC = () => {
                 <input
                   type="range"
                   min="0"
-                  max="100"
+                  max="20000"
                   value={filters.priceRange[1]}
                   onChange={(e) => handlePriceRangeChange([filters.priceRange[0], parseInt(e.target.value)])}
                   className="price-slider price-slider-max"
@@ -338,16 +344,16 @@ const ProductBrowse: React.FC = () => {
             ) : (
               currentProducts.map((product) => (
                 <div 
-                  key={product.id} 
+                  key={product.productId} 
                   className="product-card"
-                  onClick={() => navigate(`/product/${product.id}`)}
+                  onClick={() => navigate(`/product/${product.productId}`)}
                 >
                   <div className="product-image">
-                    <img src={product.image} alt={product.name} />
+                    <img src={product.imageUrl} alt={product.productName} />
                   </div>
                   <div className="product-info">
-                    <div className="product-name">{product.name}</div>
-                    <div className="product-price">${product.price}</div>
+                    <div className="product-name">{product.productName}</div>
+                    <div className="product-price">${product.productPrice}</div>
                   </div>
                 </div>
               ))
