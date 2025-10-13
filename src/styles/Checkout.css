@@ -1,4 +1,8 @@
 .checkout-page { display: flex; flex-direction: column; min-height: 100vh; }
+
+.checkout-page .footer {
+  margin-top: auto;
+}
 .checkout-container { max-width: 1200px; margin: 0 auto; padding: 96px 24px 24px; }
 .checkout-grid { display: grid; grid-template-columns: 1fr 240px; gap: 24px; align-items: start; width: 100%; margin: 0 auto; }
 
@@ -6,15 +10,109 @@
 .section-title.center { text-align: center; }
 
 .address-section { grid-column: 1 / 2; position: relative; margin-bottom: 24px; }
-.address-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; justify-content: center; align-items: center; }
-.address-card { width: 100%; height: 120px; border-radius: 8px; background: #f8f8f8; border: 1px solid #e0e0e0; display:flex; align-items:center; justify-content:center; color:#333; font-size: 16px; cursor: pointer; transition: all 0.2s; padding: 16px; }
+.address-list { display: flex; justify-content: flex-start; align-items: center; max-width: 100%; margin: 0; }
+.address-card { width: 100%; min-height: 60px; border-radius: 8px; background: #f8f8f8; border: 1px solid #e0e0e0; display:flex; flex-direction: column; color:#333; font-size: 14px; cursor: pointer; transition: all 0.2s; padding: 8px 16px; }
 .address-card:hover { background: #f0f0f0; border-color: #ff8a33; }
+
+/* 默认地址样式 */
+.address-card.default-address {
+  background: #fff3cd;
+  border-color: #ff8a33;
+  min-height: 60px;
+}
+
+.address-label {
+  font-weight: 600;
+  color: #ff8a33;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.address-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.address-line {
+  font-size: 13px;
+  color: #333;
+  line-height: 1.3;
+}
+
+/* 加载状态 */
+.address-card.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-style: italic;
+}
+
+/* 错误状态 */
+.address-card.error {
+  background: #fee;
+  border-color: #fcc;
+  color: #c33;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* 无地址状态 */
+.address-card.no-address {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #f8f9fa;
+}
+
+.no-address-text {
+  color: #666;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.add-address-btn {
+  background: #ff8a33;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-address-btn:hover {
+  background: #e6731a;
+}
 .manage-btn { position:absolute; right:0; top: 0; transform: translateY(-50%); background:#ff8a33; color:#fff; border:none; border-radius:16px; padding:6px 12px; cursor:pointer; height:32px; font-size: 12px; }
 
 .order-section { grid-column: 1 / 2; margin-top: 0; }
 .order-wrapper { border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; background: #fff; }
 .order-card { display:grid; grid-template-columns: 120px 1fr auto; align-items:center; gap:20px; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:20px; margin:12px 0; width: 100%; }
-.order-thumb { width:120px; height:120px; border-radius:6px; background:#ddd; }
+.order-thumb { 
+  width:120px; 
+  height:120px; 
+  border-radius:6px; 
+  background:#ddd; 
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.order-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
 .order-info { display:flex; flex-direction:column; }
 .order-name { font-weight:600; font-size: 16px; margin-bottom: 8px; }
 .order-price { color:#666; font-size:16px; margin-top:4px; }
@@ -34,8 +132,47 @@
 .pay-methods { margin-top:8px; }
 .pay-title { color:#999; font-size:12px; margin-bottom:8px; }
 .pay-icons { display:flex; flex-wrap:wrap; gap:8px; }
-.pm { background:#f5f5f5; border-radius:8px; padding:6px 10px; font-size:12px; }
-.pay-btn { width:100%; margin-top:16px; background:#ff8a33; color:#fff; border:none; border-radius:24px; padding:10px 16px; cursor:pointer; font-weight:600; }
+.pm { 
+  background:#f5f5f5; 
+  border-radius:8px; 
+  padding:6px 10px; 
+  font-size:12px; 
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.pm:hover {
+  background: #e8e8e8;
+}
+
+.pm.selected {
+  background: #ff8a33;
+  color: white;
+  border-color: #ff8a33;
+}
+.pay-btn { 
+  width:100%; 
+  margin-top:16px; 
+  background:#ff8a33; 
+  color:#fff; 
+  border:none; 
+  border-radius:24px; 
+  padding:10px 16px; 
+  cursor:pointer; 
+  font-weight:600; 
+  transition: all 0.2s ease;
+}
+
+.pay-btn:hover:not(:disabled) {
+  background: #e6731a;
+}
+
+.pay-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 
 @media (max-width: 960px) {
   .checkout-grid { grid-template-columns: 1fr; }

@@ -4,6 +4,10 @@
   min-height: 100vh;
 }
 
+.cart-page .footer {
+  margin-top: auto;
+}
+
 .cart-container {
   max-width: 100%;
   margin: 0 auto;
@@ -55,6 +59,25 @@
 .checkbox { display: inline-flex; align-items: center; }
 .checkbox input {
   width: 16px; height: 16px; accent-color: #ff8a33; cursor: pointer;
+}
+
+.checkbox input:checked {
+  accent-color: #ff8a33;
+}
+
+/* 修改勾选框内对勾的颜色为浅灰色 */
+.checkbox input[type="checkbox"]:checked {
+  background-color: #ff8a33;
+}
+
+.checkbox input[type="checkbox"]:checked::before {
+  content: "✓";
+  color: #ccc;
+  font-size: 12px;
+  font-weight: bold;
+  display: block;
+  text-align: center;
+  line-height: 16px;
 }
 .cart-empty { color: #999; padding: 24px 8px; }
 

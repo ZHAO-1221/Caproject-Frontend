@@ -48,7 +48,7 @@ const LogoutSuccess: React.FC = () => {
           </button>
           
           <div className="auto-redirect-message">
-            页面将在 <span className="countdown">{countdown}</span> 秒后自动跳转到登录页面
+            Page will automatically redirect to login page in <span className="countdown">{countdown}</span> seconds
           </div>
         </div>
       </div>

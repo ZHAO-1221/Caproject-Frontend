@@ -25,6 +25,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.logo:hover {
+  background: rgba(255,121,38,0.2);
 }
 
 .logo img {
@@ -35,37 +41,44 @@
 
 .home {
   position: absolute;
-  top: 10px;
+  top: 14px;
   left: 80px;
-  width: 44px;
-  height: 44px;
-  overflow: hidden;
+  width: 36px;
+  height: 36px;
+  overflow: visible;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .icon {
   position: absolute;
-  height: 83.33%;
-  width: 75%;
-  top: 8.33%;
-  right: 12.49%;
-  bottom: 8.33%;
-  left: 12.51%;
+  height: 80%;
+  width: 80%;
+  top: 10%;
+  left: 10%;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
   max-height: 100%;
+  object-fit: contain;
 }
 
 .shopping-cart {
   position: absolute;
-  top: 10px;
-  right: 20px;
-  width: 44px;
-  height: 44px;
-  overflow: hidden;
+  top: 0px;
+  right: 12px;
+  width: 64px;
+  height: 64px;
+  overflow: visible;
   cursor: pointer;
   border-radius: 50%;
   transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .shopping-cart:hover {
@@ -73,25 +86,21 @@
 }
 
 .div-icon {
-  position: absolute;
-  height: 87.5%;
-  width: 91.74%;
-  top: 4.17%;
-  right: 4.09%;
-  bottom: 8.33%;
-  left: 4.17%;
-  max-width: 100%;
-  overflow: hidden;
-  max-height: 100%;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+  position: relative;
 }
 
 .account-circle-icon {
   position: absolute;
-  top: 10px;
-  right: 80px;
-  width: 44px;
-  height: 44px;
+  top: 0px;
+  right: 72px;
+  width: 64px;
+  height: 64px;
   cursor: pointer;
+  object-fit: contain;
 }
 
 .search-field {
@@ -111,14 +120,30 @@
   border-radius: 22px;
 }
 
-.search {
+.search-form {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+.search-input {
   flex: 1;
-  position: relative;
+  height: 100%;
+  border: none;
+  background: transparent;
   font-size: 20px;
-  line-height: 16px;
   font-weight: 500;
   font-family: 'SF Pro', Inter, sans-serif;
   color: #999;
+  padding: 0;
+  outline: none;
   white-space: nowrap;
   text-align: left;
   overflow: hidden;
@@ -127,41 +152,48 @@
   z-index: 2;
 }
 
+.search-input::placeholder {
+  color: #999;
+}
+
+.search-button {
+  display: none;
+}
+
 .icon-button {
   position: absolute;
-  top: 10px;
+  top: 14px;
   left: 130px;
-  border-radius: 32px;
+  border-radius: 18px;
   background-color: #ffa065;
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
+  padding: 8px;
   box-sizing: border-box;
   cursor: pointer;
 }
 
 .menu {
-  width: 20px;
+  width: 16px;
   position: relative;
-  height: 20px;
+  height: 16px;
   overflow: hidden;
   flex-shrink: 0;
 }
 
 .icon2 {
   position: absolute;
-  height: 60%;
-  width: 85%;
-  top: 20%;
-  right: 7.5%;
-  bottom: 20%;
-  left: 7.5%;
+  height: 70%;
+  width: 70%;
+  top: 15%;
+  left: 15%;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
   max-height: 100%;
+  object-fit: contain;
 }
 
