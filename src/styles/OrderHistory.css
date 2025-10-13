@@ -1,0 +1,320 @@
+.order-history-page {
+  width: 100%;
+  position: relative;
+  background-color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  text-align: left;
+  font-size: 16px;
+  color: #1e1e1e;
+  font-family: Inter;
+}
+
+/* 消息提示样式 */
+.message {
+  padding: 12px 20px;
+  margin: 16px 0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  border: 1px solid #fcc;
+}
+
+.success-message {
+  background-color: #efe;
+  color: #3c3;
+  border: 1px solid #cfc;
+}
+
+.info-message {
+  background-color: #eef;
+  color: #33c;
+  border: 1px solid #ccf;
+}
+
+.main-content {
+  position: relative;
+  margin: 80px auto 0;
+  width: 100%;
+  max-width: 1400px;
+  min-height: 640px;
+  display: flex;
+  padding: 40px;
+  box-sizing: border-box;
+  gap: 40px;
+}
+
+.sidebar {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.profile-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-picture {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255,121,38,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  overflow: hidden;
+}
+
+.profile-picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.profile-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e1e1e;
+  text-align: center;
+}
+
+.nav-menu {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-item {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1e1e1e;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.nav-item.active {
+  background: #fff3cd;
+  color: #F58220;
+}
+
+.nav-item:hover {
+  background: #f5f5f5;
+}
+
+.content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #F58220;
+  margin: 0;
+}
+
+.orders-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.order-item:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.order-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.order-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.order-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.order-number {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e1e1e;
+}
+
+.order-time {
+  font-size: 14px;
+  color: #666;
+}
+
+.order-status {
+  font-size: 14px;
+  color: #F58220;
+  font-weight: 500;
+}
+
+.order-price {
+  font-size: 24px;
+  font-weight: 700;
+  color: #F58220;
+  text-align: right;
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.no-orders {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  font-size: 16px;
+}
+
+.no-orders p {
+  margin: 0;
+  font-size: 18px;
+  color: #999;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .profile-section {
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .profile-picture {
+    width: 60px;
+    height: 60px;
+  }
+
+  .profile-name {
+    font-size: 16px;
+  }
+
+  .nav-menu {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .nav-item {
+    padding: 8px 12px;
+    font-size: 14px;
+    flex: 1;
+    min-width: 80px;
+  }
+
+  .order-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .order-image {
+    width: 100%;
+    height: 120px;
+    align-self: center;
+  }
+
+  .order-details {
+    width: 100%;
+  }
+
+  .order-price {
+    align-self: flex-end;
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 24px;
+  }
+
+  .order-item {
+    padding: 12px;
+  }
+
+  .order-image {
+    height: 100px;
+  }
+
+  .order-number {
+    font-size: 14px;
+  }
+
+  .order-time,
+  .order-status {
+    font-size: 12px;
+  }
+
+  .order-price {
+    font-size: 18px;
+  }
+}
