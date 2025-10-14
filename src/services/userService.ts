@@ -41,6 +41,18 @@ export interface UpdatePasswordRequest {
   newPassword: string;
 }
 
+export interface UpdateWalletRequest {
+  amount: number;
+  operation: 'add' | 'deduct';
+  description?: string;
+}
+
+export interface UpdateWalletResponse {
+  success: boolean;
+  message?: string;
+  newBalance?: number;
+}
+
 class UserService {
   /**
    * 获取用户信息
@@ -139,6 +151,44 @@ class UserService {
         return error.response.data;
       }
       throw new Error('网络错误，请稍后重试');
+    }
+  }
+
+  /**
+   * 更新钱包余额
+   */
+  async updateWalletBalance(walletData: UpdateWalletRequest): Promise<UpdateWalletResponse> {
+    try {
+      console.log('=== UserService.updateWalletBalance Debug Info ===');
+      console.log('Wallet update data:', walletData);
+      
+      const response = await axios.put(`${API_BASE_URL}/wallet`, walletData, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...authService.getAuthHeaders()
+        }
+      });
+      
+      console.log('Wallet update response:', response.data);
+      
+      if (response.data && response.data.success) {
+        return {
+          success: true,
+          newBalance: response.data.newBalance,
+          message: response.data.message
+        };
+      } else {
+        return {
+          success: false,
+          message: response.data?.message || '钱包余额更新失败'
+        };
+      }
+    } catch (error: any) {
+      console.error('Failed to update wallet balance:', error);
+      return {
+        success: false,
+        message: error.response?.data?.message || '钱包余额更新失败，请稍后重试'
+      };
     }
   }
 

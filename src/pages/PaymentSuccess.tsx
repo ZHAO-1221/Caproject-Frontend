@@ -9,6 +9,7 @@ interface OrderInfo {
   amount: number;
   paymentMethod: string;
   items: any[];
+  newWalletBalance?: number;
   timestamp: string;
 }
 
@@ -88,6 +89,12 @@ const PaymentSuccess: React.FC = () => {
                 <span className="label">Payment Time:</span>
                 <span className="value">{new Date(orderInfo.timestamp).toLocaleString('en-US')}</span>
               </div>
+              {orderInfo.paymentMethod === 'wallet' && orderInfo.newWalletBalance !== undefined && (
+                <div className="order-info-item">
+                  <span className="label">Remaining Wallet Balance:</span>
+                  <span className="value">${orderInfo.newWalletBalance.toFixed(2)}</span>
+                </div>
+              )}
             </div>
           )}
         </div>
