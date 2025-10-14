@@ -96,12 +96,30 @@ class UserService {
           ...authService.getAuthHeaders()
         }
       });
-      return response.data;
+      
+      // 后端直接返回用户对象，需要包装为期望的格式
+      if (response.data && response.data.userId) {
+        return {
+          success: true,
+          data: response.data
+        };
+      } else {
+        return {
+          success: false,
+          message: '更新失败'
+        };
+      }
     } catch (error: any) {
       if (error.response) {
-        return error.response.data;
+        return {
+          success: false,
+          message: error.response.data?.message || '更新失败'
+        };
       }
-      throw new Error('网络错误，请稍后重试');
+      return {
+        success: false,
+        message: '网络错误，请稍后重试'
+      };
     }
   }
 
