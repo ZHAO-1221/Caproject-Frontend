@@ -29,7 +29,6 @@
   background: #fff;
   border-radius: 16px;
   padding: 28px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   height: fit-content;
   flex-shrink: 0;
   border: 1px solid #f0f0f0;
@@ -98,14 +97,12 @@
   background: #F58220;
   cursor: pointer;
   border: 3px solid #fff;
-  box-shadow: 0 2px 8px rgba(245, 130, 32, 0.3), 0 0 0 1px rgba(245, 130, 32, 0.1);
   pointer-events: auto;
   transition: all 0.2s ease;
 }
 
 .price-slider::-webkit-slider-thumb:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(245, 130, 32, 0.4), 0 0 0 2px rgba(245, 130, 32, 0.2);
 }
 
 .price-slider::-moz-range-thumb {
@@ -115,14 +112,12 @@
   background: #F58220;
   cursor: pointer;
   border: 3px solid #fff;
-  box-shadow: 0 2px 8px rgba(245, 130, 32, 0.3), 0 0 0 1px rgba(245, 130, 32, 0.1);
   pointer-events: auto;
   transition: all 0.2s ease;
 }
 
 .price-slider::-moz-range-thumb:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(245, 130, 32, 0.4), 0 0 0 2px rgba(245, 130, 32, 0.2);
 }
 
 .price-slider-min::-webkit-slider-thumb {
@@ -276,7 +271,6 @@
   background: #fff;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   border: 1px solid #f0f0f0;
 }
 
@@ -441,13 +435,11 @@
   text-align: center;
   line-height: 1.2;
   white-space: pre-line;
-  box-shadow: 0 2px 8px rgba(245, 130, 32, 0.3);
 }
 
 .add-to-cart-btn:hover:not(:disabled) {
   background-color: #e6741a;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(245, 130, 32, 0.4);
 }
 
 .add-to-cart-btn:disabled {
@@ -455,7 +447,6 @@
   color: #999;
   cursor: not-allowed;
   transform: none;
-  box-shadow: none;
 }
 
 /* Product Specifications & Reviews Section */
