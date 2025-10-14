@@ -95,7 +95,8 @@ const PersonalInfo: React.FC = () => {
         console.log('=== 处理用户信息数据 ===');
         console.log('原始后端数据:', profile);
         
-        setUserInfo({
+        setUserInfo(prev => ({
+          ...prev,
           name: profile.userName || '',
           email: profile.userEmail || '',
           password: '************',
@@ -104,13 +105,9 @@ const PersonalInfo: React.FC = () => {
           avatar: profile.userProfileUrl || '/images/user-avatar.svg',
           introduce: profile.userIntroduce || '',
           wallet: profile.wallet || 0,
-          address: {
-            street: '',
-            building: '',
-            postal: '',
-            country: ''
-          }
-        });
+          // 保留现有的地址信息，不重置
+          address: prev.address
+        }));
         
         console.log('=== 映射后的用户信息 ===');
         console.log('用户名:', profile.userName);
