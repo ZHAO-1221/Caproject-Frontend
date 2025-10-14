@@ -209,7 +209,6 @@ const AddressManagement: React.FC = () => {
             </button>
             <button className="nav-item" onClick={() => navigate('/order-history')}>Orders</button>
             <button className="nav-item active">Manage Addresses</button>
-            <button className="nav-item">My Coupons</button>
             <button className="nav-item" onClick={handleLogout}>Sign out</button>
           </div>
         </div>
