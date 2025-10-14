@@ -57,6 +57,20 @@ const PersonalInfo: React.FC = () => {
     loadFirstAddress();
   }, []);
 
+  // 监听页面焦点变化，当从其他页面返回时重新加载地址
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('页面获得焦点，重新加载地址信息');
+      loadFirstAddress();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
+
   const loadUserProfile = async () => {
     try {
       setLoading(true);
@@ -70,7 +84,7 @@ const PersonalInfo: React.FC = () => {
 
       console.log('=== 获取用户个人信息 ===');
       console.log('前端发送给后端的数据:', { username });
-      console.log('请求URL:', `/api/users/me?username=${username}`);
+      console.log('请求URL:', `/api/users/me?`);
       
       const response = await userService.getUserProfile(username);
       
@@ -140,11 +154,13 @@ const PersonalInfo: React.FC = () => {
       
       console.log('后端返回给前端的数据:', response);
 
-      if (response.success && response.data && Array.isArray(response.data) && response.data.length > 0) {
-        // 获取第一条地址作为默认地址
-        const firstAddress: any = response.data[0];
+      if (response.code === 200 && response.data && Array.isArray(response.data) && response.data.length > 0) {
+        // 查找默认地址，如果没有默认地址则使用第一条地址
+        const defaultAddress = response.data.find((addr: any) => addr.defaultAddress === true) || response.data[0];
+        const firstAddress: any = defaultAddress;
         console.log('=== 处理地址数据 ===');
-        console.log('第一条地址数据:', firstAddress);
+        console.log('找到的默认地址数据:', firstAddress);
+        console.log('是否为默认地址:', firstAddress.defaultAddress);
         
         const parsed = addressService.parseAddressText(firstAddress.locationText);
         console.log('解析后的地址:', parsed);

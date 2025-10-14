@@ -11,14 +11,17 @@ export interface Address {
 }
 
 export interface AddressResponse {
-  success: boolean;
+  code: number;
   message?: string;
-  data?: Address | Address[];
+  data?: Address | Address[] | number;
+  success?: boolean; // 保持向后兼容
 }
 
 export interface AddAddressRequest {
   userId: number;
   locationText: string;
+  postalCode?: string;
+  city?: string;
 }
 
 export interface UpdateAddressRequest {
@@ -30,66 +33,44 @@ class AddressService {
    * 获取用户的所有地址
    */
   async getAddresses(username: string): Promise<AddressResponse> {
-    try {
-      const headers = {
-        'Content-Type': 'application/json',
-        ...authService.getAuthHeaders()
-      };
-      
-      console.log('=== AddressService.getAddresses 调试信息 ===');
-      console.log('请求参数:', { username });
-      console.log('请求头:', headers);
-      console.log('完整URL:', `${API_BASE_URL}/location/getLocation`);
-      
-      const response = await axios.get(`${API_BASE_URL}/location/getLocation`, {
-        params: { username },
-        headers
-      });
-      
-      console.log('响应状态:', response.status);
-      console.log('响应头:', response.headers);
-      console.log('响应数据:', response.data);
-      
-      return response.data;
-    } catch (error: any) {
-      if (error.response) {
-        return error.response.data;
-      }
-      throw new Error('网络错误，请稍后重试');
-    }
+    const headers = {
+      'Content-Type': 'application/json',
+      ...authService.getAuthHeaders()
+    };
+    
+    console.log('=== AddressService.getAddresses 调试信息 ===');
+    console.log('请求参数:', { username });
+    console.log('请求头:', headers);
+    console.log('完整URL:', `${API_BASE_URL}/location/getLocation`);
+    
+    const response = await axios.get(`${API_BASE_URL}/location/getLocation`, {
+      params: { username },
+      headers
+    });
+    
+    console.log('响应状态:', response.status);
+    console.log('响应头:', response.headers);
+    console.log('响应数据:', response.data);
+    
+    return response.data;
   }
 
   /**
    * 添加新地址
    */
   async addAddress(data: AddAddressRequest): Promise<AddressResponse> {
-    try {
-      console.log('=== AddressService.addAddress 调试信息 ===');
-      console.log('请求数据:', data);
-      console.log('用户ID:', data.userId);
-      console.log('地址文本:', data.locationText);
-      
-      const response = await axios.post(`${API_BASE_URL}/location/addLocation`, data, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...authService.getAuthHeaders()
-        }
-      });
-      return response.data;
-    } catch (error: any) {
-      console.log('API调用失败，使用离线模式');
-      // 离线模式：模拟成功响应
-      return {
-        success: true,
-        message: '地址添加成功（离线模式）',
-        data: {
-          id: Date.now(), // 生成一个临时ID
-          locationText: data.locationText,
-          isDefault: false,
-          userId: data.userId
-        }
-      };
-    }
+    console.log('=== AddressService.addAddress 调试信息 ===');
+    console.log('请求数据:', data);
+    console.log('用户ID:', data.userId);
+    console.log('地址文本:', data.locationText);
+    
+    const response = await axios.post(`${API_BASE_URL}/location/addLocation`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...authService.getAuthHeaders()
+      }
+    });
+    return response.data;
   }
 
   /**
@@ -191,8 +172,8 @@ class AddressService {
    * 解析地址文本（将后端格式转为前端格式）
    */
   parseAddressText(locationText: string): { street: string; building: string; postal: string; city: string } {
-    // 后端格式：用空格分隔的地址字符串
-    const parts = locationText.split(' ').filter(p => p.trim());
+    // 后端格式：用逗号分隔的地址字符串
+    const parts = locationText.split(',').map(p => p.trim()).filter(p => p);
     
     // 假设格式为：street building postal city
     // 如果只有3个部分，可能是缺少building或city

@@ -53,8 +53,7 @@ const Login: React.FC = () => {
       if (response.success && response.user) {
         setSuccess('登录成功！正在跳转...');
         
-        // 保存用户信息到sessionStorage
-        authService.setUserSession(response.user);
+        // authService.login() 已经自动保存了认证信息，无需重复调用setUserSession
         
         // 延迟跳转到个人信息页面
         setTimeout(() => {
