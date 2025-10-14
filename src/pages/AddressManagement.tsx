@@ -45,58 +45,32 @@ const AddressManagement: React.FC = () => {
         return;
       }
 
-      try {
-        const response = await addressService.getAddresses(username);
+      const response = await addressService.getAddresses(username);
 
-        if (response.success && Array.isArray(response.data)) {
-          const addressList = response.data.map((loc: any) => {
-            const parsed = addressService.parseAddressText(loc.locationText);
-            return {
-              id: loc.id,
-              ...parsed,
-              isDefault: loc.isDefault || false
-            };
-          });
-          setAddresses(addressList);
-        } else {
-          // API返回失败时使用离线数据
-          loadOfflineAddresses();
-        }
-      } catch (apiError) {
-        console.log('地址API不可用，使用离线模式');
-        // API调用失败时使用离线数据
-        loadOfflineAddresses();
+      // 检查后端返回的格式：{code: 200, data: [...], message: "获取地址列表成功"}
+      if (response.code === 200 && Array.isArray(response.data)) {
+        const addressList = response.data.map((loc: any) => {
+          const parsed = addressService.parseAddressText(loc.locationText);
+          return {
+            id: loc.locationId || loc.id, // 使用locationId字段
+            ...parsed,
+            isDefault: loc.defaultAddress || loc.isDefault || false
+          };
+        });
+        setAddresses(addressList);
+      } else {
+        setError(response.message || '获取地址列表失败');
+        setAddresses([]);
       }
     } catch (error: any) {
       console.error('Load addresses error:', error);
-      loadOfflineAddresses();
+      setError('网络错误，请稍后重试');
+      setAddresses([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // 加载离线地址数据
-  const loadOfflineAddresses = () => {
-    const offlineAddresses = [
-      {
-        id: 1,
-        street: '12 West Coast Road',
-        building: 'The Stellar #05-12',
-        postal: '126821',
-        city: 'Singapore',
-        isDefault: true
-      },
-      {
-        id: 2,
-        street: '8 Marina Boulevard',
-        building: 'Marina Bay Financial Centre #15-01',
-        postal: '018981',
-        city: 'Singapore',
-        isDefault: false
-      }
-    ];
-    setAddresses(offlineAddresses);
-  };
 
   const handleLogout = async () => {
     if (window.confirm('Are you sure you want to logout?')) {
@@ -114,7 +88,7 @@ const AddressManagement: React.FC = () => {
 
         const response = await addressService.deleteAddress(id);
 
-        if (response.success) {
+        if (response.code === 200) {
           setAddresses(prev => prev.filter(addr => addr.id !== id));
           setSuccess('地址删除成功！');
           setTimeout(() => setSuccess(''), 3000);
@@ -141,7 +115,7 @@ const AddressManagement: React.FC = () => {
 
       const response = await addressService.setDefaultAddress(id, username);
 
-      if (response.success) {
+      if (response.code === 200) {
         // 更新本地状态
         setAddresses(prev => prev.map(addr => ({
           ...addr,
@@ -186,21 +160,27 @@ const AddressManagement: React.FC = () => {
       console.log('用户ID:', userId);
       console.log('地址信息:', newAddress);
       console.log('格式化地址文本:', locationText);
-      console.log('发送给后端的数据:', { userId, locationText });
+      
+      // 发送后端期望的数据格式
+      const addressData = {
+        userId: Number(userId),
+        locationText: `${newAddress.street}, ${newAddress.building}, ${newAddress.postal}, ${newAddress.city}`,
+        postal: Number(newAddress.postal) // 后端期望postal是整数类型
+      };
+      
+      console.log('发送给后端的数据:', addressData);
 
-      const response = await addressService.addAddress({
-        userId,
-        locationText
-      });
+      const response = await addressService.addAddress(addressData);
 
       console.log('后端响应:', response);
 
-      if (response.success) {
+      // 检查后端返回的格式：{code: 200, data: locationId, message: "地址添加成功"}
+      if (response.code === 200) {
+        setSuccess(response.message || '地址添加成功！');
         // 重新加载地址列表
         await loadAddresses();
         setShowModal(false);
         setNewAddress({ street: '', building: '', postal: '', city: '' });
-        setSuccess('地址添加成功！');
         setTimeout(() => setSuccess(''), 3000);
       } else {
         setError(response.message || '添加失败');
