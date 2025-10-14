@@ -35,7 +35,20 @@ const TestCheckout: React.FC = () => {
       
       <main className="main-content">
         <div className="container">
-          <h1 className="checkout-title">Checkout</h1>
+          <div style={{
+            backgroundColor: '#fff3cd',
+            border: '1px solid #ffc107',
+            borderRadius: '8px',
+            padding: '15px',
+            marginBottom: '20px',
+            textAlign: 'center'
+          }}>
+            <strong style={{ color: '#856404' }}>⚠️ 测试模式 - 只读页面</strong>
+            <p style={{ color: '#856404', margin: '5px 0 0 0', fontSize: '14px' }}>
+              此页面仅用于测试UI界面，不会修改任何数据或执行实际支付操作
+            </p>
+          </div>
+          <h1 className="checkout-title">Checkout (Test Mode)</h1>
           
           <div className="checkout-content">
             {/* 地址信息 */}
@@ -125,11 +138,11 @@ const TestCheckout: React.FC = () => {
 
             {/* 结账按钮 */}
             <div className="checkout-actions">
-              <button className="btn btn-primary btn-large">
-                Complete Order
+              <button className="btn btn-primary btn-large" disabled style={{ opacity: 0.6, cursor: 'not-allowed' }}>
+                Complete Order (Test Mode - Disabled)
               </button>
-              <button className="btn btn-secondary">
-                Back to Cart
+              <button className="btn btn-secondary" disabled style={{ opacity: 0.6, cursor: 'not-allowed' }}>
+                Back to Cart (Test Mode - Disabled)
               </button>
             </div>
           </div>

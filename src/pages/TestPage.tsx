@@ -12,6 +12,19 @@ const TestPage: React.FC = () => {
       <h1 style={{ color: '#333', marginBottom: '20px' }}>
         🎉 测试页面成功！
       </h1>
+      <div style={{
+        backgroundColor: '#fff3cd',
+        border: '1px solid #ffc107',
+        borderRadius: '8px',
+        padding: '15px',
+        marginBottom: '20px',
+        textAlign: 'center'
+      }}>
+        <strong style={{ color: '#856404' }}>⚠️ 测试模式提醒</strong>
+        <p style={{ color: '#856404', margin: '5px 0 0 0', fontSize: '14px' }}>
+          所有测试页面都是只读的，不会修改任何数据
+        </p>
+      </div>
       <p style={{ fontSize: '18px', color: '#666', marginBottom: '30px' }}>
         如果你能看到这个页面，说明React应用正在正常运行。
       </p>

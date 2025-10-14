@@ -37,7 +37,7 @@ class AuthService {
           
           // 尝试获取完整的用户信息（包含userId）
           try {
-            const userResponse = await axios.get(`${API_BASE_URL}/users/me`, {
+            const userResponse = await axios.get(`${API_BASE_URL}/me`, {
               headers: {
                 'Authorization': `Bearer ${response.data.token}`
               }

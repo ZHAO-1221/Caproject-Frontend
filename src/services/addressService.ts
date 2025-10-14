@@ -183,20 +183,48 @@ class AddressService {
    * 格式化地址文本（将前端格式转为后端格式）
    */
   formatAddressText(address: { street: string; building: string; postal: string; city: string }): string {
-    return `${address.street}, ${address.building}, ${address.postal}, ${address.city}`;
+    // 后端要求的格式：完整的地址字符串，用空格分隔各个部分
+    return `${address.street} ${address.building} ${address.postal} ${address.city}`.trim();
   }
 
   /**
    * 解析地址文本（将后端格式转为前端格式）
    */
   parseAddressText(locationText: string): { street: string; building: string; postal: string; city: string } {
-    const parts = locationText.split(',').map(p => p.trim());
-    return {
-      street: parts[0] || '',
-      building: parts[1] || '',
-      postal: parts[2] || '',
-      city: parts[3] || ''
-    };
+    // 后端格式：用空格分隔的地址字符串
+    const parts = locationText.split(' ').filter(p => p.trim());
+    
+    // 假设格式为：street building postal city
+    // 如果只有3个部分，可能是缺少building或city
+    if (parts.length >= 4) {
+      return {
+        street: parts[0] || '',
+        building: parts[1] || '',
+        postal: parts[2] || '',
+        city: parts.slice(3).join(' ') || '' // city可能包含空格，所以用剩余部分
+      };
+    } else if (parts.length === 3) {
+      return {
+        street: parts[0] || '',
+        building: parts[1] || '',
+        postal: parts[2] || '',
+        city: ''
+      };
+    } else if (parts.length === 2) {
+      return {
+        street: parts[0] || '',
+        building: '',
+        postal: parts[1] || '',
+        city: ''
+      };
+    } else {
+      return {
+        street: parts[0] || '',
+        building: '',
+        postal: '',
+        city: ''
+      };
+    }
   }
 }
 

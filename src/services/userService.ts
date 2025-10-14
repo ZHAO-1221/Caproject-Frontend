@@ -58,7 +58,7 @@ class UserService {
       console.log('请求头:', headers);
       console.log('完整URL:', `${API_BASE_URL}/me`);
       
-      const response = await axios.get(`${API_BASE_URL}/users/me`, {
+      const response = await axios.get(`${API_BASE_URL}/me`, {
         headers
       });
       
@@ -90,7 +90,7 @@ class UserService {
    */
   async updateUserProfile(updates: UpdateProfileRequest): Promise<UserProfileResponse> {
     try {
-      const response = await axios.put(`${API_BASE_URL}/users/me`, updates, {
+      const response = await axios.put(`${API_BASE_URL}/me`, updates, {
         headers: {
           'Content-Type': 'application/json',
           ...authService.getAuthHeaders()

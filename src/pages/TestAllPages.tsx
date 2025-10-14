@@ -124,6 +124,22 @@ const TestAllPages: React.FC = () => {
           <div style={{
             marginTop: '40px',
             padding: '20px',
+            backgroundColor: '#fff3cd',
+            borderRadius: '8px',
+            border: '1px solid #ffc107'
+          }}>
+            <h3 style={{ color: '#856404', marginBottom: '15px' }}>⚠️ 重要提醒 - 测试模式</h3>
+            <ul style={{ color: '#856404', lineHeight: '1.6' }}>
+              <li><strong>只读测试</strong>：所有测试页面都不会修改任何数据</li>
+              <li><strong>安全测试</strong>：表单提交、支付等操作已被禁用</li>
+              <li><strong>模拟数据</strong>：使用模拟数据展示UI效果</li>
+              <li><strong>功能验证</strong>：仅测试界面布局和用户交互</li>
+            </ul>
+          </div>
+
+          <div style={{
+            marginTop: '20px',
+            padding: '20px',
             backgroundColor: '#f8f9fa',
             borderRadius: '8px',
             border: '1px solid #e0e0e0'
