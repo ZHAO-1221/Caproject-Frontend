@@ -100,41 +100,40 @@ const ProductDetail: React.FC = () => {
 
     loadProduct();
     
-    const mockReviews: Review[] = [
-      {
-        id: 1,
-        title: 'Review title',
-        body: 'Review body',
-        rating: 5,
-        reviewerName: 'Reviewer name',
-        date: 'Date',
-        avatar: '/images/user-avatar.svg'
-      },
-      {
-        id: 2,
-        title: 'Review title',
-        body: 'Review body',
-        rating: 4,
-        reviewerName: 'Reviewer name',
-        date: 'Date',
-        avatar: '/images/user-avatar.svg'
-      },
-      {
-        id: 3,
-        title: 'Review title',
-        body: 'Review body',
-        rating: 5,
-        reviewerName: 'Reviewer name',
-        date: 'Date',
-        avatar: '/images/user-avatar.svg'
+    const loadReviews = async () => {
+      try {
+        const currentProductId = parseInt(productId || '1');
+        const res = await productService.getProductReviews(currentProductId);
+        if (res?.success && Array.isArray(res.data)) {
+          const mapped: Review[] = res.data.map((rv: any) => {
+            let dateText = '';
+            if (rv?.reviewCreateTime) {
+              const d = new Date(rv.reviewCreateTime);
+              dateText = isNaN(d.getTime()) ? String(rv.reviewCreateTime) : d.toLocaleDateString();
+            }
+            return {
+              id: rv.reviewId,
+              title: 'Review',
+              body: rv.comment || '',
+              rating: typeof rv.reviewRank === 'number' ? rv.reviewRank : 0,
+              reviewerName: rv.user?.userName || 'Anonymous',
+              date: dateText,
+              avatar: '/images/user-avatar.svg'
+            };
+          });
+          setReviews(mapped);
+        } else {
+          setReviews([]);
+        }
+      } catch (e) {
+        console.error('Error loading reviews:', e);
+        setReviews([]);
       }
-    ];
-    
-    setReviews(mockReviews);
+    };
+
+    loadReviews();
     
     // Set filter based on product category - this will be handled in the product loading effect
-    
-    setLoading(false);
   }, [productId]);
 
   //
@@ -203,6 +202,19 @@ const ProductDetail: React.FC = () => {
     );
   }
 
+  // Compute rating summary based on fetched reviews
+  const totalReviews = reviews.length;
+  const averageRating = totalReviews
+    ? Math.round((reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / totalReviews) * 10) / 10
+    : 0;
+  const roundedForStars = Math.round(averageRating);
+  const counts: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  reviews.forEach(r => {
+    const val = Math.max(0, Math.min(5, Math.floor(r.rating || 0)));
+    counts[val] += 1;
+  });
+  const perc = (n: number) => (totalReviews ? Math.round((n / totalReviews) * 100) : 0);
+
   return (
     <div className="product-detail-page">
       <Header />
@@ -270,84 +282,65 @@ const ProductDetail: React.FC = () => {
 
             {/* Product Specifications & Reviews Section */}
             <div className="product-specs-section">
-              {/* Product Specifications */}
-              <div className="specs-card">
-                <h3 className="specs-title">Product Specifications</h3>
-                <div className="specs-list">
-                  <div className="spec-item">
-                    <span className="spec-label">Brand:</span>
-                    <span className="spec-value">Group Six</span>
-                  </div>
-                  <div className="spec-item">
-                    <span className="spec-label">Category:</span>
-                    <span className="spec-value">Daily Necessities</span>
-                  </div>
-                  <div className="spec-item">
-                    <span className="spec-label">SKU:</span>
-                    <span className="spec-value">GS-001</span>
-                  </div>
-                  <div className="spec-item">
-                    <span className="spec-label">Weight:</span>
-                    <span className="spec-value">0.5 kg</span>
-                  </div>
-                  <div className="spec-item">
-                    <span className="spec-label">Dimensions:</span>
-                    <span className="spec-value">20 x 15 x 10 cm</span>
-                  </div>
-                </div>
-              </div>
 
               {/* Customer Reviews Summary */}
               <div className="reviews-summary-card">
                 <h3 className="reviews-summary-title">Customer Reviews</h3>
                 <div className="rating-overview">
                   <div className="rating-score">
-                    <span className="rating-number">4.2</span>
+                    <span className="rating-number">{averageRating}</span>
                     <div className="rating-stars">
                       {Array.from({ length: 5 }, (_, i) => (
-                        <span key={i} className={`star ${i < 4 ? 'filled' : ''}`}>
+                        <span key={i} className={`star ${i < roundedForStars ? 'filled' : ''}`}>
                           ★
                         </span>
                       ))}
                     </div>
-                    <span className="rating-count">(127 reviews)</span>
+                    <span className="rating-count">({totalReviews} reviews)</span>
                   </div>
                 </div>
                 <div className="rating-breakdown">
                   <div className="rating-bar">
                     <span className="rating-label">5★</span>
                     <div className="rating-progress">
-                      <div className="rating-fill" style={{width: '60%'}}></div>
+                      <div className="rating-fill" style={{width: `${perc(counts[5])}%`}}></div>
                     </div>
-                    <span className="rating-percentage">60%</span>
+                    <span className="rating-percentage">{perc(counts[5])}%</span>
                   </div>
                   <div className="rating-bar">
                     <span className="rating-label">4★</span>
                     <div className="rating-progress">
-                      <div className="rating-fill" style={{width: '25%'}}></div>
+                      <div className="rating-fill" style={{width: `${perc(counts[4])}%`}}></div>
                     </div>
-                    <span className="rating-percentage">25%</span>
+                    <span className="rating-percentage">{perc(counts[4])}%</span>
                   </div>
                   <div className="rating-bar">
                     <span className="rating-label">3★</span>
                     <div className="rating-progress">
-                      <div className="rating-fill" style={{width: '10%'}}></div>
+                      <div className="rating-fill" style={{width: `${perc(counts[3])}%`}}></div>
                     </div>
-                    <span className="rating-percentage">10%</span>
+                    <span className="rating-percentage">{perc(counts[3])}%</span>
                   </div>
                   <div className="rating-bar">
                     <span className="rating-label">2★</span>
                     <div className="rating-progress">
-                      <div className="rating-fill" style={{width: '3%'}}></div>
+                      <div className="rating-fill" style={{width: `${perc(counts[2])}%`}}></div>
                     </div>
-                    <span className="rating-percentage">3%</span>
+                    <span className="rating-percentage">{perc(counts[2])}%</span>
                   </div>
                   <div className="rating-bar">
                     <span className="rating-label">1★</span>
                     <div className="rating-progress">
-                      <div className="rating-fill" style={{width: '2%'}}></div>
+                      <div className="rating-fill" style={{width: `${perc(counts[1])}%`}}></div>
                     </div>
-                    <span className="rating-percentage">2%</span>
+                    <span className="rating-percentage">{perc(counts[1])}%</span>
+                  </div>
+                  <div className="rating-bar">
+                    <span className="rating-label">0★</span>
+                    <div className="rating-progress">
+                      <div className="rating-fill" style={{width: `${perc(counts[0])}%`}}></div>
+                    </div>
+                    <span className="rating-percentage">{perc(counts[0])}%</span>
                   </div>
                 </div>
               </div>
@@ -376,7 +369,7 @@ const ProductDetail: React.FC = () => {
                     </div>
                   ))}
                 </div>
-                <button className="view-all-reviews-btn">View All Reviews</button>
+                <button className="view-all-reviews-btn" onClick={() => navigate(`/product/${product.id}/reviews`)}>View All Reviews</button>
               </div>
             </div>
           </div>

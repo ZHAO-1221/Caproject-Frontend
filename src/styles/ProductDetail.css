@@ -228,11 +228,11 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 12px 16px;
-  background: #f8f9fa;
+  padding: 13px 18px;
+  background: #f3f4f6;
   color: #495057;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -240,17 +240,33 @@
   text-decoration: none;
 }
 
+.back-to-browse-btn::before {
+  content: '←';
+  font-size: 16px;
+  line-height: 1;
+  margin-right: 2px;
+  transition: transform 0.2s ease;
+}
+
 .back-to-browse-btn:hover {
   background: #e9ecef;
-  border-color: #adb5bd;
+  border-color: #d0d5db;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.back-to-browse-btn:hover::before {
+  transform: translateX(-2px);
 }
 
 .back-to-browse-btn:active {
   transform: translateY(0);
-  background: #dee2e6;
-  box-shadow: none;
+  background: #e5e7eb;
+}
+
+.back-to-browse-btn:focus-visible {
+  outline: none;
+  outline: 2px solid #F58220;
+  outline-offset: 2px;
 }
 
 /* Product Main Section - 包含产品详情和评论 */
