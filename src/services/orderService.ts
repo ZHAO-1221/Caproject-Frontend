@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_BASE_URL = 'http://172.20.10.11:8080/api';
+const API_BASE_URL = '/api';
 
 export interface OrderServiceResponse<T = any> {
   success: boolean;

@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://172.20.10.11:8080/api';
-
 export interface LoginRequest {
   username: string;
   password: string;
@@ -25,10 +23,10 @@ class AuthService {
     try {
       console.log('=== AuthService.login 调试信息 ===');
       console.log('登录凭据:', credentials);
-      console.log('请求URL:', `${API_BASE_URL}/auth/login`);
+      console.log('请求URL:', `/api/auth/login`);
       
       const config = { headers: { 'Content-Type': 'application/json' } };
-      let response = await axios.post(`${API_BASE_URL}/auth/login`, credentials, config);
+      let response = await axios.post(`/api/auth/login`, credentials, config);
       
       console.log('登录响应:', response.data);
       
@@ -49,7 +47,7 @@ class AuthService {
           // 尝试获取完整的用户信息（包含userId）
           try {
             console.log('尝试获取完整用户信息...');
-            const userResponse = await axios.get(`${API_BASE_URL}/users/me`, {
+            const userResponse = await axios.get(`/api/users/me`, {
               headers: {
                 'Authorization': `Bearer ${response.data.token}`
               }
@@ -93,12 +91,12 @@ class AuthService {
             const fallbackBody1 = { userName: credentials.username?.trim(), password: trimmedPassword };
             const config = { headers: { 'Content-Type': 'application/json' } };
             console.warn('首次登录返回400，尝试使用 userName 字段重试...');
-            let retryResp = await axios.post(`${API_BASE_URL}/auth/login`, fallbackBody1, config);
+            let retryResp = await axios.post(`/api/auth/login`, fallbackBody1, config);
             if (!retryResp.data?.success) {
               // 再尝试 email 字段
               console.warn('使用 userName 登录失败，尝试使用 email 字段重试...');
               const fallbackBody2 = { email: credentials.username?.trim(), password: trimmedPassword };
-              retryResp = await axios.post(`${API_BASE_URL}/auth/login`, fallbackBody2, config);
+              retryResp = await axios.post(`/api/auth/login`, fallbackBody2, config);
             }
 
             if (retryResp.data?.success) {
@@ -110,7 +108,7 @@ class AuthService {
               if (retryResp.data.user) {
                 sessionStorage.setItem('user', JSON.stringify(retryResp.data.user));
                 try {
-                  const userResponse = await axios.get(`${API_BASE_URL}/users/me`, {
+                  const userResponse = await axios.get(`/api/users/me`, {
                     headers: { 'Authorization': `Bearer ${retryResp.data.token}` }
                   });
                   if (userResponse.data) {
@@ -135,7 +133,7 @@ class AuthService {
 
   async logout(): Promise<void> {
     try {
-      await axios.post(`${API_BASE_URL}/logout`);
+      await axios.post(`/api/logout`);
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

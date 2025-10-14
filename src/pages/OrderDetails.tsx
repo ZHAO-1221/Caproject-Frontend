@@ -31,6 +31,18 @@ const OrderDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const getImageCode = (url: string | undefined): string => {
+    if (!url) return '';
+    try {
+      // 提取 URL 或相对路径中的文件名，例如 200012.png
+      const pathname = url.replace(/^https?:\/\/[^/]+/, '');
+      const parts = pathname.split('?')[0].split('#')[0].split('/').filter(Boolean);
+      return parts.length ? parts[parts.length - 1] : '';
+    } catch {
+      return '';
+    }
+  };
+
   useEffect(() => {
     if (orderId) {
       loadOrderDetails(orderId);
@@ -215,6 +227,7 @@ const OrderDetails: React.FC = () => {
                     </div>
                     <div className="item-details">
                       <div className="item-name">{item.productName}</div>
+                      <div className="item-image-code">Image Code: {getImageCode(item.productImage)}</div>
                     </div>
                     <div className="item-price-quantity">
                       <div className="item-price">${item.unitPrice}</div>

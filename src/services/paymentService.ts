@@ -1,8 +1,6 @@
 import axios from 'axios';
 import authService from './authService';
 
-const API_BASE_URL = 'http://172.20.10.11:8080/api';
-
 export interface PaymentRequest {
   paymentMethod: string;
   amount: number;
@@ -40,9 +38,9 @@ class PaymentService {
       
       console.log('=== PaymentService.getWalletBalance Debug Info ===');
       console.log('Request headers:', headers);
-      console.log('Full URL:', `${API_BASE_URL}/users/me`);
+      console.log('Full URL:', `/api/users/me`);
       
-      const response = await axios.get(`${API_BASE_URL}/users/me`, {
+      const response = await axios.get(`/api/users/me`, {
         headers
       });
       

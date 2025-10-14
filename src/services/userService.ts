@@ -1,7 +1,6 @@
 import axios from 'axios';
 import authService from './authService';
-
-const API_BASE_URL = 'http://172.20.10.11:8080/api/users';
+const API_BASE_URL = '/api/users';
 
 export interface UserProfile {
   userId: number;

@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://172.20.10.11:8080/api';
-
 export interface RegistrationRequest {
   username: string;
   email: string;
@@ -27,7 +25,7 @@ class RegistrationService {
    */
   async register(data: RegistrationRequest): Promise<RegistrationResponse> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/register/new`, data);
+      const response = await axios.post(`/api/register/new`, data);
       return response.data;
     } catch (error: any) {
       if (error.response) {

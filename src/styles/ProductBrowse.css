@@ -29,7 +29,6 @@
   background: #fff;
   border-radius: 16px;
   padding: 28px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   height: fit-content;
   flex-shrink: 0;
   border: 1px solid #f0f0f0;
@@ -98,14 +97,12 @@
   background: #F58220;
   cursor: pointer;
   border: 3px solid #fff;
-  box-shadow: 0 2px 8px rgba(245, 130, 32, 0.3), 0 0 0 1px rgba(245, 130, 32, 0.1);
   pointer-events: auto;
   transition: all 0.2s ease;
 }
 
 .price-slider::-webkit-slider-thumb:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(245, 130, 32, 0.4), 0 0 0 2px rgba(245, 130, 32, 0.2);
 }
 
 .price-slider::-moz-range-thumb {
@@ -115,14 +112,12 @@
   background: #F58220;
   cursor: pointer;
   border: 3px solid #fff;
-  box-shadow: 0 2px 8px rgba(245, 130, 32, 0.3), 0 0 0 1px rgba(245, 130, 32, 0.1);
   pointer-events: auto;
   transition: all 0.2s ease;
 }
 
 .price-slider::-moz-range-thumb:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(245, 130, 32, 0.4), 0 0 0 2px rgba(245, 130, 32, 0.2);
 }
 
 .price-slider-min::-webkit-slider-thumb {
@@ -242,13 +237,11 @@
   background: #e9ecef;
   border-color: #adb5bd;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .back-to-home-btn:active {
   transform: translateY(0);
   background: #dee2e6;
-  box-shadow: none;
 }
 
 /* Sort Section */
@@ -308,7 +301,6 @@
   background: #fff !important;
   border-radius: 8px !important;
   padding: 8px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
   transition: all 0.3s ease !important;
   cursor: pointer !important;
   border: 1px solid #f0f0f0 !important;
@@ -323,7 +315,6 @@
 }
 
 .product-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
 

@@ -1,8 +1,6 @@
 import axios from 'axios';
 import authService from './authService';
 
-const API_BASE_URL = 'http://172.20.10.11:8080/api';
-
 export interface Address {
   id: number;
   locationText: string;
@@ -41,9 +39,9 @@ class AddressService {
     console.log('=== AddressService.getAddresses 调试信息 ===');
     console.log('请求参数:', { username });
     console.log('请求头:', headers);
-    console.log('完整URL:', `${API_BASE_URL}/location/getLocation`);
+    console.log('完整URL:', `/api/location/getLocation`);
     
-    const response = await axios.get(`${API_BASE_URL}/location/getLocation`, {
+    const response = await axios.get(`/api/location/getLocation`, {
       params: { username },
       headers
     });
@@ -64,7 +62,7 @@ class AddressService {
     console.log('用户ID:', data.userId);
     console.log('地址文本:', data.locationText);
     
-    const response = await axios.post(`${API_BASE_URL}/location/addLocation`, data, {
+    const response = await axios.post(`/api/location/addLocation`, data, {
       headers: {
         'Content-Type': 'application/json',
         ...authService.getAuthHeaders()
@@ -78,7 +76,7 @@ class AddressService {
    */
   async updateAddress(id: number, data: UpdateAddressRequest): Promise<AddressResponse> {
     try {
-      const response = await axios.put(`${API_BASE_URL}/location/updateLocation/${id}`, data, {
+      const response = await axios.put(`/api/location/updateLocation/${id}`, data, {
         headers: {
           'Content-Type': 'application/json',
           ...authService.getAuthHeaders()
@@ -98,7 +96,7 @@ class AddressService {
    */
   async deleteAddress(id: number): Promise<AddressResponse> {
     try {
-      const response = await axios.delete(`${API_BASE_URL}/location/deleteLocation/${id}`, {
+      const response = await axios.delete(`/api/location/deleteLocation/${id}`, {
         headers: {
           'Content-Type': 'application/json',
           ...authService.getAuthHeaders()
@@ -118,7 +116,7 @@ class AddressService {
    */
   async setDefaultAddress(id: number, username: string): Promise<AddressResponse> {
     try {
-      const response = await axios.put(`${API_BASE_URL}/location/set-default/${id}`, null, {
+      const response = await axios.put(`/api/location/set-default/${id}`, null, {
         params: { username },
         headers: {
           'Content-Type': 'application/json',
