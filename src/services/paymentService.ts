@@ -1,7 +1,7 @@
 import axios from 'axios';
 import authService from './authService';
 
-const API_BASE_URL = 'http://172.20.10.6:8080/api';
+const API_BASE_URL = '/api';
 
 export interface PaymentRequest {
   paymentMethod: string;
