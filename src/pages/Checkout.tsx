@@ -5,7 +5,7 @@ import Footer from '../components/Footer';
 import addressService from '../services/addressService';
 import cartService, { CartItem } from '../services/cartService';
 import productService from '../services/productService';
-import paymentService from '../services/paymentService';
+import paymentService, { PaymentResponse } from '../services/paymentService';
 import '../styles/Checkout.css';
 
 interface DefaultAddress {
@@ -36,7 +36,7 @@ const Checkout: React.FC = () => {
   useEffect(() => {
     loadDefaultAddress();
     loadCartItems();
-    loadWalletBalance();
+    loadWalletBalance(true); // 初始加载时强制刷新
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadCartItems = () => {
@@ -94,14 +94,26 @@ const Checkout: React.FC = () => {
   };
 
   // 加载钱包余额
-  const loadWalletBalance = async () => {
+  const loadWalletBalance = async (forceRefresh = false) => {
     try {
       setWalletLoading(true);
-      const response = await paymentService.getWalletBalance();
+      
+      console.log('=== Checkout.loadWalletBalance Debug ===');
+      console.log('Current wallet balance state:', walletBalance);
+      console.log('Force refresh:', forceRefresh);
+      
+      // 只有在强制刷新时才清除缓存
+      if (forceRefresh) {
+        paymentService.clearWalletBalanceCache();
+      }
+      
+      const response = await paymentService.getWalletBalance(forceRefresh);
+      
+      console.log('Wallet balance response:', response);
       
       if (response.success && response.balance !== undefined) {
         setWalletBalance(response.balance);
-        console.log('Wallet balance:', response.balance);
+        console.log('Wallet balance updated to:', response.balance);
       } else {
         console.warn('Failed to get wallet balance:', response.message);
         // Set default balance for testing
@@ -118,6 +130,22 @@ const Checkout: React.FC = () => {
 
   const handlePaymentMethodSelect = (method: string) => {
     setSelectedPaymentMethod(method);
+  };
+
+  // 测试后端连接
+  const testBackendConnection = async () => {
+    try {
+      console.log('Testing backend connection...');
+      const isConnected = await paymentService.testBackendConnection();
+      if (isConnected) {
+        alert('后端连接成功！');
+      } else {
+        alert('后端连接失败，请检查后端服务是否运行在 http://localhost:8080');
+      }
+    } catch (error) {
+      console.error('Backend connection test error:', error);
+      alert('后端连接测试失败');
+    }
   };
 
   const handlePayment = async () => {
@@ -143,7 +171,7 @@ const Checkout: React.FC = () => {
           'Default Address'
       };
 
-      let paymentResult;
+      let paymentResult: PaymentResponse;
 
       if (selectedPaymentMethod === 'wallet') {
         // Check wallet balance
@@ -161,12 +189,51 @@ const Checkout: React.FC = () => {
       
       if (paymentResult.success) {
         console.log('Payment successful:', paymentResult);
+        console.log('Payment data format:', {
+          userId: paymentResult.data?.userId,
+          totalPrice: paymentResult.data?.totalPrice
+        });
+        
+        // 如果是钱包支付，更新本地钱包余额显示
+        if (selectedPaymentMethod === 'wallet' && paymentResult.data?.newWalletBalance !== undefined) {
+          // 直接更新状态
+          setWalletBalance(paymentResult.data.newWalletBalance);
+          console.log('Updated wallet balance in Checkout:', paymentResult.data.newWalletBalance);
+          
+          // 同时更新PaymentService的缓存
+          paymentService.updateWalletBalance(paymentResult.data.newWalletBalance);
+          console.log('Updated PaymentService cache with new balance:', paymentResult.data.newWalletBalance);
+          
+          // 强制更新UI显示
+          setTimeout(() => {
+            if (paymentResult.data?.newWalletBalance !== undefined) {
+              setWalletBalance(paymentResult.data.newWalletBalance);
+              console.log('Force updated wallet balance display:', paymentResult.data.newWalletBalance);
+            }
+          }, 100);
+        }
+        
+        // 删除购物车内所选中的商品
+        const selectedItemIds = items.map(item => item.id);
+        selectedItemIds.forEach(itemId => {
+          cartService.removeFromCart(itemId);
+        });
+        console.log('Removed selected items from cart:', selectedItemIds);
+        
+        // 重新加载钱包余额以确保显示最新数据
+        if (selectedPaymentMethod === 'wallet') {
+          await loadWalletBalance();
+        }
+        
         // Save order information to sessionStorage for payment success page
         sessionStorage.setItem('lastOrder', JSON.stringify({
           orderId: paymentResult.transactionId,
           amount: grandTotal,
           paymentMethod: selectedPaymentMethod,
           items: items,
+          newWalletBalance: paymentResult.data?.newWalletBalance,
+          userId: paymentResult.data?.userId,
+          totalPrice: paymentResult.data?.totalPrice,
           timestamp: new Date().toISOString()
         }));
         // Payment successful, redirect to success page
@@ -293,6 +360,7 @@ const Checkout: React.FC = () => {
                 <div className="pay-title">select payment method</div>
                 <div className="pay-icons">
                   <span 
+                    key={`wallet-${walletBalance}`}
                     className={`pm wallet ${selectedPaymentMethod === 'wallet' ? 'selected' : ''} ${walletBalance < grandTotal ? 'insufficient' : ''}`}
                     onClick={() => handlePaymentMethodSelect('wallet')}
                     title={walletLoading ? 'Loading...' : `Balance: ${formatMoney(walletBalance)}`}
@@ -335,6 +403,12 @@ const Checkout: React.FC = () => {
                 onClick={handlePayment}
                 disabled={!selectedPaymentMethod}
               >Pay</button>
+              
+              <button 
+                className="pay-btn" 
+                onClick={testBackendConnection}
+                style={{ marginTop: '10px', backgroundColor: '#007bff' }}
+              >测试后端连接</button>
             </div>
           </aside>
         </div>
