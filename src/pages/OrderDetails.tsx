@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import userService from '../services/userService';
+import orderService from '../services/orderService';
 import '../styles/OrderDetails.css';
 
 interface OrderItem {
@@ -30,92 +31,51 @@ const OrderDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const getImageCode = (url: string | undefined): string => {
+    if (!url) return '';
+    try {
+      // 提取 URL 或相对路径中的文件名，例如 200012.png
+      const pathname = url.replace(/^https?:\/\/[^/]+/, '');
+      const parts = pathname.split('?')[0].split('#')[0].split('/').filter(Boolean);
+      return parts.length ? parts[parts.length - 1] : '';
+    } catch {
+      return '';
+    }
+  };
+
   useEffect(() => {
     if (orderId) {
-      loadOrderDetails(parseInt(orderId));
+      loadOrderDetails(orderId);
     } else {
       setError('Invalid order ID');
       setLoading(false);
     }
   }, [orderId]);
 
-  const loadOrderDetails = async (id: number) => {
+  const loadOrderDetails = async (orderNumber: string) => {
     try {
       setLoading(true);
       setError('');
-
-      // 模拟加载延迟
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // 模拟订单详情数据
-      const mockOrderDetails: { [key: number]: OrderDetails } = {
-        1: {
-          id: 1,
-          orderNumber: 'ORD-2024-001',
-          orderTime: '2024-01-15 14:30:25',
-          totalPrice: 150,
-          status: 'Completed',
-          items: [
-            {
-              id: 1,
-              productName: 'Product Name',
-              unitPrice: 50,
-              quantity: 1,
-              productImage: '/images/placeholder.svg'
-            },
-            {
-              id: 2,
-              productName: 'Title',
-              unitPrice: 50,
-              quantity: 1,
-              productImage: '/images/placeholder.svg'
-            },
-            {
-              id: 3,
-              productName: 'Title',
-              unitPrice: 50,
-              quantity: 1,
-              productImage: '/images/placeholder.svg'
-            }
-          ]
-        },
-        2: {
-          id: 2,
-          orderNumber: 'ORD-2024-002',
-          orderTime: '2024-01-20 09:15:42',
-          totalPrice: 200,
-          status: 'Completed',
-          items: [
-            {
-              id: 4,
-              productName: 'Premium Product',
-              unitPrice: 100,
-              quantity: 2,
-              productImage: '/images/placeholder.svg'
-            }
-          ]
-        },
-        3: {
-          id: 3,
-          orderNumber: 'ORD-2024-003',
-          orderTime: '2024-01-25 16:45:18',
-          totalPrice: 75,
-          status: 'Completed',
-          items: [
-            {
-              id: 5,
-              productName: 'Featured Product',
-              unitPrice: 75,
-              quantity: 1,
-              productImage: '/images/placeholder.svg'
-            }
-          ]
-        }
-      };
-
-      const orderDetails = mockOrderDetails[id];
-      if (orderDetails) {
-        setOrder(orderDetails);
+      // 从本地订单历史中查找该订单
+      const localOrders = orderService.getLocalOrders();
+      const found = localOrders.find(o => o.id === orderNumber);
+      if (found) {
+        const mapped: OrderDetails = {
+          id: 0,
+          orderNumber: found.id,
+          orderTime: new Date(found.orderTime).toLocaleString('en-US'),
+          totalPrice: found.amount,
+          status: found.status,
+          items: (found.items || []).map((it: any, idx: number) => ({
+            id: idx + 1,
+            productId: it.id ?? it.productId,
+            productName: it.name ?? it.productName ?? 'Product',
+            unitPrice: it.price ?? it.unitPrice ?? 0,
+            quantity: it.qty ?? it.quantity ?? 1,
+            productImage: it.image ?? it.productImage ?? '/images/placeholder.svg'
+          }))
+        };
+        setOrder(mapped);
       } else {
         setError('Order not found');
       }
@@ -267,6 +227,7 @@ const OrderDetails: React.FC = () => {
                     </div>
                     <div className="item-details">
                       <div className="item-name">{item.productName}</div>
+                      <div className="item-image-code">Image Code: {getImageCode(item.productImage)}</div>
                     </div>
                     <div className="item-price-quantity">
                       <div className="item-price">${item.unitPrice}</div>

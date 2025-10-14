@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_BASE_URL = 'http://172.20.10.11:8080/api';
+const API_BASE_URL = '/api';
 
 export interface OrderServiceResponse<T = any> {
   success: boolean;
@@ -16,6 +15,44 @@ class OrderService {
     } catch (error: any) {
       console.error('Get orders error:', error);
       return { success: false, message: error.response?.data?.message || '获取订单失败' };
+    }
+  }
+
+  // Local order history helpers
+  private LOCAL_KEY = 'orderHistory';
+
+  saveLocalOrder(order: {
+    id: string;
+    amount: number;
+    orderTime: string;
+    status: string;
+    items: any[];
+    productImage?: string;
+  }): void {
+    try {
+      const existing = localStorage.getItem(this.LOCAL_KEY);
+      const list = existing ? JSON.parse(existing) : [];
+      list.unshift(order);
+      localStorage.setItem(this.LOCAL_KEY, JSON.stringify(list));
+    } catch (e) {
+      console.error('Failed to save local order history', e);
+    }
+  }
+
+  getLocalOrders(): Array<{
+    id: string;
+    amount: number;
+    orderTime: string;
+    status: string;
+    items: any[];
+    productImage?: string;
+  }> {
+    try {
+      const existing = localStorage.getItem(this.LOCAL_KEY);
+      return existing ? JSON.parse(existing) : [];
+    } catch (e) {
+      console.error('Failed to read local order history', e);
+      return [];
     }
   }
 }

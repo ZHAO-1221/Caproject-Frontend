@@ -1,7 +1,6 @@
 import axios from 'axios';
 import authService from './authService';
-
-const API_BASE_URL = 'http://172.20.10.11:8080/api';
+const API_BASE_URL = '/api';
 
 // Product Service - manages product information and inventory
 export interface Product {
@@ -61,11 +60,17 @@ class ProductService {
   // Get product details by ID
   async getProductById(productId: number): Promise<ProductResponse> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/products/getProductById/${productId}`);
-      return {
-        success: true,
-        data: response.data
-      };
+      // 先尝试路径参数形式
+      try {
+        const response = await axios.get(`${API_BASE_URL}/products/getProductById/${productId}`);
+        return { success: true, data: response.data };
+      } catch (errPath: any) {
+        // 再尝试 query 参数形式
+        const response = await axios.get(`${API_BASE_URL}/products/getProductById`, {
+          params: { productId }
+        });
+        return { success: true, data: response.data };
+      }
     } catch (error: any) {
       console.error('Get product by ID error:', error);
       return {
@@ -78,11 +83,17 @@ class ProductService {
   // Get product reviews
   async getProductReviews(productId: number): Promise<any> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/products/getReviewsByProductId/${productId}`);
-      return {
-        success: true,
-        data: response.data
-      };
+      // 先尝试路径参数形式
+      try {
+        const response = await axios.get(`${API_BASE_URL}/products/getReviewsByProductId/${productId}`);
+        return { success: true, data: response.data };
+      } catch (errPath: any) {
+        // 再尝试 query 参数形式
+        const response = await axios.get(`${API_BASE_URL}/products/getReviewsByProductId`, {
+          params: { productId }
+        });
+        return { success: true, data: response.data };
+      }
     } catch (error: any) {
       console.error('Get product reviews error:', error);
       return {

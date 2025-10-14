@@ -39,6 +39,36 @@ const ProductReview: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [productExists, setProductExists] = useState<boolean>(true);
   const [productDetail, setProductDetail] = useState<any>(null);
+  const [imgFallbackStep, setImgFallbackStep] = useState<number>(0);
+  
+  const normalizeImageUrl = (raw: any): string => {
+    if (!raw) return '/images/placeholder.svg';
+    const url = String(raw);
+    // 去掉路径中的 /api 片段，避免后端图片地址包含 /api 导致 404
+    if (/^https?:\/\//i.test(url)) {
+      return url.replace(/\/api(\/|$)/, '$1');
+    }
+    return url.replace(/^\/api\//, '/');
+  };
+
+  const computeImageSrc = (): string => {
+    const id = parseInt(productId || '0');
+    const fileName = (() => {
+      const fromDetail = productDetail?.imageUrl ? normalizeImageUrl(productDetail.imageUrl) : '';
+      if (fromDetail) {
+        const parts = fromDetail.split('?')[0].split('#')[0].split('/').filter(Boolean);
+        const last = parts.length ? parts[parts.length - 1] : '';
+        if (last.includes('.')) return last;
+      }
+      return id ? `${id}.png` : '';
+    })();
+    if (!fileName) return '/images/placeholder.svg';
+    // 按优先级提供多种候选
+    if (imgFallbackStep === 0 && productDetail?.imageUrl) return normalizeImageUrl(productDetail.imageUrl);
+    if (imgFallbackStep === 1) return `/api/images/${fileName}`; // 走后端同域代理
+    if (imgFallbackStep === 2) return `http://192.168.81.86:8080/images/${fileName}`; // 明确后端地址
+    return '/images/placeholder.svg';
+  };
 
   // 获取当前用户信息
   useEffect(() => {
@@ -211,7 +241,11 @@ const ProductReview: React.FC = () => {
           <div className="product-info-section">
             <div className="product-card">
               <div className="product-image">
-                <img src={productDetail?.imageUrl || '/images/placeholder.svg'} alt={productDetail?.productName || 'Product'} />
+                <img 
+                  src={computeImageSrc()} 
+                  alt={productDetail?.productName || 'Product'} 
+                  onError={() => setImgFallbackStep((s) => Math.min(s + 1, 3))}
+                />
               </div>
               <div className="product-details">
                 <h2 className="product-title">{productDetail?.productName || 'Product'}</h2>
