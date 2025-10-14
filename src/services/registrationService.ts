@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://172.20.10.11:8080/api';
 
 export interface RegistrationRequest {
   username: string;

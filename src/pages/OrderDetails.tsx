@@ -7,6 +7,7 @@ import '../styles/OrderDetails.css';
 
 interface OrderItem {
   id: number;
+  productId?: number; // 优先使用真实商品ID
   productName: string;
   unitPrice: number;
   quantity: number;
@@ -274,7 +275,7 @@ const OrderDetails: React.FC = () => {
                     <div className="item-actions">
                       <button 
                         className="review-button"
-                        onClick={() => navigate(`/product-review/${item.id}`)}
+                        onClick={() => navigate(`/product-review/${item.productId ?? item.id}`)}
                       >
                         Review
                       </button>
