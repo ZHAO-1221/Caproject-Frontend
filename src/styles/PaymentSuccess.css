@@ -75,12 +75,47 @@
 }
 
 .payment-success-container .main-title {
-  margin: 0;
+  margin: 0 0 24px 0;
   font-size: 48px;
   color: #F58220;
   font-weight: 600;
   line-height: 120%;
   letter-spacing: -0.02em;
+}
+
+.order-details {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  border: 1px solid #e9ecef;
+  width: 100%;
+  max-width: 500px;
+}
+
+.order-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.order-info-item:last-child {
+  border-bottom: none;
+}
+
+.order-info-item .label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 14px;
+}
+
+.order-info-item .value {
+  font-weight: 500;
+  color: #212529;
+  font-size: 14px;
+  text-align: right;
 }
 
 .button-container {

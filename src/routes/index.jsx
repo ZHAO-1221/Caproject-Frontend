@@ -11,6 +11,7 @@ import OrderDetails from '../pages/OrderDetails';
 import ProductReview from '../pages/ProductReview';
 import ProductBrowse from '../pages/ProductBrowse';
 import ProductDetail from '../pages/ProductDetail';
+import ProductReviewsList from '../pages/ProductReviewsList';
 import Cart from '../pages/Cart';
 import Checkout from '../pages/Checkout';
 import PaymentSuccess from '../pages/PaymentSuccess';
@@ -143,6 +144,10 @@ const AppRoutes = () => {
       <Route
         path="/product/:productId"
         element={<ProductDetail />}
+      />
+      <Route
+        path="/product/:productId/reviews"
+        element={<ProductReviewsList />}
       />
       <Route 
         path="/checkout" 

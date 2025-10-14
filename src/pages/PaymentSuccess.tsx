@@ -4,11 +4,32 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import '../styles/PaymentSuccess.css';
 
+interface OrderInfo {
+  orderId: string;
+  amount: number;
+  paymentMethod: string;
+  items: any[];
+  timestamp: string;
+}
+
 const PaymentSuccess: React.FC = () => {
   const navigate = useNavigate();
   const [countdown, setCountdown] = useState(5);
+  const [orderInfo, setOrderInfo] = useState<OrderInfo | null>(null);
 
   useEffect(() => {
+    // 加载订单信息
+    const lastOrderStr = sessionStorage.getItem('lastOrder');
+    if (lastOrderStr) {
+      try {
+        const orderData = JSON.parse(lastOrderStr);
+        setOrderInfo(orderData);
+        console.log('Order information:', orderData);
+      } catch (error) {
+        console.error('Failed to parse order information:', error);
+      }
+    }
+
     const timer = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
@@ -40,6 +61,35 @@ const PaymentSuccess: React.FC = () => {
 
         <div className="title-container">
           <h1 className="main-title">Payment Success</h1>
+          {orderInfo && (
+            <div className="order-details">
+              <div className="order-info-item">
+                <span className="label">Order Number:</span>
+                <span className="value">{orderInfo.orderId}</span>
+              </div>
+              <div className="order-info-item">
+                <span className="label">Payment Amount:</span>
+                <span className="value">${orderInfo.amount.toFixed(2)}</span>
+              </div>
+              <div className="order-info-item">
+                <span className="label">Payment Method:</span>
+                <span className="value">
+                  {orderInfo.paymentMethod === 'wallet' ? 'My Wallet' : 
+                   orderInfo.paymentMethod === 'visa' ? 'VISA' :
+                   orderInfo.paymentMethod === 'mc' ? 'MasterCard' :
+                   orderInfo.paymentMethod === 'alipay' ? 'Alipay' :
+                   orderInfo.paymentMethod === 'gpay' ? 'Google Pay' :
+                   orderInfo.paymentMethod === 'apple' ? 'Apple Pay' :
+                   orderInfo.paymentMethod === 'wechat' ? 'WeChat Pay' :
+                   orderInfo.paymentMethod}
+                </span>
+              </div>
+              <div className="order-info-item">
+                <span className="label">Payment Time:</span>
+                <span className="value">{new Date(orderInfo.timestamp).toLocaleString('en-US')}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="button-container">
