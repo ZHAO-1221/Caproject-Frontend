@@ -19,6 +19,7 @@ import HomePage from '../pages/HomePage';
 import AdminLogin from '../pages/AdminLogin';
 import LogoutSuccess from '../pages/LogoutSuccess';
 import EasterEgg from '../pages/EasterEgg';
+import AddressDebug from '../pages/AddressDebug';
 
 // 路由保护组件 - 检查用户是否已登录
 const ProtectedRoute = ({ children }) => {
@@ -164,6 +165,7 @@ const AppRoutes = () => {
       {/* 特殊路由 */}
       <Route path="/logout-success" element={<LogoutSuccess />} />
       <Route path="/easter-egg" element={<EasterEgg />} />
+      <Route path="/address-debug" element={<AddressDebug />} />
       
       {/* 主页路由 */}
       <Route path="/home" element={<HomePage />} />

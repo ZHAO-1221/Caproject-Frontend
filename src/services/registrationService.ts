@@ -12,11 +12,13 @@ export interface RegistrationRequest {
 export interface RegistrationResponse {
   success: boolean;
   message: string;
-  user?: {
-    username: string;
-    email: string;
-    userType: number;
-  };
+  user?: UserInfo;
+}
+
+export interface UserInfo {
+  username: string;
+  email: string;
+  userType: number;
 }
 
 class RegistrationService {

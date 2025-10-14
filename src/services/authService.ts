@@ -10,21 +10,14 @@ export interface LoginRequest {
 export interface LoginResponse {
   success: boolean;
   message: string;
-  user?: {
-    username: string;
-    email: string;
-    name: string;
-    role: string;
-    loginTime: number;
-  };
+  token?: string;
+  user?: UserInfo;
 }
 
-export interface User {
+export interface UserInfo {
   username: string;
   email: string;
-  name: string;
-  role: string;
-  loginTime: number;
+  userType: number;
 }
 
 class AuthService {
@@ -35,11 +28,43 @@ class AuthService {
       // 如果登录成功，保存认证信息
       if (response.data.success) {
         sessionStorage.setItem('isLoggedIn', 'true');
-        if (response.data.user) {
-          sessionStorage.setItem('user', JSON.stringify(response.data.user));
-        }
         if (response.data.token) {
           sessionStorage.setItem('token', response.data.token);
+        }
+        if (response.data.user) {
+          // 保存基本用户信息
+          sessionStorage.setItem('user', JSON.stringify(response.data.user));
+          
+          // 尝试获取完整的用户信息（包含userId）
+          try {
+            const userResponse = await axios.get(`${API_BASE_URL}/users/me`, {
+              headers: {
+                'Authorization': `Bearer ${response.data.token}`
+              }
+            });
+            if (userResponse.data) {
+              // 合并用户信息，保留登录时的基本信息，添加完整的用户数据
+              const completeUser = {
+                ...response.data.user,
+                userId: userResponse.data.userId,
+                userPhone: userResponse.data.userPhone,
+                userEmail: userResponse.data.userEmail,
+                userType: userResponse.data.userType,
+                userRegisterTime: userResponse.data.userRegisterTime,
+                userLastLoginTime: userResponse.data.userLastLoginTime,
+                userName: userResponse.data.userName,
+                userGender: userResponse.data.userGender,
+                userBirthday: userResponse.data.userBirthday,
+                userIntroduce: userResponse.data.userIntroduce,
+                userProfileUrl: userResponse.data.userProfileUrl,
+                wallet: userResponse.data.wallet
+              };
+              sessionStorage.setItem('user', JSON.stringify(completeUser));
+            }
+          } catch (userError) {
+            console.warn('Failed to fetch complete user info:', userError);
+            // 如果获取完整用户信息失败，仍然保存基本登录信息
+          }
         }
       }
       
@@ -83,12 +108,12 @@ class AuthService {
     return headers;
   }
 
-  getCurrentUser(): User | null {
+  getCurrentUser(): UserInfo | null {
     const userStr = sessionStorage.getItem('user');
     return userStr ? JSON.parse(userStr) : null;
   }
 
-  setUserSession(user: User): void {
+  setUserSession(user: UserInfo): void {
     sessionStorage.setItem('user', JSON.stringify(user));
     sessionStorage.setItem('isLoggedIn', 'true');
   }

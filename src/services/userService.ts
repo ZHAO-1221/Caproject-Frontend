@@ -5,27 +5,17 @@ const API_BASE_URL = '/api';
 
 export interface UserProfile {
   userId: number;
-  userName: string;
-  userEmail: string;
   userPhone: string;
-  userGender: string;
-  userBirthday?: number[];
-  userIntroduce?: string;
-  userProfileUrl?: string;
-  wallet?: number;
+  userEmail: string;
   userType: number;
-  userRegisterTime?: number[];
-  userLastLoginTime?: number[];
-  userPassword?: string;
-  // 其他可能的字段
-  coupons?: any[];
-  discounts?: any[];
-  locations?: any[];
-  orders?: any[];
-  products?: any[];
-  reviews?: any[];
-  shoppingCarts?: any[];
-  userCoupons?: any[];
+  userRegisterTime: string;
+  userLastLoginTime: string;
+  userName: string;
+  userGender: string;
+  userBirthday: string;
+  userIntroduce: string;
+  userProfileUrl: string;
+  wallet: number;
 }
 
 export interface UserProfileResponse {
@@ -35,12 +25,15 @@ export interface UserProfileResponse {
 }
 
 export interface UpdateProfileRequest {
-  username: string;
-  email?: string;
-  phone?: string;
-  gender?: string;
-  introduce?: string;
-  profileUrl?: string;
+  userPhone?: string;
+  userEmail?: string;
+  userPassword?: string;
+  userLastLoginTime?: string;
+  userName?: string;
+  userGender?: string;
+  userBirthday?: string;
+  userIntroduce?: string;
+  userProfileUrl?: string;
 }
 
 export interface UpdatePasswordRequest {
@@ -65,8 +58,7 @@ class UserService {
       console.log('请求头:', headers);
       console.log('完整URL:', `${API_BASE_URL}/me`);
       
-      const response = await axios.get(`${API_BASE_URL}/me`, {
-        params: { username },
+      const response = await axios.get(`${API_BASE_URL}/users/me`, {
         headers
       });
       
@@ -98,7 +90,7 @@ class UserService {
    */
   async updateUserProfile(updates: UpdateProfileRequest): Promise<UserProfileResponse> {
     try {
-      const response = await axios.put(`${API_BASE_URL}/profile`, updates, {
+      const response = await axios.put(`${API_BASE_URL}/users/me`, updates, {
         headers: {
           'Content-Type': 'application/json',
           ...authService.getAuthHeaders()

@@ -71,10 +71,10 @@ const ProductDetail: React.FC = () => {
         
         if (response.success && response.data) {
           const apiProduct = response.data as any;
-          // Convert absolute image URL to relative URL for proxy access
-          const imageUrl = apiProduct.imageUrl ? 
-            apiProduct.imageUrl.replace('http://192.168.81.86:8080', '') : 
-            '/images/placeholder.svg';
+                 // Convert absolute image URL to relative URL for proxy access
+                 const imageUrl = apiProduct.imageUrl ? 
+                   apiProduct.imageUrl.replace(/http:\/\/[^:]+:8080/, '') : 
+                   '/images/placeholder.svg';
           
           const transformedProduct = {
             id: apiProduct.productId,

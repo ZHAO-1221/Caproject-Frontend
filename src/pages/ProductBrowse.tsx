@@ -99,10 +99,10 @@ const ProductBrowse: React.FC = () => {
         if (response.success && Array.isArray(response.data)) {
           // Transform API data to match our interface
           const transformedProducts = response.data.map((product: any) => {
-            // Convert absolute image URL to relative URL for proxy access
-            const imageUrl = product.imageUrl ? 
-              product.imageUrl.replace('http://192.168.81.86:8080', '') : 
-              '/images/placeholder.svg';
+                   // Convert absolute image URL to relative URL for proxy access
+                   const imageUrl = product.imageUrl ? 
+                     product.imageUrl.replace(/http:\/\/[^:]+:8080/, '') : 
+                     '/images/placeholder.svg';
             
             return {
               productId: product.productId,
