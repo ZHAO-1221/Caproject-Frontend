@@ -38,15 +38,15 @@ class PaymentService {
         ...authService.getAuthHeaders()
       };
       
-      console.log('=== PaymentService.getWalletBalance 调试信息 ===');
-      console.log('请求头:', headers);
-      console.log('完整URL:', `${API_BASE_URL}/users/me`);
+      console.log('=== PaymentService.getWalletBalance Debug Info ===');
+      console.log('Request headers:', headers);
+      console.log('Full URL:', `${API_BASE_URL}/users/me`);
       
       const response = await axios.get(`${API_BASE_URL}/users/me`, {
         headers
       });
       
-      console.log('钱包余额响应:', response.data);
+      console.log('Wallet balance response:', response.data);
       
       if (response.data && typeof response.data.wallet === 'number') {
         return {
@@ -56,42 +56,42 @@ class PaymentService {
       } else {
         return {
           success: false,
-          message: '无法获取钱包余额'
+          message: 'Unable to get wallet balance'
         };
       }
     } catch (error: any) {
-      console.error('获取钱包余额失败:', error);
+      console.error('Failed to get wallet balance:', error);
       return {
         success: false,
-        message: error.response?.data?.message || '获取钱包余额失败'
+        message: error.response?.data?.message || 'Failed to get wallet balance'
       };
     }
   }
 
   /**
-   * 使用钱包支付
+   * Use wallet payment
    */
   async payWithWallet(paymentData: PaymentRequest): Promise<PaymentResponse> {
     try {
-      console.log('=== PaymentService.payWithWallet 调试信息 ===');
-      console.log('支付数据:', paymentData);
+      console.log('=== PaymentService.payWithWallet Debug Info ===');
+      console.log('Payment data:', paymentData);
       
-      // 先创建订单
+      // Create order first
       const orderResult = await this.createOrder(paymentData);
       if (!orderResult.success) {
         return orderResult;
       }
       
-      console.log('订单创建成功，订单ID:', orderResult.transactionId);
+      console.log('Order created successfully, Order ID:', orderResult.transactionId);
       
-      // 模拟钱包支付处理
+      // Simulate wallet payment processing
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // 模拟钱包支付结果（95%成功率，因为已经检查过余额）
+      // Simulate wallet payment result (95% success rate, since balance has been checked)
       const isSuccessful = Math.random() > 0.05;
       
       if (isSuccessful) {
-        console.log('钱包支付成功');
+        console.log('Wallet payment successful');
         return {
           success: true,
           transactionId: orderResult.transactionId,
@@ -104,37 +104,37 @@ class PaymentService {
           }
         };
       } else {
-        console.log('钱包支付失败');
+        console.log('Wallet payment failed');
         return {
           success: false,
-          message: '钱包支付处理失败，请重试'
+          message: 'Wallet payment processing failed, please try again'
         };
       }
     } catch (error: any) {
-      console.error('钱包支付失败:', error);
+      console.error('Wallet payment failed:', error);
       return {
         success: false,
-        message: error.response?.data?.message || '钱包支付失败'
+        message: error.response?.data?.message || 'Wallet payment failed'
       };
     }
   }
 
   /**
-   * 创建订单
+   * Create order
    */
   async createOrder(paymentData: PaymentRequest): Promise<PaymentResponse> {
     try {
-      console.log('=== PaymentService.createOrder 调试信息 ===');
-      console.log('订单数据:', paymentData);
+      console.log('=== PaymentService.createOrder Debug Info ===');
+      console.log('Order data:', paymentData);
       
-      // 模拟创建订单API调用
-      // 在实际应用中，这里会调用真实的后端API
+      // Simulate create order API call
+      // In actual application, this would call real backend API
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // 生成订单ID
+      // Generate order ID
       const orderId = 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
       
-      console.log('创建订单成功，订单ID:', orderId);
+      console.log('Order created successfully, Order ID:', orderId);
       
       return {
         success: true,
@@ -150,35 +150,35 @@ class PaymentService {
         }
       };
     } catch (error: any) {
-      console.error('创建订单失败:', error);
+      console.error('Failed to create order:', error);
       return {
         success: false,
-        message: error.response?.data?.message || '创建订单失败'
+        message: error.response?.data?.message || 'Failed to create order'
       };
     }
   }
 
   /**
-   * 模拟其他支付方式
+   * Simulate other payment methods
    */
   async processPayment(paymentData: PaymentRequest): Promise<PaymentResponse> {
     try {
-      console.log('=== PaymentService.processPayment 调试信息 ===');
-      console.log('支付方式:', paymentData.paymentMethod);
-      console.log('支付金额:', paymentData.amount);
+      console.log('=== PaymentService.processPayment Debug Info ===');
+      console.log('Payment method:', paymentData.paymentMethod);
+      console.log('Payment amount:', paymentData.amount);
       
-      // 先创建订单
+      // Create order first
       const orderResult = await this.createOrder(paymentData);
       if (!orderResult.success) {
         return orderResult;
       }
       
-      console.log('订单创建成功，订单ID:', orderResult.transactionId);
+      console.log('Order created successfully, Order ID:', orderResult.transactionId);
       
-      // 模拟支付处理延迟
+      // Simulate payment processing delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // 模拟支付结果（90%成功率）
+      // Simulate payment result (90% success rate)
       const isSuccessful = Math.random() > 0.1;
       
       if (isSuccessful) {
@@ -196,14 +196,14 @@ class PaymentService {
       } else {
         return {
           success: false,
-          message: '支付处理失败，请重试'
+          message: 'Payment processing failed, please try again'
         };
       }
     } catch (error: any) {
-      console.error('支付处理失败:', error);
+      console.error('Payment processing failed:', error);
       return {
         success: false,
-        message: '支付处理失败'
+        message: 'Payment processing failed'
       };
     }
   }

@@ -24,9 +24,9 @@ const PaymentSuccess: React.FC = () => {
       try {
         const orderData = JSON.parse(lastOrderStr);
         setOrderInfo(orderData);
-        console.log('订单信息:', orderData);
+        console.log('Order information:', orderData);
       } catch (error) {
-        console.error('解析订单信息失败:', error);
+        console.error('Failed to parse order information:', error);
       }
     }
 
@@ -64,15 +64,15 @@ const PaymentSuccess: React.FC = () => {
           {orderInfo && (
             <div className="order-details">
               <div className="order-info-item">
-                <span className="label">订单号:</span>
+                <span className="label">Order Number:</span>
                 <span className="value">{orderInfo.orderId}</span>
               </div>
               <div className="order-info-item">
-                <span className="label">支付金额:</span>
+                <span className="label">Payment Amount:</span>
                 <span className="value">${orderInfo.amount.toFixed(2)}</span>
               </div>
               <div className="order-info-item">
-                <span className="label">支付方式:</span>
+                <span className="label">Payment Method:</span>
                 <span className="value">
                   {orderInfo.paymentMethod === 'wallet' ? 'My Wallet' : 
                    orderInfo.paymentMethod === 'visa' ? 'VISA' :
@@ -85,8 +85,8 @@ const PaymentSuccess: React.FC = () => {
                 </span>
               </div>
               <div className="order-info-item">
-                <span className="label">支付时间:</span>
-                <span className="value">{new Date(orderInfo.timestamp).toLocaleString('zh-CN')}</span>
+                <span className="label">Payment Time:</span>
+                <span className="value">{new Date(orderInfo.timestamp).toLocaleString('en-US')}</span>
               </div>
             </div>
           )}
