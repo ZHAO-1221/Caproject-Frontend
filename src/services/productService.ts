@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = '/api';
 
-// 商品服务 - 管理商品信息和库存
+// Product Service - manages product information and inventory
 export interface Product {
   productId: number;
   productName: string;
@@ -21,7 +21,7 @@ export interface ProductResponse {
 }
 
 class ProductService {
-  // 获取所有可见商品
+  // Get all visible products
   async getVisibleProducts(): Promise<ProductResponse> {
     try {
       const response = await axios.get(`${API_BASE_URL}/products/getVisibleProducts`);
@@ -38,7 +38,7 @@ class ProductService {
     }
   }
 
-  // 获取分页商品
+  // Get paginated products
   async getProductsPaged(page: number = 0, size: number = 10): Promise<ProductResponse> {
     try {
       const response = await axios.get(`${API_BASE_URL}/products`, {
@@ -57,7 +57,7 @@ class ProductService {
     }
   }
 
-  // 根据ID获取商品详情
+  // Get product details by ID
   async getProductById(productId: number): Promise<ProductResponse> {
     try {
       const response = await axios.get(`${API_BASE_URL}/products/getProductById/${productId}`);
@@ -74,7 +74,7 @@ class ProductService {
     }
   }
 
-  // 获取商品评论
+  // Get product reviews
   async getProductReviews(productId: number): Promise<any> {
     try {
       const response = await axios.get(`${API_BASE_URL}/products/getReviewsByProductId/${productId}`);
@@ -91,7 +91,7 @@ class ProductService {
     }
   }
 
-  // 添加商品到购物车
+  // Add product to cart
   async addToCart(productId: number, quantity: number, userId?: number): Promise<any> {
     try {
       const url = userId 
@@ -112,7 +112,7 @@ class ProductService {
     }
   }
 
-  // 添加商品评论
+  // Add a review for a product
   async addReview(productId: number, comment: string, reviewRank: number, userId?: number): Promise<any> {
     try {
       const url = userId 
@@ -133,21 +133,21 @@ class ProductService {
     }
   }
 
-  // 检查商品是否有库存
+  // Check whether a product is in stock
   isInStock(product: Product): boolean {
     return product.productStockQuantity > 0;
   }
 
-  // 获取商品库存数量
+  // Get the stock quantity of a product
   getStockQuantity(product: Product): number {
     return product.productStockQuantity;
   }
 
-  // 根据商品ID获取库存数量（兼容旧代码）
+  // Get stock quantity by product ID (compatibility with older code)
   getStockQuantityById(productId: number): number {
-    // 这个方法需要从API获取商品信息，暂时返回一个默认值
-    // 在实际使用中，应该先获取商品信息再调用getStockQuantity
-    return 10; // 默认库存
+    // This method should fetch product info from the API; returns a placeholder for now
+    // In real usage, fetch the product first, then call getStockQuantity
+    return 10; // default stock
   }
 }
 
