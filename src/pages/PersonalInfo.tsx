@@ -228,19 +228,36 @@ const PersonalInfo: React.FC = () => {
         return;
       }
 
-      // 准备更新数据
-      const updates: any = { username };
+      // 准备更新数据，使用后端期望的字段名
+      const updates: any = {};
 
       if (field === 'email') {
-        updates.email = editValue;
+        updates.userEmail = editValue;
       } else if (field === 'phone') {
-        updates.phone = editValue;
+        updates.userPhone = editValue;
       } else if (field === 'gender') {
-        updates.gender = editValue;
+        updates.userGender = editValue;
       } else if (field === 'introduce') {
-        updates.introduce = editValue;
+        updates.userIntroduce = editValue;
+      } else if (field === 'name') {
+        updates.userName = editValue;
       } else if (field === 'password') {
-        // 密码更新单独处理
+        // 密码更新需要特殊处理
+        const oldPassword = prompt('请输入当前密码：');
+        if (!oldPassword) {
+          setEditingField(null);
+          setEditValue('');
+          return;
+        }
+        const newPassword = prompt('请输入新密码：');
+        if (!newPassword) {
+          setEditingField(null);
+          setEditValue('');
+          return;
+        }
+        updates.userPassword = newPassword;
+        // 这里需要调用密码更新API，暂时跳过
+        alert('密码更新功能需要单独实现');
         setEditingField(null);
         setEditValue('');
         return;
@@ -250,9 +267,14 @@ const PersonalInfo: React.FC = () => {
       const response = await userService.updateUserProfile(updates);
 
       if (response.success) {
+        // 根据字段名正确更新状态
         setUserInfo(prev => ({
           ...prev,
-          [field]: editValue
+          ...(field === 'email' && { email: editValue }),
+          ...(field === 'phone' && { phone: editValue }),
+          ...(field === 'gender' && { gender: editValue }),
+          ...(field === 'introduce' && { introduce: editValue }),
+          ...(field === 'name' && { name: editValue })
         }));
         setSuccess('更新成功');
         setTimeout(() => setSuccess(''), 3000);
