@@ -93,6 +93,12 @@ class CartService {
     localStorage.removeItem(this.cartKey);
   }
 
+  // 立即清空当前购物车（用于初始化）
+  clearCurrentCart(): void {
+    localStorage.removeItem(this.cartKey);
+    console.log('Current cart cleared');
+  }
+
   // 保存购物车数据
   private saveCartItems(items: CartItem[]): void {
     try {
