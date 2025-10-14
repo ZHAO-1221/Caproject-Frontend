@@ -105,12 +105,27 @@ const ProductDetail: React.FC = () => {
         const currentProductId = parseInt(productId || '1');
         const res = await productService.getProductReviews(currentProductId);
         if (res?.success && Array.isArray(res.data)) {
-          const mapped: Review[] = res.data.map((rv: any) => {
-            let dateText = '';
-            if (rv?.reviewCreateTime) {
-              const d = new Date(rv.reviewCreateTime);
-              dateText = isNaN(d.getTime()) ? String(rv.reviewCreateTime) : d.toLocaleDateString();
+          const formatDateYMD = (input: any): string => {
+            if (!input) return '';
+            const dateObj = new Date(input);
+            if (isNaN(dateObj.getTime())) {
+              // Try to handle strings like "2025,9,15,18,0" -> take first three parts and join with '-'
+              const parts = String(input).split(/\D+/).filter(Boolean);
+              if (parts.length >= 3) {
+                const [y, m, d] = parts.map(Number);
+                const mm = String(m).padStart(2, '0');
+                const dd = String(d).padStart(2, '0');
+                return `${y}-${mm}-${dd}`;
+              }
+              return String(input);
             }
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+          };
+          const mapped: Review[] = res.data.map((rv: any) => {
+            const dateText = formatDateYMD(rv?.reviewCreateTime);
             return {
               id: rv.reviewId,
               title: 'Review',
