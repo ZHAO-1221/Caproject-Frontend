@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import addressService from '../services/addressService';
 import cartService, { CartItem } from '../services/cartService';
 import productService from '../services/productService';
+import paymentService from '../services/paymentService';
 import '../styles/Checkout.css';
 
 interface DefaultAddress {
@@ -29,11 +30,14 @@ const Checkout: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [walletLoading, setWalletLoading] = useState(false);
 
   // 加载默认地址和购物车数据
   useEffect(() => {
     loadDefaultAddress();
     loadCartItems();
+    loadWalletBalance();
   }, []);
 
   const loadCartItems = () => {
@@ -90,6 +94,29 @@ const Checkout: React.FC = () => {
     setDefaultAddress(offlineAddress);
   };
 
+  // 加载钱包余额
+  const loadWalletBalance = async () => {
+    try {
+      setWalletLoading(true);
+      const response = await paymentService.getWalletBalance();
+      
+      if (response.success && response.balance !== undefined) {
+        setWalletBalance(response.balance);
+        console.log('钱包余额:', response.balance);
+      } else {
+        console.warn('获取钱包余额失败:', response.message);
+        // 设置默认余额用于测试
+        setWalletBalance(1000);
+      }
+    } catch (error) {
+      console.error('加载钱包余额错误:', error);
+      // 设置默认余额用于测试
+      setWalletBalance(1000);
+    } finally {
+      setWalletLoading(false);
+    }
+  };
+
   const handlePaymentMethodSelect = (method: string) => {
     setSelectedPaymentMethod(method);
   };
@@ -102,21 +129,58 @@ const Checkout: React.FC = () => {
 
     try {
       console.log('Processing payment with method:', selectedPaymentMethod);
-      // 模拟支付处理过程
-      // 在实际应用中，这里会调用支付API
       
-      // 模拟支付成功（90%概率成功）
-      const isPaymentSuccessful = Math.random() > 0.1;
+      // 准备支付数据
+      const paymentData = {
+        paymentMethod: selectedPaymentMethod,
+        amount: grandTotal,
+        orderItems: items.map(item => ({
+          productId: item.id,
+          quantity: item.qty,
+          price: item.price
+        })),
+        shippingAddress: defaultAddress ? 
+          `${defaultAddress.street}, ${defaultAddress.building}, ${defaultAddress.postal}, ${defaultAddress.city}` : 
+          'Default Address'
+      };
+
+      let paymentResult;
+
+      if (selectedPaymentMethod === 'wallet') {
+        // 检查钱包余额
+        if (walletBalance < grandTotal) {
+          alert(`钱包余额不足！当前余额: ${formatMoney(walletBalance)}, 需要: ${formatMoney(grandTotal)}`);
+          return;
+        }
+        
+        // 使用钱包支付
+        paymentResult = await paymentService.payWithWallet(paymentData);
+      } else {
+        // 其他支付方式
+        paymentResult = await paymentService.processPayment(paymentData);
+      }
       
-      if (isPaymentSuccessful) {
+      if (paymentResult.success) {
+        console.log('支付成功:', paymentResult);
+        // 保存订单信息到sessionStorage，供支付成功页面使用
+        sessionStorage.setItem('lastOrder', JSON.stringify({
+          orderId: paymentResult.transactionId,
+          amount: grandTotal,
+          paymentMethod: selectedPaymentMethod,
+          items: items,
+          timestamp: new Date().toISOString()
+        }));
         // 支付成功，跳转到成功页面
         navigate('/payment-success');
       } else {
+        console.error('支付失败:', paymentResult.message);
+        alert(`支付失败: ${paymentResult.message}`);
         // 支付失败，跳转到失败页面
         navigate('/payment-failed');
       }
     } catch (error) {
       console.error('Payment error:', error);
+      alert('支付处理出错，请重试');
       // 支付出错，跳转到失败页面
       navigate('/payment-failed');
     }
@@ -230,6 +294,18 @@ const Checkout: React.FC = () => {
               <div className="pay-methods">
                 <div className="pay-title">select payment method</div>
                 <div className="pay-icons">
+                  <span 
+                    className={`pm wallet ${selectedPaymentMethod === 'wallet' ? 'selected' : ''} ${walletBalance < grandTotal ? 'insufficient' : ''}`}
+                    onClick={() => handlePaymentMethodSelect('wallet')}
+                    title={walletLoading ? '加载中...' : `余额: ${formatMoney(walletBalance)}`}
+                  >
+                    My Wallet
+                    {!walletLoading && (
+                      <div className="wallet-balance">
+                        {formatMoney(walletBalance)}
+                      </div>
+                    )}
+                  </span>
                   <span 
                     className={`pm visa ${selectedPaymentMethod === 'visa' ? 'selected' : ''}`}
                     onClick={() => handlePaymentMethodSelect('visa')}

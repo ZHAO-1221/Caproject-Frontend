@@ -151,6 +151,43 @@
   color: white;
   border-color: #ff8a33;
 }
+
+.pm.wallet {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 50px;
+  padding: 8px 10px;
+}
+
+.pm.wallet:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.pm.wallet.selected {
+  background: linear-gradient(135deg, #ff8a33 0%, #ff6b35 100%);
+  border-color: #ff8a33;
+}
+
+.pm.wallet.insufficient {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.pm.wallet.insufficient:hover {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+}
+
+.wallet-balance {
+  font-size: 10px;
+  margin-top: 2px;
+  opacity: 0.9;
+  font-weight: 500;
+}
 .pay-btn { 
   width:100%; 
   margin-top:16px; 
