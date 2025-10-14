@@ -26,34 +26,13 @@ interface Review {
   avatar: string;
 }
 
-interface FilterState {
-  priceRange: [number, number];
-  categories: {
-    dailyNecessities: boolean;
-    homeKitchen: boolean;
-    fashionApparel: boolean;
-    sportsOutdoors: boolean;
-    electronics: boolean;
-    personalCare: boolean;
-  };
-}
+//
 
 const ProductDetail: React.FC = () => {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
   
-  // Filter states - will be initialized based on product category
-  const [filters, setFilters] = useState<FilterState>({
-    priceRange: [0, 100],
-    categories: {
-      dailyNecessities: false,
-      homeKitchen: false,
-      fashionApparel: false,
-      sportsOutdoors: false,
-      electronics: false,
-      personalCare: false,
-    }
-  });
+  //
 
   // Product and reviews data
   const [product, setProduct] = useState<Product | null>(null);
@@ -158,37 +137,11 @@ const ProductDetail: React.FC = () => {
     setLoading(false);
   }, [productId]);
 
-  // Helper function to get category key based on product ID
-  const getProductCategoryKey = (productId: number): string => {
-    // Map product IDs to their categories
-    if (productId === 2) return 'dailyNecessities'; // hajimi
-    if (productId >= 3 && productId <= 12) return 'dailyNecessities';
-    if (productId >= 13 && productId <= 22) return 'homeKitchen';
-    if (productId >= 23 && productId <= 32) return 'fashionApparel';
-    if (productId >= 33 && productId <= 42) return 'sportsOutdoors';
-    if (productId >= 43 && productId <= 52) return 'electronics';
-    if (productId >= 53 && productId <= 62) return 'personalCare';
-    return 'dailyNecessities'; // default
-  };
+  //
 
-  // Handle price range change
-  const handlePriceRangeChange = (newRange: [number, number]) => {
-    setFilters(prev => ({
-      ...prev,
-      priceRange: newRange
-    }));
-  };
+  //
 
-  // Handle category filter change
-  const handleCategoryChange = (category: keyof FilterState['categories']) => {
-    setFilters(prev => ({
-      ...prev,
-      categories: {
-        ...prev.categories,
-        [category]: !prev.categories[category]
-      }
-    }));
-  };
+  //
 
   // Handle quantity change
   const handleQuantityChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -221,14 +174,7 @@ const ProductDetail: React.FC = () => {
     }
   };
 
-  const categories = [
-    { key: 'dailyNecessities', label: 'daily necessities' },
-    { key: 'homeKitchen', label: 'home&kitchen' },
-    { key: 'fashionApparel', label: 'fashion&apparel' },
-    { key: 'sportsOutdoors', label: 'sports&outdoors' },
-    { key: 'electronics', label: 'electronics' },
-    { key: 'personalCare', label: 'personal care' },
-  ] as const;
+  //
 
   // Generate quantity options (always show 10 options)
   const quantityOptions = Array.from({ length: 10 }, (_, i) => i + 1);
@@ -262,68 +208,6 @@ const ProductDetail: React.FC = () => {
       <Header />
       
       <div className="main-content">
-        {/* Filter Sidebar */}
-        <div className="filter-sidebar">
-          <h3 className="filter-title">Filter</h3>
-          
-          {/* Price Filter */}
-          <div className="filter-section">
-            <label className="filter-label">Price</label>
-            <div className="price-range-container">
-              <div className="price-slider-wrapper">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={filters.priceRange[0]}
-                  onChange={(e) => handlePriceRangeChange([parseInt(e.target.value), filters.priceRange[1]])}
-                  className="price-slider price-slider-min"
-                />
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={filters.priceRange[1]}
-                  onChange={(e) => handlePriceRangeChange([filters.priceRange[0], parseInt(e.target.value)])}
-                  className="price-slider price-slider-max"
-                />
-              </div>
-              <div className="price-range-labels">
-                <span className="price-min">${filters.priceRange[0]}</span>
-                <span className="price-max">${filters.priceRange[1]}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Category Filter */}
-          <div className="filter-section">
-            <label className="filter-label">Category</label>
-            <div className="category-list">
-              {categories.map((category) => (
-                <label key={category.key} className="category-item">
-                  <input
-                    type="checkbox"
-                    checked={filters.categories[category.key]}
-                    onChange={() => handleCategoryChange(category.key)}
-                    className="category-checkbox"
-                  />
-                  <span className="category-label">{category.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Back to Browse Button */}
-          <div className="back-to-browse-section">
-            <button 
-              className="back-to-browse-btn"
-              onClick={() => navigate('/products')}
-            >
-              ← Back to Products
-            </button>
-          </div>
-        </div>
-
         {/* Product Content Area */}
         <div className="product-content-area">
           <div className="product-main-section">
@@ -495,6 +379,14 @@ const ProductDetail: React.FC = () => {
                 <button className="view-all-reviews-btn">View All Reviews</button>
               </div>
             </div>
+          </div>
+          <div className="back-to-browse-section">
+            <button
+              className="back-to-browse-btn"
+              onClick={() => navigate('/products')}
+            >
+              back to product list
+            </button>
           </div>
         </div>
       </div>
