@@ -6,6 +6,7 @@ import addressService from '../services/addressService';
 import cartService, { CartItem } from '../services/cartService';
 import productService from '../services/productService';
 import paymentService from '../services/paymentService';
+import orderService from '../services/orderService';
 import '../styles/Checkout.css';
 
 interface DefaultAddress {
@@ -169,6 +170,20 @@ const Checkout: React.FC = () => {
           items: items,
           timestamp: new Date().toISOString()
         }));
+        // Save to local order history for Order History page
+        try {
+          const orderImage = items[0]?.image || '/images/placeholder.svg';
+          orderService.saveLocalOrder({
+            id: paymentResult.transactionId || 'UNKNOWN',
+            amount: grandTotal,
+            orderTime: new Date().toISOString(),
+            status: 'Completed',
+            items: items,
+            productImage: orderImage
+          });
+        } catch (e) {
+          console.error('Failed to save order to local history', e);
+        }
         // Payment successful, redirect to success page
         navigate('/payment-success');
       } else {

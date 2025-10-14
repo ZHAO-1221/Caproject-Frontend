@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import userService from '../services/userService';
+import orderService from '../services/orderService';
 import '../styles/OrderHistory.css';
 
 interface Order {
@@ -20,7 +21,6 @@ const OrderHistory: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // 模拟订单数据
   useEffect(() => {
     loadOrders();
   }, []);
@@ -30,38 +30,18 @@ const OrderHistory: React.FC = () => {
       setLoading(true);
       setError('');
 
-      // 模拟加载延迟
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Load from local order history first
+      const localOrders = orderService.getLocalOrders();
+      const mappedLocal: Order[] = localOrders.map((o, idx) => ({
+        id: idx + 1,
+        orderNumber: o.id,
+        orderTime: new Date(o.orderTime).toLocaleString('en-US'),
+        price: o.amount,
+        productImage: o.productImage || '/images/placeholder.svg',
+        status: o.status
+      }));
 
-      // 模拟订单数据
-      const mockOrders: Order[] = [
-        {
-          id: 1,
-          orderNumber: 'ORD-2024-001',
-          orderTime: '2024-01-15 14:30:25',
-          price: 50,
-          productImage: '/images/placeholder.svg',
-          status: 'Completed'
-        },
-        {
-          id: 2,
-          orderNumber: 'ORD-2024-002',
-          orderTime: '2024-01-20 09:15:42',
-          price: 50,
-          productImage: '/images/placeholder.svg',
-          status: 'Completed'
-        },
-        {
-          id: 3,
-          orderNumber: 'ORD-2024-003',
-          orderTime: '2024-01-25 16:45:18',
-          price: 50,
-          productImage: '/images/placeholder.svg',
-          status: 'Completed'
-        }
-      ];
-
-      setOrders(mockOrders);
+      setOrders(mappedLocal);
     } catch (error: any) {
       console.error('Load orders error:', error);
       setError('Failed to load orders');
@@ -115,7 +95,7 @@ const OrderHistory: React.FC = () => {
               </div>
             ) : (
               orders.map((order) => (
-                <div key={order.id} className="order-item" onClick={() => navigate(`/order-details/${order.id}`)}>
+                <div key={order.id} className="order-item" onClick={() => navigate(`/order-details/${encodeURIComponent(order.orderNumber)}`)}>
                   <div className="order-image">
                     <img src={order.productImage} alt="Product" />
                   </div>
