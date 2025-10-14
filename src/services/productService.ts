@@ -1,6 +1,7 @@
 import axios from 'axios';
+import authService from './authService';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://172.20.10.11:8080/api';
 
 // 商品服务 - 管理商品信息和库存
 export interface Product {
@@ -119,7 +120,15 @@ class ProductService {
         ? `${API_BASE_URL}/products/addReviewToProduct/${productId}`
         : `${API_BASE_URL}/products/test/addReviewToProduct/${productId}`;
       
-      const response = await axios.post(url, { comment, reviewRank });
+      const headers = {
+        'Content-Type': 'application/json',
+        ...authService.getAuthHeaders()
+      };
+      const payload: any = { comment, reviewRank };
+      if (userId) {
+        payload.userId = userId;
+      }
+      const response = await axios.post(url, payload, { headers });
       return {
         success: true,
         data: response.data
@@ -128,7 +137,7 @@ class ProductService {
       console.error('Add review error:', error);
       return {
         success: false,
-        message: error.response?.data?.message || '添加评论失败'
+        message: error.response?.data?.message || error.response?.data?.error || `添加评论失败（${error.response?.status || '未知状态'}）`
       };
     }
   }

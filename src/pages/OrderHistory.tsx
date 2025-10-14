@@ -98,7 +98,6 @@ const OrderHistory: React.FC = () => {
             <button className="nav-item" onClick={() => navigate('/address-management')}>
               Manage Addresses
             </button>
-            <button className="nav-item">My Coupons</button>
             <button className="nav-item" onClick={handleLogout}>Sign out</button>
           </div>
         </div>

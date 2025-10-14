@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://172.20.10.11:8080/api';
 
 export interface LoginRequest {
   username: string;
@@ -27,7 +27,8 @@ class AuthService {
       console.log('登录凭据:', credentials);
       console.log('请求URL:', `${API_BASE_URL}/auth/login`);
       
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, credentials);
+      const config = { headers: { 'Content-Type': 'application/json' } };
+      let response = await axios.post(`${API_BASE_URL}/auth/login`, credentials, config);
       
       console.log('登录响应:', response.data);
       
@@ -82,7 +83,50 @@ class AuthService {
       
       return response.data;
     } catch (error: any) {
-      if (error.response) {
+      // 兼容后端可能使用 userName 字段的情况，出现 Bad credentials 时重试一次
+      if (error.response && error.response.status === 400) {
+        const message = error.response.data?.message || '';
+        if (typeof message === 'string' && message.includes('Bad credentials')) {
+          try {
+            const trimmedPassword = credentials.password?.trim();
+            // 先尝试 userName
+            const fallbackBody1 = { userName: credentials.username?.trim(), password: trimmedPassword };
+            const config = { headers: { 'Content-Type': 'application/json' } };
+            console.warn('首次登录返回400，尝试使用 userName 字段重试...');
+            let retryResp = await axios.post(`${API_BASE_URL}/auth/login`, fallbackBody1, config);
+            if (!retryResp.data?.success) {
+              // 再尝试 email 字段
+              console.warn('使用 userName 登录失败，尝试使用 email 字段重试...');
+              const fallbackBody2 = { email: credentials.username?.trim(), password: trimmedPassword };
+              retryResp = await axios.post(`${API_BASE_URL}/auth/login`, fallbackBody2, config);
+            }
+
+            if (retryResp.data?.success) {
+              // 与上面相同的成功处理逻辑
+              sessionStorage.setItem('isLoggedIn', 'true');
+              if (retryResp.data.token) {
+                sessionStorage.setItem('token', retryResp.data.token);
+              }
+              if (retryResp.data.user) {
+                sessionStorage.setItem('user', JSON.stringify(retryResp.data.user));
+                try {
+                  const userResponse = await axios.get(`${API_BASE_URL}/users/me`, {
+                    headers: { 'Authorization': `Bearer ${retryResp.data.token}` }
+                  });
+                  if (userResponse.data) {
+                    const completeUser = { ...retryResp.data.user, ...userResponse.data };
+                    sessionStorage.setItem('user', JSON.stringify(completeUser));
+                  }
+                } catch {}
+              }
+              return retryResp.data;
+            }
+            return retryResp.data;
+          } catch (retryError: any) {
+            if (retryError.response) return retryError.response.data;
+            throw new Error('网络错误，请稍后重试');
+          }
+        }
         return error.response.data;
       }
       throw new Error('网络错误，请稍后重试');

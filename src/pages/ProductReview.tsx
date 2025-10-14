@@ -1,7 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import productService from '../services/productService';
+import authService from '../services/authService';
 import '../styles/ProductReview.css';
 
 interface ProductInfo {
@@ -34,15 +36,40 @@ const ProductReview: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [productExists, setProductExists] = useState<boolean>(true);
+  const [productDetail, setProductDetail] = useState<any>(null);
 
-  // 模拟商品信息
-  const product: ProductInfo = {
-    id: parseInt(productId || '1'),
-    title: 'Title',
-    description: 'Body text for whatever you\'d like to say. Add main takeaway points, quotes, anecdotes, or even a very very short story.',
-    price: 50,
-    image: '/images/placeholder.svg'
-  };
+  // 获取当前用户信息
+  useEffect(() => {
+    const user = authService.getCurrentUser();
+    setCurrentUser(user);
+    console.log('ProductReview - 当前用户:', user);
+  }, []);
+
+  // 从后端获取真实商品信息
+  useEffect(() => {
+    const id = parseInt(productId || '0');
+    if (!id) {
+      setProductExists(false);
+      setError('无效的商品ID');
+      return;
+    }
+    (async () => {
+      const res = await productService.getProductById(id);
+      if (res.success && res.data) {
+        setProductExists(true);
+        setProductDetail(res.data);
+      } else {
+        setProductExists(false);
+        setError(res.message || `商品不存在（ID: ${id}）`);
+      }
+    })();
+    // 清理提示
+    return () => {
+      setError('');
+    };
+  }, [productId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -81,6 +108,11 @@ const ProductReview: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!productExists) {
+      setError('商品不存在或已下架，无法提交评价');
+      return;
+    }
+
     if (reviewForm.rating === 0) {
       setError('Please select a rating');
       return;
@@ -96,21 +128,42 @@ const ProductReview: React.FC = () => {
       return;
     }
 
+    if (!currentUser) {
+      setError('Please login first');
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
       setSuccess('');
 
-      // 模拟提交延迟
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log('=== 提交评价调试信息 ===');
+      const id = parseInt(productId || '0');
+      console.log('商品ID:', id);
+      console.log('评价内容:', reviewForm.content);
+      console.log('评价等级:', reviewForm.rating);
+      console.log('当前用户:', currentUser);
 
-      // 模拟提交成功
-      setSuccess('Review submitted successfully! Thank you for your feedback.');
-      
-      // 3秒后跳转回商品页面或订单页面
-      setTimeout(() => {
-        navigate('/order-history');
-      }, 3000);
+      // 调用真实API提交评价
+      const result = await productService.addReview(
+        id,
+        reviewForm.content,
+        reviewForm.rating,
+        currentUser.userId
+      );
+
+      console.log('评价提交结果:', result);
+
+      if (result.success) {
+        setSuccess('Review submitted successfully! Thank you for your feedback.');
+        // 3秒后跳转回商品页面或订单页面
+        setTimeout(() => {
+          navigate('/order-history');
+        }, 3000);
+      } else {
+        setError(result.message || 'Submission failed, please try again later');
+      }
       
     } catch (error: any) {
       console.error('Submit review error:', error);
@@ -138,7 +191,7 @@ const ProductReview: React.FC = () => {
             <div className="profile-picture">
               <img src="/images/user-avatar.svg" alt="User Avatar" />
             </div>
-            <div className="profile-name">Tina</div>
+            <div className="profile-name">{currentUser?.userName || 'User'}</div>
           </div>
           <div className="nav-menu">
             <button className="nav-item" onClick={() => navigate('/personal-info')}>
@@ -158,12 +211,14 @@ const ProductReview: React.FC = () => {
           <div className="product-info-section">
             <div className="product-card">
               <div className="product-image">
-                <img src={product.image} alt={product.title} />
+                <img src={productDetail?.imageUrl || '/images/placeholder.svg'} alt={productDetail?.productName || 'Product'} />
               </div>
               <div className="product-details">
-                <h2 className="product-title">{product.title}</h2>
-                <p className="product-description">{product.description}</p>
-                <div className="product-price">${product.price}</div>
+                <h2 className="product-title">{productDetail?.productName || 'Product'}</h2>
+                <p className="product-description">{productDetail?.productDescription || ''}</p>
+                {productDetail?.productPrice != null && (
+                  <div className="product-price">${productDetail.productPrice}</div>
+                )}
               </div>
             </div>
           </div>
@@ -226,7 +281,7 @@ const ProductReview: React.FC = () => {
                     <img src="/images/user-avatar.svg" alt="User Avatar" />
                   </div>
                   <div className="user-details">
-                    <div className="user-name">User Name</div>
+                    <div className="user-name">{currentUser?.userName || 'User Name'}</div>
                     <div className="user-review">User Review</div>
                   </div>
                 </div>

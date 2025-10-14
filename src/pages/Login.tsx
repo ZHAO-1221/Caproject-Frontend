@@ -48,7 +48,11 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await authService.login(formData);
+      const credentials = {
+        username: formData.username.trim(),
+        password: formData.password.trim()
+      };
+      const response = await authService.login(credentials);
       
       if (response.success && response.user) {
         setSuccess('登录成功！正在跳转...');
