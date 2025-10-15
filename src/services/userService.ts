@@ -1,6 +1,7 @@
 import axios from 'axios';
 import authService from './authService';
 const API_BASE_URL = '/api/users';
+const AVATAR_API = '/api/avatars';
 
 export interface UserProfile {
   userId: number;
@@ -35,10 +36,6 @@ export interface UpdateProfileRequest {
   userProfileUrl?: string;
 }
 
-export interface PresetAvatarItem {
-  id: number;
-  url: string;
-}
 
 export interface UpdatePasswordRequest {
   username: string;
@@ -56,6 +53,12 @@ export interface UpdateWalletResponse {
   success: boolean;
   message?: string;
   newBalance?: number;
+}
+
+// 预设头像条目
+export interface PresetAvatarItem {
+  id: number;
+  url: string;
 }
 
 class UserService {
@@ -198,6 +201,35 @@ class UserService {
   }
 
   /**
+   * 获取预设头像列表
+   */
+  async listAvatars(): Promise<PresetAvatarItem[]> {
+    const response = await axios.get(AVATAR_API, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...authService.getAuthHeaders()
+      }
+    });
+    return response.data as PresetAvatarItem[];
+  }
+
+  /**
+   * 通过文件名更新头像（后端会拼接为 /avatars/<filename>）
+   */
+  async updateAvatarByFilename(filename: string): Promise<UserProfileResponse> {
+    const response = await axios.put(`${API_BASE_URL}/me/avatar`, { filename }, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...authService.getAuthHeaders()
+      }
+    });
+    if (response.data && response.data.userId) {
+      return { success: true, data: response.data };
+    }
+    return { success: false, message: '更新失败' };
+  }
+
+  /**
    * 获取当前登录用户的用户名
    */
   getCurrentUsername(): string | null {
@@ -209,92 +241,7 @@ class UserService {
     return null;
   }
 
-  /**
-   * 获取预设头像列表
-   */
-  async listAvatars(): Promise<PresetAvatarItem[]> {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/avatars`, {
-        headers: authService.getAuthHeaders()
-      });
-      
-      if (response.data && Array.isArray(response.data)) {
-        return response.data;
-      }
-      
-      // 如果后端没有返回数据，返回本地头像列表
-      return [
-        { id: 1, url: 'image_001 .png' },
-        { id: 2, url: 'image_002.png' },
-        { id: 3, url: 'image_003.png' },
-        { id: 4, url: 'image_004.png' },
-        { id: 5, url: 'image_005.png' },
-        { id: 6, url: 'image_006.png' },
-        { id: 7, url: 'image_007.png' },
-        { id: 8, url: 'image_008.png' },
-        { id: 9, url: 'image_009.png' },
-        { id: 10, url: 'image_010.png' },
-        { id: 11, url: 'image_011.png' },
-        { id: 12, url: 'image_012.png' },
-        { id: 13, url: 'image_013.png' },
-        { id: 14, url: 'image_014.png' },
-        { id: 15, url: 'image_015.png' }
-      ];
-    } catch (error) {
-      console.error('获取头像列表失败:', error);
-      // 返回本地头像列表作为备用
-      return [
-        { id: 1, url: 'image_001 .png' },
-        { id: 2, url: 'image_002.png' },
-        { id: 3, url: 'image_003.png' },
-        { id: 4, url: 'image_004.png' },
-        { id: 5, url: 'image_005.png' },
-        { id: 6, url: 'image_006.png' },
-        { id: 7, url: 'image_007.png' },
-        { id: 8, url: 'image_008.png' },
-        { id: 9, url: 'image_009.png' },
-        { id: 10, url: 'image_010.png' },
-        { id: 11, url: 'image_011.png' },
-        { id: 12, url: 'image_012.png' },
-        { id: 13, url: 'image_013.png' },
-        { id: 14, url: 'image_014.png' },
-        { id: 15, url: 'image_015.png' }
-      ];
-    }
-  }
-
-  /**
-   * 通过文件名更新用户头像
-   */
-  async updateAvatarByFilename(filename: string): Promise<{ success: boolean; data?: { userProfileUrl: string }; message?: string }> {
-    try {
-      const response = await axios.put(`${API_BASE_URL}/avatar`, {
-        filename: filename
-      }, {
-        headers: authService.getAuthHeaders()
-      });
-      
-      if (response.data && response.data.success) {
-        return {
-          success: true,
-          data: {
-            userProfileUrl: response.data.data?.userProfileUrl || `/images/${filename}`
-          }
-        };
-      }
-      
-      return {
-        success: false,
-        message: response.data?.message || '更新头像失败'
-      };
-    } catch (error: any) {
-      console.error('更新头像失败:', error);
-      return {
-        success: false,
-        message: error.response?.data?.message || '更新头像失败'
-      };
-    }
-  }
+  // 下面的头像相关旧实现已移除，统一使用上方与后端匹配的 AVATAR_API 和 /api/users/me/avatar
 }
 
 export default new UserService();
