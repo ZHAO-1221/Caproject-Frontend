@@ -4,7 +4,6 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import cartService from '../services/cartService';
 import productService, { Product as ApiProduct } from '../services/productService';
-import { BACKEND_URL } from '../config/backend';
 import '../styles/ProductDetail.css';
 
 interface Product {
@@ -51,16 +50,13 @@ const ProductDetail: React.FC = () => {
         
         if (response.success && response.data) {
           const apiProduct = response.data as any;
-                 // Handle image URL - use backend URL directly
+                 // 如果没有提供图片URL，则返回一个默认的占位图路径
                  let imageUrl = '/images/placeholder.svg';
                  if (apiProduct.imageUrl) {
-                   if (apiProduct.imageUrl.startsWith('http://')) {
-                     // Use absolute URL directly (replace with correct backend IP)
-                     imageUrl = apiProduct.imageUrl.replace(/http:\/\/[^:]+:8080/, BACKEND_URL);
-                   } else if (apiProduct.imageUrl.startsWith('/images/')) {
-                     // Convert relative URL to absolute backend URL
-                     imageUrl = `${BACKEND_URL}${apiProduct.imageUrl}`;
-                   }
+                   // `package.json` 中的 `proxy` 配置会自动将开发环境中的相对路径请求
+                   // 转发到后端服务器。因此，我们只需要直接返回路径即可。
+                   // 这个逻辑同时适用于完整的外部URL（例如来自CDN）和后端的相对路径。
+                   imageUrl = apiProduct.imageUrl;
                  }
           
           const transformedProduct = {
@@ -171,7 +167,7 @@ const ProductDetail: React.FC = () => {
   };
 
   // Handle add to cart
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     // Check if user is logged in
     const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
     
@@ -182,17 +178,27 @@ const ProductDetail: React.FC = () => {
     }
     
     if (product?.inStock) {
-      // Add to cart using cartService
-      cartService.addToCart(
-        product.id,
-        product.name,
-        product.price,
-        quantity,
-        product.image
-      );
-      
-      console.log(`Added ${quantity} of product ${product.id} to cart`);
-      alert(`Added ${quantity} of ${product.name} to cart!`);
+      try {
+        // Add to cart using cartService (now with backend sync)
+        const result = await cartService.addToCart(
+          product.id,
+          product.name,
+          product.price,
+          quantity,
+          product.image
+        );
+        
+        if (result.success) {
+          console.log(`Added ${quantity} of product ${product.id} to cart`);
+          alert(`Added ${quantity} of ${product.name} to cart!`);
+        } else {
+          console.error('Failed to add to cart:', result.message);
+          alert(`添加失败: ${result.message}`);
+        }
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        alert('添加到购物车时发生错误');
+      }
     }
   };
 

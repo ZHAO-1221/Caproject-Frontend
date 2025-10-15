@@ -10,9 +10,102 @@
 .section-title.center { text-align: center; }
 
 .address-section { grid-column: 1 / 2; position: relative; margin-bottom: 24px; }
-.address-list { display: flex; justify-content: flex-start; align-items: center; max-width: 100%; margin: 0; }
+.address-controls { display: flex; gap: 12px; margin-bottom: 12px; }
+.refresh-btn { padding: 6px 12px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 12px; }
+.refresh-btn:hover:not(:disabled) { background: #e0e0e0; }
+.refresh-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.address-list { display: flex; flex-direction: column; gap: 12px; max-width: 100%; margin: 0; }
+.address-options { display: flex; flex-direction: column; gap: 12px; }
+.address-display-container { position: relative; }
 .address-card { width: 100%; min-height: 60px; border-radius: 8px; background: #f8f8f8; border: 1px solid #e0e0e0; display:flex; flex-direction: column; color:#333; font-size: 14px; cursor: pointer; transition: all 0.2s; padding: 8px 16px; }
 .address-card:hover { background: #f0f0f0; border-color: #ff8a33; }
+.address-card.selected { background: #e8f4fd; border-color: #2196f3; border-width: 2px; }
+.address-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.address-selector input[type="radio"] { margin: 0; }
+
+/* 当前地址卡片样式 */
+.current-address-card {
+  width: 100%;
+  min-height: 60px;
+  border-radius: 8px;
+  background: #fff3cd;
+  border: 1px solid #ff8a33;
+  display: flex;
+  flex-direction: column;
+  color: #333;
+  font-size: 14px;
+  padding: 12px 16px;
+  transition: all 0.2s;
+}
+
+/* 更换地址按钮 */
+.change-address-btn {
+  padding: 4px 8px;
+  background: #ff8a33;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s;
+}
+
+.change-address-btn:hover {
+  background: #e67e22;
+}
+
+/* 下拉选择器样式 */
+.address-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  margin-top: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.dropdown-title {
+  padding: 8px 16px;
+  background: #f8f8f8;
+  border-bottom: 1px solid #e0e0e0;
+  font-weight: 600;
+  font-size: 13px;
+  color: #666;
+}
+
+.dropdown-address-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dropdown-address-item:hover {
+  background: #f8f8f8;
+}
+
+.dropdown-address-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-address-label {
+  font-weight: 600;
+  color: #ff8a33;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.dropdown-address-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
 /* 默认地址样式 */
 .address-card.default-address {
@@ -52,13 +145,33 @@
 
 /* 错误状态 */
 .address-card.error {
-  background: #fee;
-  border-color: #fcc;
-  color: #c33;
+  background: #f8d7da;
+  border-color: #dc3545;
+  color: #721c24;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+}
+
+.error-message {
+  font-size: 14px;
   text-align: center;
+}
+
+.retry-btn {
+  padding: 6px 12px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.retry-btn:hover {
+  background: #c82333;
 }
 
 /* 无地址状态 */

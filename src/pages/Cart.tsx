@@ -4,7 +4,6 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import cartService, { CartItem } from '../services/cartService';
 import productService from '../services/productService';
-import { BACKEND_URL } from '../config/backend';
 import '../styles/Cart.css';
 
 const CURRENCY = '$';
@@ -14,17 +13,14 @@ function formatMoney(value: number): string {
 }
 
 function getImageUrl(imageUrl?: string): string {
-  if (!imageUrl) return '/images/placeholder.svg';
-  
-  // Handle image URL - use backend URL directly
-  if (imageUrl.startsWith('http://')) {
-    // Use absolute URL directly (replace with correct backend IP)
-    return imageUrl.replace(/http:\/\/[^:]+:8080/, BACKEND_URL);
-  } else if (imageUrl.startsWith('/images/')) {
-    // Convert relative URL to absolute backend URL
-    return `${BACKEND_URL}${imageUrl}`;
+  // 如果没有提供图片URL，则返回一个默认的占位图路径
+  if (!imageUrl) {
+    return '/images/placeholder.svg';
   }
-  
+
+  // `package.json` 中的 `proxy` 配置会自动将开发环境中的相对路径请求
+  // 转发到后端服务器。因此，我们只需要直接返回路径即可。
+  // 这个逻辑同时适用于完整的外部URL（例如来自CDN）和后端的相对路径。
   return imageUrl;
 }
 
@@ -34,8 +30,21 @@ const Cart: React.FC = () => {
 
   // Load cart items from cartService
   useEffect(() => {
-    const cartItems = cartService.getCartItems();
-    setItems(cartItems);
+    const loadCartItems = async () => {
+      // 先尝试从后端同步购物车数据
+      const syncResult = await cartService.syncCartFromBackend();
+      if (syncResult.success) {
+        console.log('Cart synced from backend successfully');
+      } else {
+        console.warn('Failed to sync cart from backend:', syncResult.message);
+      }
+      
+      // 加载本地购物车数据
+      const cartItems = cartService.getCartItems();
+      setItems(cartItems);
+    };
+
+    loadCartItems();
   }, []);
 
   const allSelected = useMemo(() => items.length > 0 && items.every(i => i.selected), [items]);
@@ -55,19 +64,40 @@ const Cart: React.FC = () => {
     setItems(cartService.getCartItems());
   };
 
-  const changeQty = (id: number, delta: number) => {
+  const changeQty = async (id: number, delta: number) => {
     const item = items.find(i => i.id === id);
     if (item) {
       const stockQuantity = productService.getStockQuantityById(id);
       const newQty = Math.max(1, Math.min(stockQuantity, item.qty + delta));
-      cartService.updateQuantity(id, newQty);
-      setItems(cartService.getCartItems());
+      
+      try {
+        const result = await cartService.updateQuantity(id, newQty);
+        if (result.success) {
+          setItems(cartService.getCartItems());
+        } else {
+          console.error('Failed to update quantity:', result.message);
+          alert(`更新数量失败: ${result.message}`);
+        }
+      } catch (error) {
+        console.error('Error updating quantity:', error);
+        alert('更新数量时发生错误');
+      }
     }
   };
 
-  const removeItem = (id: number) => {
-    cartService.removeFromCart(id);
-    setItems(cartService.getCartItems());
+  const removeItem = async (id: number) => {
+    try {
+      const result = await cartService.removeFromCart(id);
+      if (result.success) {
+        setItems(cartService.getCartItems());
+      } else {
+        console.error('Failed to remove item:', result.message);
+        alert(`移除商品失败: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error removing item:', error);
+      alert('移除商品时发生错误');
+    }
   };
 
   return (

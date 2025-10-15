@@ -41,16 +41,52 @@ class AddressService {
     console.log('请求头:', headers);
     console.log('完整URL:', `/api/location/getLocation`);
     
-    const response = await axios.get(`/api/location/getLocation`, {
-      params: { username },
-      headers
-    });
-    
-    console.log('响应状态:', response.status);
-    console.log('响应头:', response.headers);
-    console.log('响应数据:', response.data);
-    
-    return response.data;
+    try {
+      const response = await axios.get(`/api/location/getLocation`, {
+        params: { username },
+        headers
+      });
+      
+      console.log('响应状态:', response.status);
+      console.log('响应头:', response.headers);
+      console.log('响应数据:', response.data);
+      console.log('响应数据类型:', typeof response.data);
+      
+      // 确保返回的数据有正确的格式
+      if (response.data) {
+        console.log('原始API响应数据:', response.data);
+        // 如果后端返回的数据已经有code、data、message结构，直接返回
+        if (response.data.code && response.data.data) {
+          console.log('后端返回标准格式，直接返回');
+          return response.data;
+        } else {
+          // 否则包装成标准格式
+          console.log('包装成标准格式');
+          return {
+            success: true,
+            code: response.status,
+            data: response.data,
+            message: 'Success'
+          };
+        }
+      } else {
+        return {
+          success: false,
+          code: response.status,
+          message: 'No data returned'
+        };
+      }
+    } catch (error: any) {
+      console.error('地址API调用失败:', error);
+      console.error('错误响应:', error.response?.data);
+      console.error('错误状态:', error.response?.status);
+      
+      return {
+        success: false,
+        code: error.response?.status || 500,
+        message: error.response?.data?.message || error.message || 'Network error'
+      };
+    }
   }
 
   /**
@@ -170,40 +206,83 @@ class AddressService {
    * 解析地址文本（将后端格式转为前端格式）
    */
   parseAddressText(locationText: string): { street: string; building: string; postal: string; city: string } {
-    // 后端格式：用逗号分隔的地址字符串
-    const parts = locationText.split(',').map(p => p.trim()).filter(p => p);
-    
-    // 假设格式为：street building postal city
-    // 如果只有3个部分，可能是缺少building或city
-    if (parts.length >= 4) {
-      return {
-        street: parts[0] || '',
-        building: parts[1] || '',
-        postal: parts[2] || '',
-        city: parts.slice(3).join(' ') || '' // city可能包含空格，所以用剩余部分
-      };
-    } else if (parts.length === 3) {
-      return {
-        street: parts[0] || '',
-        building: parts[1] || '',
-        postal: parts[2] || '',
-        city: ''
-      };
-    } else if (parts.length === 2) {
-      return {
-        street: parts[0] || '',
-        building: '',
-        postal: parts[1] || '',
-        city: ''
-      };
-    } else {
-      return {
-        street: parts[0] || '',
-        building: '',
-        postal: '',
-        city: ''
-      };
+    if (!locationText || typeof locationText !== 'string') {
+      console.warn('地址文本为空或格式错误:', locationText);
+      return { street: '', building: '', postal: '', city: '' };
     }
+
+    console.log('解析地址文本:', locationText);
+    
+    // 尝试多种分隔符：逗号、分号、换行符
+    let parts: string[] = [];
+    
+    if (locationText.includes(',')) {
+      parts = locationText.split(',').map(p => p.trim()).filter(p => p);
+    } else if (locationText.includes(';')) {
+      parts = locationText.split(';').map(p => p.trim()).filter(p => p);
+    } else if (locationText.includes('\n')) {
+      parts = locationText.split('\n').map(p => p.trim()).filter(p => p);
+    } else {
+      // 如果没有分隔符，尝试按空格分割
+      parts = locationText.split(/\s+/).filter(p => p);
+    }
+    
+    console.log('分割后的地址部分:', parts);
+    
+    // 智能解析地址部分
+    let street = '';
+    let building = '';
+    let postal = '';
+    let city = '';
+    
+    if (parts.length >= 4) {
+      // 完整格式：street, building, postal, city
+      street = parts[0] || '';
+      building = parts[1] || '';
+      postal = parts[2] || '';
+      city = parts.slice(3).join(' ') || '';
+    } else if (parts.length === 3) {
+      // 三部分格式：可能是 street, building, postal 或 street, postal, city
+      // 检查第二部分是否像邮政编码（数字）
+      if (/^\d+$/.test(parts[1])) {
+        // 格式：street, postal, city
+        street = parts[0] || '';
+        building = '';
+        postal = parts[1] || '';
+        city = parts[2] || '';
+      } else {
+        // 格式：street, building, postal
+        street = parts[0] || '';
+        building = parts[1] || '';
+        postal = parts[2] || '';
+        city = '';
+      }
+    } else if (parts.length === 2) {
+      // 两部分格式：可能是 street, postal 或 street, city
+      if (/^\d+$/.test(parts[1])) {
+        // 格式：street, postal
+        street = parts[0] || '';
+        building = '';
+        postal = parts[1] || '';
+        city = '';
+      } else {
+        // 格式：street, city
+        street = parts[0] || '';
+        building = '';
+        postal = '';
+        city = parts[1] || '';
+      }
+    } else if (parts.length === 1) {
+      // 单一部分：可能是完整地址或街道
+      street = parts[0] || '';
+      building = '';
+      postal = '';
+      city = '';
+    }
+    
+    const result = { street, building, postal, city };
+    console.log('解析结果:', result);
+    return result;
   }
 }
 

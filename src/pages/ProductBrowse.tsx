@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import productService, { Product } from '../services/productService';
-import { BACKEND_URL } from '../config/backend';
 import '../styles/ProductBrowse.css';
 
 // Product interface is imported from productService
@@ -100,21 +99,13 @@ const ProductBrowse: React.FC = () => {
         if (response.success && Array.isArray(response.data)) {
           // Transform API data to match our interface
           const transformedProducts = response.data.map((product: any) => {
-                   // Handle image URL - use backend URL directly
-                   let imageUrl = '/images/placeholder.svg'; // default fallback
+                   // 如果没有提供图片URL，则返回一个默认的占位图路径
+                   let imageUrl = '/images/placeholder.svg';
                    if (product.imageUrl) {
-                     if (product.imageUrl.startsWith('http://')) {
-                       // Use absolute URL directly (replace with correct backend IP)
-                       imageUrl = product.imageUrl.replace(/http:\/\/[^:]+:8080/, BACKEND_URL);
-                     } else if (product.imageUrl.startsWith('/images/')) {
-                       // Check if it's the non-existent placeholder, use frontend placeholder instead
-                       if (product.imageUrl === '/images/product-placeholder.jpg') {
-                         imageUrl = '/images/placeholder.svg';
-                       } else {
-                         // Convert relative URL to absolute backend URL
-                         imageUrl = `${BACKEND_URL}${product.imageUrl}`;
-                       }
-                     }
+                     // `package.json` 中的 `proxy` 配置会自动将开发环境中的相对路径请求
+                     // 转发到后端服务器。因此，我们只需要直接返回路径即可。
+                     // 这个逻辑同时适用于完整的外部URL（例如来自CDN）和后端的相对路径。
+                     imageUrl = product.imageUrl;
                    }
             
             return {

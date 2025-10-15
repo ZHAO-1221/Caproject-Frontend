@@ -7,7 +7,6 @@ import cartService, { CartItem } from '../services/cartService';
 import productService from '../services/productService';
 import paymentService from '../services/paymentService';
 import orderService from '../services/orderService';
-import { BACKEND_URL } from '../config/backend';
 import '../styles/Checkout.css';
 
 interface DefaultAddress {
@@ -17,6 +16,13 @@ interface DefaultAddress {
   city: string;
 }
 
+interface AddressOption {
+  id: number;
+  locationText: string;
+  isDefault: boolean;
+  parsed: DefaultAddress;
+}
+
 const CURRENCY = '$';
 
 function formatMoney(value: number): string {
@@ -24,17 +30,14 @@ function formatMoney(value: number): string {
 }
 
 function getImageUrl(imageUrl?: string): string {
-  if (!imageUrl) return '/images/placeholder.svg';
-  
-  // Handle image URL - use backend URL directly
-  if (imageUrl.startsWith('http://')) {
-    // Use absolute URL directly (replace with correct backend IP)
-    return imageUrl.replace(/http:\/\/[^:]+:8080/, BACKEND_URL);
-  } else if (imageUrl.startsWith('/images/')) {
-    // Convert relative URL to absolute backend URL
-    return `${BACKEND_URL}${imageUrl}`;
+  // 如果没有提供图片URL，则返回一个默认的占位图路径
+  if (!imageUrl) {
+    return '/images/placeholder.svg';
   }
-  
+
+  // `package.json` 中的 `proxy` 配置会自动将开发环境中的相对路径请求
+  // 转发到后端服务器。因此，我们只需要直接返回路径即可。
+  // 这个逻辑同时适用于完整的外部URL（例如来自CDN）和后端的相对路径。
   return imageUrl;
 }
 
@@ -43,6 +46,9 @@ const Checkout: React.FC = () => {
   
   const [items, setItems] = useState<CartItem[]>([]);
   const [defaultAddress, setDefaultAddress] = useState<DefaultAddress | null>(null);
+  const [addressOptions, setAddressOptions] = useState<AddressOption[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [showAddressDropdown, setShowAddressDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
@@ -55,6 +61,21 @@ const Checkout: React.FC = () => {
     loadCartItems();
     loadWalletBalance();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 点击外部关闭下拉菜单
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showAddressDropdown && !target.closest('.address-display-container')) {
+        setShowAddressDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showAddressDropdown]);
 
   const loadCartItems = () => {
     // 从cartService获取选中的商品
@@ -70,44 +91,192 @@ const Checkout: React.FC = () => {
 
       const username = addressService.getCurrentUsername();
       if (!username) {
+        console.error('User not logged in, redirecting to login page');
         navigate('/login');
         return;
       }
 
-      // 注意：addressService没有getDefaultAddress方法，使用getAddresses获取所有地址然后找默认地址
+      console.log('=== Loading user addresses ===');
+      console.log('Current username:', username);
+      console.log('User login status:', sessionStorage.getItem('isLoggedIn'));
+      console.log('User full info:', sessionStorage.getItem('user'));
+      
       const response = await addressService.getAddresses(username);
+      console.log('Address API response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Response keys:', Object.keys(response || {}));
 
-      if (response.success && Array.isArray(response.data)) {
-        // 从地址列表中找到默认地址
-        const defaultAddr = response.data.find((addr: any) => addr.isDefault);
-        if (defaultAddr) {
-          const parsedAddress = addressService.parseAddressText(defaultAddr.locationText);
-          setDefaultAddress(parsedAddress);
+      // 检查响应格式
+      if (response && (response.success || response.code === 200)) {
+        const addressData = response.data;
+        console.log('Address data:', addressData);
+        console.log('Address data type:', typeof addressData);
+        console.log('Is array:', Array.isArray(addressData));
+        
+        console.log('Checking address data conditions:');
+        console.log('- addressData exists:', !!addressData);
+        console.log('- addressData is array:', Array.isArray(addressData));
+        console.log('- addressData length:', Array.isArray(addressData) ? addressData.length : 'N/A');
+        console.log('- condition result:', Array.isArray(addressData) && addressData.length > 0);
+        
+        if (Array.isArray(addressData) && addressData.length > 0) {
+          console.log('✅ Successfully loaded address list, total', addressData.length, 'addresses');
+          
+          // 处理所有地址选项，过滤无效数据
+          const validAddresses = addressData.filter((addr: any) => {
+            const isValid = validateAddressData(addr);
+            if (!isValid) {
+              console.warn('Skipping invalid address:', addr);
+            }
+            return isValid;
+          });
+
+          if (validAddresses.length === 0) {
+            console.log('❌ No valid address data found');
+            // Add some test address data for debugging
+            console.log('Adding test address data for debugging');
+            const testAddresses = [
+              {
+                id: 1,
+                locationText: '123 Main Street, Building A, 12345, Test City',
+                isDefault: true
+              }
+            ];
+            
+            const testOptions: AddressOption[] = testAddresses.map((addr: any) => {
+              const parsed = addressService.parseAddressText(addr.locationText);
+              console.log('Parsing test address:', addr.locationText, '->', parsed);
+              return {
+                id: addr.id,
+                locationText: addr.locationText,
+                isDefault: addr.isDefault,
+                parsed: parsed
+              };
+            });
+            
+            setAddressOptions(testOptions);
+            setDefaultAddress(testOptions[0].parsed);
+            setSelectedAddressId(testOptions[0].id);
+            console.log('✅ Using test address data');
+            return;
+          }
+
+          const options: AddressOption[] = validAddresses.map((addr: any) => {
+            // 获取地址ID（支持多种字段名）
+            const addressId = addr.id || addr.addressId || addr.locationId;
+            // 获取地址文本（支持多种字段名）
+            const addressText = addr.locationText || addr.address || addr.fullAddress || addr.text;
+            // 获取默认状态（API返回的是defaultAddress字段）
+            const isDefault = addr.isDefault || addr.default || addr.defaultAddress || false;
+            
+            const parsed = addressService.parseAddressText(addressText);
+            console.log('Parsing address:', addressText, '->', parsed);
+            console.log('Address ID:', addressId, 'Is default:', isDefault);
+            return {
+              id: addressId,
+              locationText: addressText,
+              isDefault: isDefault,
+              parsed: parsed
+            };
+          });
+
+          setAddressOptions(options);
+
+          // 找到默认地址
+          const defaultAddr = options.find(addr => addr.isDefault);
+          if (defaultAddr) {
+            setDefaultAddress(defaultAddr.parsed);
+            setSelectedAddressId(defaultAddr.id);
+            console.log('✅ Set default address:', defaultAddr.parsed);
+          } else if (options.length > 0) {
+            // 如果没有默认地址，使用第一个地址
+            setDefaultAddress(options[0].parsed);
+            setSelectedAddressId(options[0].id);
+            console.log('⚠️ No default address, using first address:', options[0].parsed);
+          } else {
+            console.log('❌ Address list is empty');
+            setError('You have not added any addresses yet, please add an address first');
+          }
         } else {
-          // 没有默认地址时使用离线数据
-          loadOfflineAddress();
+          console.log('❌ Address data format error or empty:', addressData);
+          setError('Address data format error, please try again later');
         }
       } else {
-        // API返回失败时使用离线数据
-        loadOfflineAddress();
+        console.warn('❌ API call failed:', response);
+        setError(`Failed to get addresses: ${response?.message || 'Unknown error'}`);
       }
     } catch (error: any) {
-      console.error('Load default address error:', error);
-        setError('Failed to load address');
+      console.error('❌ Error loading addresses:', error);
+      setError(`Failed to load addresses: ${error.message || 'Network error'}`);
     } finally {
       setLoading(false);
     }
   };
 
-  // 加载离线地址数据
-  const loadOfflineAddress = () => {
-    const offlineAddress = {
-      street: '12 West Coast Road',
-      building: 'The Stellar #05-12',
-      postal: '126821',
-      city: 'Singapore'
-    };
-    setDefaultAddress(offlineAddress);
+  // 清除地址数据（不再使用硬编码的离线地址）
+  const clearAddressData = () => {
+    setDefaultAddress(null);
+    setAddressOptions([]);
+    setSelectedAddressId(null);
+  };
+
+  // 处理地址选择
+  const handleAddressSelect = (addressId: number) => {
+    const selectedAddress = addressOptions.find(addr => addr.id === addressId);
+    if (selectedAddress) {
+      setSelectedAddressId(addressId);
+      setDefaultAddress(selectedAddress.parsed);
+      setShowAddressDropdown(false); // 选择后关闭下拉菜单
+      console.log('Selected address:', selectedAddress.parsed);
+    }
+  };
+
+  // 切换下拉选择器显示状态
+  const toggleAddressDropdown = () => {
+    setShowAddressDropdown(!showAddressDropdown);
+  };
+
+  // 获取当前选中的地址
+  const getCurrentAddress = (): AddressOption | null => {
+    return addressOptions.find(addr => addr.id === selectedAddressId) || null;
+  };
+
+  // 刷新地址列表
+  const refreshAddresses = () => {
+    console.log('User manually refreshed address list');
+    loadDefaultAddress();
+  };
+
+  // 验证地址数据
+  const validateAddressData = (address: any): boolean => {
+    console.log('Validating address data:', address);
+    
+    if (!address || typeof address !== 'object') {
+      console.warn('Invalid address data - not an object:', address);
+      return false;
+    }
+
+    // Check if there is an id field (can be id, addressId, etc.)
+    const hasId = address.id || address.addressId || address.locationId;
+    if (!hasId) {
+      console.warn('Address missing ID field:', address);
+      return false;
+    }
+
+    // Check address text field (can be locationText, address, fullAddress, etc.)
+    const addressText = address.locationText || address.address || address.fullAddress || address.text;
+    if (!addressText) {
+      console.warn('Address missing text field:', address);
+      return false;
+    }
+
+    if (typeof addressText !== 'string' || addressText.trim().length === 0) {
+      console.warn('Invalid address text:', addressText);
+      return false;
+    }
+
+    console.log('✅ Address data validation passed:', { id: hasId, text: addressText });
+    return true;
   };
 
   // 加载钱包余额
@@ -251,12 +420,71 @@ const Checkout: React.FC = () => {
         <div className="checkout-grid">
           <section className="address-section">
             <div className="section-title center">Confirm Delivery Address</div>
-            <button className="manage-btn" onClick={() => navigate('/address-management')}>Manage Addresses</button>
+            <div className="address-controls">
+              <button className="manage-btn" onClick={() => navigate('/address-management')}>Manage Addresses</button>
+              <button className="refresh-btn" onClick={refreshAddresses} disabled={loading}>
+                {loading ? 'Loading...' : 'Refresh'}
+              </button>
+            </div>
             <div className="address-list">
               {loading ? (
-                <div className="address-card loading">Loading address...</div>
+                <div className="address-card loading">Loading addresses...</div>
               ) : error ? (
-                <div className="address-card error">{error}</div>
+                <div className="address-card error">
+                  <div className="error-message">{error}</div>
+                  <button className="retry-btn" onClick={refreshAddresses}>Retry</button>
+                </div>
+              ) : addressOptions.length > 0 ? (
+                <div className="address-display-container">
+                  {/* 显示当前选中的地址 */}
+                  <div className="current-address-card">
+                    <div className="address-header">
+                      <div className="address-label">
+                        {getCurrentAddress()?.isDefault ? 'Default Address' : 'Delivery Address'}
+                      </div>
+                      {addressOptions.length > 1 && (
+                        <button 
+                          className="change-address-btn"
+                          onClick={toggleAddressDropdown}
+                        >
+                          {showAddressDropdown ? 'Collapse' : 'Change Address'}
+                        </button>
+                      )}
+                    </div>
+                    <div className="address-details">
+                      <div className="address-line">{defaultAddress?.street}</div>
+                      <div className="address-line">{defaultAddress?.building}</div>
+                      <div className="address-line">{defaultAddress?.postal}</div>
+                      <div className="address-line">{defaultAddress?.city}</div>
+                    </div>
+                  </div>
+
+                  {/* 下拉选择器 */}
+                  {showAddressDropdown && addressOptions.length > 1 && (
+                    <div className="address-dropdown">
+                      <div className="dropdown-title">Select Other Address</div>
+                      {addressOptions
+                        .filter(addr => addr.id !== selectedAddressId)
+                        .map((address) => (
+                          <div 
+                            key={address.id} 
+                            className="dropdown-address-item"
+                            onClick={() => handleAddressSelect(address.id)}
+                          >
+                            <div className="dropdown-address-label">
+                              {address.isDefault ? 'Default Address' : 'Address'}
+                            </div>
+                            <div className="dropdown-address-details">
+                              <div className="address-line">{address.parsed.street}</div>
+                              <div className="address-line">{address.parsed.building}</div>
+                              <div className="address-line">{address.parsed.postal}</div>
+                              <div className="address-line">{address.parsed.city}</div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
               ) : defaultAddress ? (
                 <div className="address-card default-address">
                   <div className="address-label">Default Address</div>
@@ -269,7 +497,7 @@ const Checkout: React.FC = () => {
                 </div>
               ) : (
                 <div className="address-card no-address">
-                  <div className="no-address-text">No default address</div>
+                  <div className="no-address-text">No available addresses</div>
                   <button className="add-address-btn" onClick={() => navigate('/address-management')}>
                     Add Address
                   </button>
