@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import cartService from '../services/cartService';
 import '../styles/PaymentSuccess.css';
 
 interface OrderInfo {
@@ -26,6 +27,12 @@ const PaymentSuccess: React.FC = () => {
         const orderData = JSON.parse(lastOrderStr);
         setOrderInfo(orderData);
         console.log('Order information:', orderData);
+        
+        // 支付成功后，从购物车中移除已购买的商品
+        if (orderData.items && Array.isArray(orderData.items)) {
+          cartService.removePurchasedItems(orderData.items);
+          console.log('Removed purchased items from cart');
+        }
       } catch (error) {
         console.error('Failed to parse order information:', error);
       }
