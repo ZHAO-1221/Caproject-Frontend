@@ -247,11 +247,14 @@ class UserService {
       console.log('后端返回的头像数据:', response.data);
       
       if (response.data && Array.isArray(response.data)) {
-        // 后端返回的URL格式是 /avatars/image_xxx.png，需要转换为 /api/avatars/image_xxx.png
-        return response.data.map((item: any) => ({
-          id: item.id,
-          url: item.url.startsWith('/avatars/') ? `/api${item.url}` : item.url
-        }));
+        // 规范化后端返回的URL：去空格，缺少路径则补 /avatars/
+        return response.data.map((item: any) => {
+          const rawUrl: string = (item.url || '').toString().trim().replace(/\s+/g, '');
+          const normalized = rawUrl.startsWith('/avatars/')
+            ? rawUrl
+            : (rawUrl.includes('/') ? rawUrl : `/avatars/${rawUrl}`);
+          return { id: item.id, url: normalized.replace(/\/+/g, '/') };
+        });
       }
       
       // 如果后端返回格式不对，使用本地备用
@@ -270,21 +273,21 @@ class UserService {
    */
   private getLocalAvatars(): PresetAvatarItem[] {
     return [
-      { id: 1, url: '/api/images/image_001 .png' },
-      { id: 2, url: '/api/images/image_002.png' },
-      { id: 3, url: '/api/images/image_003.png' },
-      { id: 4, url: '/api/images/image_004.png' },
-      { id: 5, url: '/api/images/image_005.png' },
-      { id: 6, url: '/api/images/image_006.png' },
-      { id: 7, url: '/api/images/image_007.png' },
-      { id: 8, url: '/api/images/image_008.png' },
-      { id: 9, url: '/api/images/image_009.png' },
-      { id: 10, url: '/api/images/image_010.png' },
-      { id: 11, url: '/api/images/image_011.png' },
-      { id: 12, url: '/api/images/image_012.png' },
-      { id: 13, url: '/api/images/image_013.png' },
-      { id: 14, url: '/api/images/image_014.png' },
-      { id: 15, url: '/api/images/image_015.png' }
+      { id: 1, url: '/avatars/image_001.png' },
+      { id: 2, url: '/avatars/image_002.png' },
+      { id: 3, url: '/avatars/image_003.png' },
+      { id: 4, url: '/avatars/image_004.png' },
+      { id: 5, url: '/avatars/image_005.png' },
+      { id: 6, url: '/avatars/image_006.png' },
+      { id: 7, url: '/avatars/image_007.png' },
+      { id: 8, url: '/avatars/image_008.png' },
+      { id: 9, url: '/avatars/image_009.png' },
+      { id: 10, url: '/avatars/image_010.png' },
+      { id: 11, url: '/avatars/image_011.png' },
+      { id: 12, url: '/avatars/image_012.png' },
+      { id: 13, url: '/avatars/image_013.png' },
+      { id: 14, url: '/avatars/image_014.png' },
+      { id: 15, url: '/avatars/image_015.png' }
     ];
   }
 

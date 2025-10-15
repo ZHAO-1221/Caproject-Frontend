@@ -472,15 +472,11 @@ const PersonalInfo: React.FC = () => {
                       avatarList.map(item => {
                         // 清理URL中的空格
                         let displayUrl = item.url.replace(/\s+/g, '');
-                        
-                        // 如果 URL 不包含路径分隔符，说明只是文件名，使用 /avatars/ 前缀；否则对整条路径进行编码
+                        // 标准化：若无路径则加 /avatars/，再统一编码并去重斜杠
                         if (!displayUrl.includes('/')) {
-                          displayUrl = '/avatars/' + encodeURIComponent(displayUrl);
-                        } else {
-                          displayUrl = encodeURI(displayUrl);
+                          displayUrl = '/avatars/' + displayUrl;
                         }
-                        // 修复双斜杠问题
-                        displayUrl = displayUrl.replace(/\/+/g, '/');
+                        displayUrl = encodeURI(displayUrl).replace(/\/+/g, '/');
                         
                         console.log(`头像${item.id}显示URL:`, displayUrl, '原始URL:', item.url);
                         
