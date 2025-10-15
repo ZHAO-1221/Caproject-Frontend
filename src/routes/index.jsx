@@ -20,6 +20,9 @@ import HomePage from '../pages/HomePage';
 import AdminLogin from '../pages/AdminLogin';
 import LogoutSuccess from '../pages/LogoutSuccess';
 import EasterEgg from '../pages/EasterEgg';
+import ProductManagement from '../pages/ProductManagement';
+import ProductEdit from '../pages/ProductEdit';
+import ProductCreate from '../pages/ProductCreate';
 
 // 路由保护组件 - 检查用户是否已登录
 const ProtectedRoute = ({ children }) => {
@@ -87,6 +90,19 @@ const AppRoutes = () => {
           </PublicRoute>
         } 
       />
+        {/* 商品管理（管理员） */}
+        <Route
+            path="/product-management"
+            element={<ProductManagement />}
+        />
+        <Route
+            path="/product-edit/:productId"
+            element={<ProductEdit />}
+        />
+        <Route
+            path="/product-create"
+            element={<ProductCreate />}
+        />
       
       {/* 受保护的用户路由 */}
       <Route 
