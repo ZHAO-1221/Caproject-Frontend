@@ -3,30 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/Header.css';
 
 interface HeaderProps {
-  hideCart?: boolean;
   onSearch?: (query: string) => void;
   searchValue?: string;
   accountPath?: string; // 点击头像跳转路径，默认 /login
 }
 
-const Header: React.FC<HeaderProps> = ({ hideCart = false, onSearch, searchValue, accountPath = '/login' }) => {
+const Header: React.FC<HeaderProps> = ({ onSearch, searchValue, accountPath = '/login' }) => {
   const navigate = useNavigate();
   const [internalSearchQuery, setInternalSearchQuery] = useState('');
 
   // 使用外部传入的searchValue或内部状态
   const searchQuery = searchValue !== undefined ? searchValue : internalSearchQuery;
 
-  // 检查登录状态
-  const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
-
-  // 处理购物车点击
-  const handleCartClick = () => {
-    if (isLoggedIn) {
-      navigate('/cart');
-    } else {
-      navigate('/login');
-    }
-  };
+  // 已移除购物车功能
 
   // 处理搜索
   const handleSearch = (e: React.FormEvent) => {
@@ -61,11 +50,7 @@ const Header: React.FC<HeaderProps> = ({ hideCart = false, onSearch, searchValue
       <div className="home" onClick={() => navigate('/home')}>
         <img className="icon" src={`${process.env.PUBLIC_URL}/images/home-icon.svg`} alt="Home" />
       </div>
-      {!hideCart && (
-        <div className="shopping-cart" onClick={handleCartClick}>
-          <img className="div-icon" src={`${process.env.PUBLIC_URL}/images/cart-icon.svg`} alt="Shopping Cart" />
-        </div>
-      )}
+      {/* 购物车功能与图标已按需求移除 */}
       <div onClick={() => navigate(accountPath)} style={{ textDecoration: 'none' }}>
         <img className="account-circle-icon" src={`${process.env.PUBLIC_URL}/images/user-icon.svg`} alt="User Account" />
       </div>
