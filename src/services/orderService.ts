@@ -29,6 +29,7 @@ class OrderService {
     status: string;
     items: any[];
     productImage?: string;
+    userId?: number; // attach current user id for filtering
   }): void {
     try {
       const existing = localStorage.getItem(this.LOCAL_KEY);
@@ -47,6 +48,7 @@ class OrderService {
     status: string;
     items: any[];
     productImage?: string;
+    userId?: number;
   }> {
     try {
       const existing = localStorage.getItem(this.LOCAL_KEY);
@@ -55,6 +57,20 @@ class OrderService {
       console.error('Failed to read local order history', e);
       return [];
     }
+  }
+
+  // Helper to get orders by a specific user id
+  getLocalOrdersByUser(userId: number): Array<{
+    id: string;
+    amount: number;
+    orderTime: string;
+    status: string;
+    items: any[];
+    productImage?: string;
+    userId?: number;
+  }> {
+    const all = this.getLocalOrders();
+    return all.filter(o => o.userId === userId);
   }
 }
 

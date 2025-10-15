@@ -80,8 +80,13 @@ const OrderDetails: React.FC = () => {
     try {
       setLoading(true);
       setError('');
-      // 从本地订单历史中查找该订单
-      const localOrders = orderService.getLocalOrders();
+      // 从本地订单历史中查找该订单，仅限当前用户
+      const userStr = sessionStorage.getItem('user');
+      const currentUser = userStr ? JSON.parse(userStr) : null;
+      const currentUserId = currentUser?.userId;
+      const localOrders = Number.isFinite(currentUserId)
+        ? orderService.getLocalOrdersByUser(currentUserId)
+        : orderService.getLocalOrders();
       const found = localOrders.find(o => o.id === orderNumber);
       if (found) {
         const mapped: OrderDetails = {

@@ -143,4 +143,18 @@
 .review-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
 .review-body { font-size: 12px; color: #444; }
 
+/* Fixed, uniform sizing for review comment area across products */
+.reviews-list { max-width: 980px; width: 100%; }
+.review-card { width: 66.6667%; box-sizing: border-box; margin: 0 auto; }
+.review-body {
+  width: 100%;
+  max-height: 120px; /* limit height but allow shorter content */
+  overflow-y: auto; /* scroll if content exceeds fixed height */
+  overflow-x: hidden;
+  overflow-wrap: anywhere; /* robust wrapping for long words/URLs */
+  word-break: break-word; /* fallback for older browsers */
+  word-wrap: break-word;
+  white-space: normal;
+}
+
 

@@ -128,7 +128,22 @@ const ProductDetail: React.FC = () => {
             const d = String(dateObj.getDate()).padStart(2, '0');
             return `${y}-${m}-${d}`;
           };
-          const mapped: Review[] = res.data.map((rv: any) => {
+          const toTimestamp = (input: any): number => {
+            const d = new Date(input);
+            if (!isNaN(d.getTime())) return d.getTime();
+            const parts = String(input).split(/\D+/).filter(Boolean);
+            if (parts.length >= 3) {
+              const [y, m, day] = parts.map(Number);
+              return new Date(y, (m || 1) - 1, day || 1).getTime();
+            }
+            return 0;
+          };
+
+          const sorted = [...res.data].sort((a: any, b: any) =>
+            toTimestamp(b?.reviewCreateTime) - toTimestamp(a?.reviewCreateTime)
+          );
+
+          const mapped: Review[] = sorted.map((rv: any) => {
             const dateText = formatDateYMD(rv?.reviewCreateTime);
             return {
               id: rv.reviewId,

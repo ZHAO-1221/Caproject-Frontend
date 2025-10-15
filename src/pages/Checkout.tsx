@@ -359,13 +359,17 @@ const Checkout: React.FC = () => {
         // Save to local order history for Order History page
         try {
           const orderImage = items[0]?.image || '/images/placeholder.svg';
+          const userStr = sessionStorage.getItem('user');
+          const currentUser = userStr ? JSON.parse(userStr) : null;
+          const userId = currentUser?.userId;
           orderService.saveLocalOrder({
             id: paymentResult.transactionId || 'UNKNOWN',
             amount: grandTotal,
             orderTime: new Date().toISOString(),
             status: 'Completed',
             items: items,
-            productImage: orderImage
+            productImage: orderImage,
+            userId
           });
         } catch (e) {
           console.error('Failed to save order to local history', e);

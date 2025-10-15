@@ -61,8 +61,14 @@ const OrderHistory: React.FC = () => {
       setLoading(true);
       setError('');
 
-      // Load from local order history first
-      const localOrders = orderService.getLocalOrders();
+      // Load from local order history for current user only
+      const userStr = sessionStorage.getItem('user');
+      const currentUser = userStr ? JSON.parse(userStr) : null;
+      const currentUserId = currentUser?.userId;
+
+      const localOrders = Number.isFinite(currentUserId)
+        ? orderService.getLocalOrdersByUser(currentUserId)
+        : orderService.getLocalOrders();
       const mappedLocal: Order[] = localOrders.map((o, idx) => ({
         id: idx + 1,
         orderNumber: o.id,
