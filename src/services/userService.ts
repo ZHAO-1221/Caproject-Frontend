@@ -118,6 +118,26 @@ class UserService {
       
       // 后端直接返回用户对象，需要包装为期望的格式
       if (response.data && response.data.userId) {
+        // 如果更新了用户名，需要重新登录获取新的token
+        if (updates.userName) {
+          console.log('用户名已更新，需要重新登录获取新token');
+          try {
+            // 使用新用户名和默认密码重新登录
+            const loginResponse = await authService.login({
+              username: updates.userName,
+              password: '123456' // 使用默认密码
+            });
+            
+            if (loginResponse.success) {
+              console.log('重新登录成功，token已更新');
+            } else {
+              console.warn('重新登录失败，但用户信息已更新');
+            }
+          } catch (loginError) {
+            console.warn('重新登录时出错，但用户信息已更新:', loginError);
+          }
+        }
+        
         return {
           success: true,
           data: response.data
@@ -204,13 +224,71 @@ class UserService {
    * 获取预设头像列表
    */
   async listAvatars(): Promise<PresetAvatarItem[]> {
-    const response = await axios.get(AVATAR_API, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...authService.getAuthHeaders()
+    try {
+      console.log('=== 调用头像API ===');
+      console.log('API URL:', AVATAR_API);
+      
+      const authHeaders = authService.getAuthHeaders();
+      console.log('请求头:', authHeaders);
+      
+      // 检查是否有有效的认证信息
+      const token = sessionStorage.getItem('token');
+      const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+      console.log('登录状态:', isLoggedIn);
+      console.log('Token存在:', !!token);
+      
+      const response = await axios.get(AVATAR_API, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeaders
+        }
+      });
+      
+      console.log('后端返回的头像数据:', response.data);
+      
+      if (response.data && Array.isArray(response.data)) {
+        // 规范化后端返回的URL：去空格，缺少路径则补 /avatars/
+        return response.data.map((item: any) => {
+          const rawUrl: string = (item.url || '').toString().trim().replace(/\s+/g, '');
+          const normalized = rawUrl.startsWith('/avatars/')
+            ? rawUrl
+            : (rawUrl.includes('/') ? rawUrl : `/avatars/${rawUrl}`);
+          return { id: item.id, url: normalized.replace(/\/+/g, '/') };
+        });
       }
-    });
-    return response.data as PresetAvatarItem[];
+      
+      // 如果后端返回格式不对，使用本地备用
+      console.log('后端返回格式不对，使用本地备用头像');
+      return this.getLocalAvatars();
+    } catch (error: any) {
+      console.error('获取头像列表失败:', error);
+      console.error('错误详情:', error.response?.data);
+      console.log('使用本地备用头像');
+      return this.getLocalAvatars();
+    }
+  }
+
+  /**
+   * 获取本地备用头像列表（使用后端API路径）
+   */
+  private getLocalAvatars(): PresetAvatarItem[] {
+    return [
+      { id: 1, url: '/avatars/image_001.png' },
+      { id: 2, url: '/avatars/image_002.png' },
+      { id: 3, url: '/avatars/image_003.png' },
+      { id: 4, url: '/avatars/image_004.png' },
+      { id: 5, url: '/avatars/image_005.png' },
+      { id: 6, url: '/avatars/image_006.png' },
+      { id: 7, url: '/avatars/image_007.png' },
+      { id: 8, url: '/avatars/image_008.png' },
+      { id: 9, url: '/avatars/image_009.png' },
+      { id: 10, url: '/avatars/image_010.png' },
+      { id: 11, url: '/avatars/image_011.png' },
+      { id: 12, url: '/avatars/image_012.png' },
+      { id: 13, url: '/avatars/image_013.png' },
+      { id: 14, url: '/avatars/image_014.png' },
+      { id: 15, url: '/avatars/image_015.png' }
+    ];
   }
 
   /**

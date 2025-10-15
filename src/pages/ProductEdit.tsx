@@ -30,12 +30,7 @@ const ProductEdit: React.FC = () => {
   const [productImage, setProductImage] = useState<string | null>(null);
   
   // Additional product fields
-  const [brand, setBrand] = useState('');
   const [category, setCategory] = useState('');
-  const [sku, setSku] = useState('');
-  const [weight, setWeight] = useState('');
-  const [dimensions, setDimensions] = useState('');
-  const [additionalLabel, setAdditionalLabel] = useState('');
   
   // Reviews
   const [reviews, setReviews] = useState<Review[]>([
@@ -136,7 +131,11 @@ const ProductEdit: React.FC = () => {
             setDescription(product.productDescription || '');
             setStock(product.productStockQuantity?.toString() || '0');
             setCategory(product.productCategory || '');
-            setProductImage(product.imageUrl || null);
+            // 标准化图片URL：优先使用后端返回的 imageUrl（转相对路径），否则回退到按ID获取图片的接口
+            const normalizedImageUrl = product.imageUrl
+              ? product.imageUrl.replace(/http:\/\/[^:]+:8080/, '')
+              : (product.productId ? `/api/admin/products/image/${product.productId}` : null);
+            setProductImage(normalizedImageUrl);
             // Note: 后端没有discount, brand, sku, weight, dimensions等字段
             // 这些字段保持默认值或可以考虑从其他地方获取
           } else {
@@ -261,7 +260,7 @@ const ProductEdit: React.FC = () => {
   
   return (
     <div className="product-edit-page">
-      <Header hideCart={true} accountPath="/admin-login" />
+      <Header accountPath="/admin-login" />
       
       {/* Back Button */}
       <button className="back-button" onClick={() => navigate('/product-management')}>
@@ -313,9 +312,10 @@ const ProductEdit: React.FC = () => {
               <input
                 type="text"
                 value={productId}
-                onChange={(e) => setProductId(e.target.value)}
+                readOnly
                 className="product-id-input"
-                placeholder="Enter ID"
+                placeholder="Auto generated"
+                title="ID 由系统生成，管理员不可编辑"
               />
             </div>
             <div className="price-wrapper">
@@ -392,66 +392,6 @@ const ProductEdit: React.FC = () => {
                   <option value="electronics">electronics</option>
                   <option value="personalCare">personal care</option>
                 </select>
-              </div>
-              
-              {/* Label Input */}
-              <div className="dropdown-group">
-                <label className="dropdown-label">Label</label>
-                <input
-                  type="text"
-                  value={brand}
-                  onChange={(e) => setBrand(e.target.value)}
-                  className="custom-input"
-                  placeholder="Enter label"
-                />
-              </div>
-              
-              {/* Label Input */}
-              <div className="dropdown-group">
-                <label className="dropdown-label">Label</label>
-                <input
-                  type="text"
-                  value={sku}
-                  onChange={(e) => setSku(e.target.value)}
-                  className="custom-input"
-                  placeholder="Enter label"
-                />
-              </div>
-              
-              {/* Label Input */}
-              <div className="dropdown-group">
-                <label className="dropdown-label">Label</label>
-                <input
-                  type="text"
-                  value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
-                  className="custom-input"
-                  placeholder="Enter label"
-                />
-              </div>
-              
-              {/* Label Input */}
-              <div className="dropdown-group">
-                <label className="dropdown-label">Label</label>
-                <input
-                  type="text"
-                  value={dimensions}
-                  onChange={(e) => setDimensions(e.target.value)}
-                  className="custom-input"
-                  placeholder="Enter label"
-                />
-              </div>
-              
-              {/* Additional Label Input */}
-              <div className="dropdown-group">
-                <label className="dropdown-label">Label</label>
-                <input
-                  type="text"
-                  value={additionalLabel}
-                  onChange={(e) => setAdditionalLabel(e.target.value)}
-                  className="custom-input"
-                  placeholder="Enter label"
-                />
               </div>
             </div>
             

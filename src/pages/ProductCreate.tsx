@@ -22,19 +22,13 @@ const ProductCreate: React.FC = () => {
   // Form states
   const [productName, setProductName] = useState('');
   const [price, setPrice] = useState('');
-  const [productId, setProductId] = useState('');
   const [description, setDescription] = useState('');
   const [stock, setStock] = useState('0');
   const [discount, setDiscount] = useState('0');
   const [productImage, setProductImage] = useState<string | null>(null);
   
   // Additional product fields
-  const [brand, setBrand] = useState('');
   const [category, setCategory] = useState('');
-  const [sku, setSku] = useState('');
-  const [weight, setWeight] = useState('');
-  const [dimensions, setDimensions] = useState('');
-  const [additionalLabel, setAdditionalLabel] = useState('');
   
   // Reviews
   const [reviews, setReviews] = useState<Review[]>([
@@ -227,7 +221,7 @@ const ProductCreate: React.FC = () => {
   
   return (
     <div className="product-edit-page">
-      <Header hideCart={true} accountPath="/admin-login" />
+      <Header accountPath="/admin-login" />
       
       {/* Back Button */}
       <button className="back-button" onClick={() => navigate('/product-management')}>
@@ -278,10 +272,11 @@ const ProductCreate: React.FC = () => {
               <span className="product-id-label">Product ID:</span>
               <input
                 type="text"
-                value={productId}
-                onChange={(e) => setProductId(e.target.value)}
+              value=""
+              readOnly
                 className="product-id-input"
-                placeholder="Enter ID"
+              placeholder="Auto generated"
+              title="ID 由系统生成，管理员不可编辑"
               />
             </div>
             <div className="price-wrapper">
@@ -360,65 +355,7 @@ const ProductCreate: React.FC = () => {
                 </select>
               </div>
               
-              {/* Label Input */}
-              <div className="dropdown-group">
-                <label className="dropdown-label">Label</label>
-                <input
-                  type="text"
-                  value={brand}
-                  onChange={(e) => setBrand(e.target.value)}
-                  className="custom-input"
-                  placeholder="Enter label"
-                />
-              </div>
               
-              {/* Label Input */}
-              <div className="dropdown-group">
-                <label className="dropdown-label">Label</label>
-                <input
-                  type="text"
-                  value={sku}
-                  onChange={(e) => setSku(e.target.value)}
-                  className="custom-input"
-                  placeholder="Enter label"
-                />
-              </div>
-              
-              {/* Label Input */}
-              <div className="dropdown-group">
-                <label className="dropdown-label">Label</label>
-                <input
-                  type="text"
-                  value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
-                  className="custom-input"
-                  placeholder="Enter label"
-                />
-              </div>
-              
-              {/* Label Input */}
-              <div className="dropdown-group">
-                <label className="dropdown-label">Label</label>
-                <input
-                  type="text"
-                  value={dimensions}
-                  onChange={(e) => setDimensions(e.target.value)}
-                  className="custom-input"
-                  placeholder="Enter label"
-                />
-              </div>
-              
-              {/* Additional Label Input */}
-              <div className="dropdown-group">
-                <label className="dropdown-label">Label</label>
-                <input
-                  type="text"
-                  value={additionalLabel}
-                  onChange={(e) => setAdditionalLabel(e.target.value)}
-                  className="custom-input"
-                  placeholder="Enter label"
-                />
-              </div>
             </div>
             
             {/* Submit Button */}
