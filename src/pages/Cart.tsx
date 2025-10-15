@@ -4,12 +4,28 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import cartService, { CartItem } from '../services/cartService';
 import productService from '../services/productService';
+import { BACKEND_URL } from '../config/backend';
 import '../styles/Cart.css';
 
 const CURRENCY = '$';
 
 function formatMoney(value: number): string {
   return `${CURRENCY}${value.toFixed(2)}`;
+}
+
+function getImageUrl(imageUrl?: string): string {
+  if (!imageUrl) return '/images/placeholder.svg';
+  
+  // Handle image URL - use backend URL directly
+  if (imageUrl.startsWith('http://')) {
+    // Use absolute URL directly (replace with correct backend IP)
+    return imageUrl.replace(/http:\/\/[^:]+:8080/, BACKEND_URL);
+  } else if (imageUrl.startsWith('/images/')) {
+    // Convert relative URL to absolute backend URL
+    return `${BACKEND_URL}${imageUrl}`;
+  }
+  
+  return imageUrl;
 }
 
 const Cart: React.FC = () => {
@@ -88,7 +104,7 @@ const Cart: React.FC = () => {
                   />
                 </label>
                 <div className="cart-item-thumb">
-                  <img src={item.image || "/images/placeholder.svg"} alt={item.name} />
+                  <img src={getImageUrl(item.image) || "/images/placeholder.svg"} alt={item.name} />
                 </div>
                 <div className="cart-item-info">
                   <div className="cart-item-name">{item.name}</div>

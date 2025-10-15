@@ -72,11 +72,15 @@ class PaymentService {
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
-        return user.userId || 100052; // 默认用户ID
+        console.log('=== 获取用户ID调试信息 ===');
+        console.log('用户数据:', user);
+        console.log('用户ID字段:', user.userId || user.id);
+        return user.userId || user.id || 100052; // 默认用户ID
       } catch (error) {
         console.error('Error parsing user data:', error);
       }
     }
+    console.log('未找到用户数据，使用默认用户ID: 100052');
     return 100052; // 默认用户ID
   }
 
@@ -232,6 +236,28 @@ class PaymentService {
     console.log('=== Syncing wallet balance from backend ===');
     this.clearWalletBalanceCache();
     return await this.getWalletBalance(true);
+  }
+
+  /**
+   * 强制刷新钱包余额（清除缓存并重新获取）
+   */
+  async forceRefreshWalletBalance(): Promise<WalletBalanceResponse> {
+    console.log('=== 强制刷新钱包余额 ===');
+    // 清除所有相关缓存
+    this.clearWalletBalanceCache();
+    sessionStorage.removeItem('user_wallet_balance');
+    localStorage.removeItem('user_wallet_balance');
+    
+    // 强制从后端获取最新数据
+    const result = await this.getWalletBalance(true);
+    
+    if (result.success && result.balance !== undefined) {
+      console.log('✅ 钱包余额刷新成功:', result.balance);
+    } else {
+      console.error('❌ 钱包余额刷新失败:', result.message);
+    }
+    
+    return result;
   }
 
   /**

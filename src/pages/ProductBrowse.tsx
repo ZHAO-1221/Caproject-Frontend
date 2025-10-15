@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import productService, { Product } from '../services/productService';
+import { BACKEND_URL } from '../config/backend';
 import '../styles/ProductBrowse.css';
 
 // Product interface is imported from productService
@@ -99,10 +100,22 @@ const ProductBrowse: React.FC = () => {
         if (response.success && Array.isArray(response.data)) {
           // Transform API data to match our interface
           const transformedProducts = response.data.map((product: any) => {
-                   // Convert absolute image URL to relative URL for proxy access
-                   const imageUrl = product.imageUrl ? 
-                     product.imageUrl.replace(/http:\/\/[^:]+:8080/, '') : 
-                     '/images/placeholder.svg';
+                   // Handle image URL - use backend URL directly
+                   let imageUrl = '/images/placeholder.svg'; // default fallback
+                   if (product.imageUrl) {
+                     if (product.imageUrl.startsWith('http://')) {
+                       // Use absolute URL directly (replace with correct backend IP)
+                       imageUrl = product.imageUrl.replace(/http:\/\/[^:]+:8080/, BACKEND_URL);
+                     } else if (product.imageUrl.startsWith('/images/')) {
+                       // Check if it's the non-existent placeholder, use frontend placeholder instead
+                       if (product.imageUrl === '/images/product-placeholder.jpg') {
+                         imageUrl = '/images/placeholder.svg';
+                       } else {
+                         // Convert relative URL to absolute backend URL
+                         imageUrl = `${BACKEND_URL}${product.imageUrl}`;
+                       }
+                     }
+                   }
             
             return {
               productId: product.productId,

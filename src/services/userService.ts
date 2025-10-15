@@ -118,24 +118,9 @@ class UserService {
       
       // 后端直接返回用户对象，需要包装为期望的格式
       if (response.data && response.data.userId) {
-        // 如果更新了用户名，需要重新登录获取新的token
+        // 用户名更新完成，不需要重新登录
         if (updates.userName) {
-          console.log('用户名已更新，需要重新登录获取新token');
-          try {
-            // 使用新用户名和默认密码重新登录
-            const loginResponse = await authService.login({
-              username: updates.userName,
-              password: '123456' // 使用默认密码
-            });
-            
-            if (loginResponse.success) {
-              console.log('重新登录成功，token已更新');
-            } else {
-              console.warn('重新登录失败，但用户信息已更新');
-            }
-          } catch (loginError) {
-            console.warn('重新登录时出错，但用户信息已更新:', loginError);
-          }
+          console.log('用户名已更新，更新完成');
         }
         
         return {
@@ -167,18 +152,46 @@ class UserService {
    */
   async updatePassword(passwordData: UpdatePasswordRequest): Promise<UserProfileResponse> {
     try {
-      const response = await axios.put(`${API_BASE_URL}/password`, passwordData, {
+      console.log('=== UserService.updatePassword 调试信息 ===');
+      console.log('密码更新数据:', { username: passwordData.username, oldPassword: '***', newPassword: '***' });
+      
+      // 使用 /api/users/me 端点更新密码
+      const response = await axios.put(`${API_BASE_URL}/me`, {
+        userPassword: passwordData.newPassword
+      }, {
         headers: {
           'Content-Type': 'application/json',
           ...authService.getAuthHeaders()
         }
       });
-      return response.data;
-    } catch (error: any) {
-      if (error.response) {
-        return error.response.data;
+      
+      console.log('密码更新响应:', response.data);
+      
+      // 后端直接返回用户对象，需要包装为期望的格式
+      if (response.data && response.data.userId) {
+        return {
+          success: true,
+          data: response.data,
+          message: '密码更新成功'
+        };
+      } else {
+        return {
+          success: false,
+          message: '密码更新失败'
+        };
       }
-      throw new Error('网络错误，请稍后重试');
+    } catch (error: any) {
+      console.error('密码更新错误:', error);
+      if (error.response) {
+        return {
+          success: false,
+          message: error.response.data?.message || '密码更新失败'
+        };
+      }
+      return {
+        success: false,
+        message: '网络错误，请稍后重试'
+      };
     }
   }
 

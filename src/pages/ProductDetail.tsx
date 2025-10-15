@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import cartService from '../services/cartService';
 import productService, { Product as ApiProduct } from '../services/productService';
+import { BACKEND_URL } from '../config/backend';
 import '../styles/ProductDetail.css';
 
 interface Product {
@@ -50,10 +51,17 @@ const ProductDetail: React.FC = () => {
         
         if (response.success && response.data) {
           const apiProduct = response.data as any;
-                 // Convert absolute image URL to relative URL for proxy access
-                 const imageUrl = apiProduct.imageUrl ? 
-                   apiProduct.imageUrl.replace(/http:\/\/[^:]+:8080/, '') : 
-                   '/images/placeholder.svg';
+                 // Handle image URL - use backend URL directly
+                 let imageUrl = '/images/placeholder.svg';
+                 if (apiProduct.imageUrl) {
+                   if (apiProduct.imageUrl.startsWith('http://')) {
+                     // Use absolute URL directly (replace with correct backend IP)
+                     imageUrl = apiProduct.imageUrl.replace(/http:\/\/[^:]+:8080/, BACKEND_URL);
+                   } else if (apiProduct.imageUrl.startsWith('/images/')) {
+                     // Convert relative URL to absolute backend URL
+                     imageUrl = `${BACKEND_URL}${apiProduct.imageUrl}`;
+                   }
+                 }
           
           const transformedProduct = {
             id: apiProduct.productId,

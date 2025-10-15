@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import userService, { PresetAvatarItem } from '../services/userService';
 import addressService from '../services/addressService';
+import authService from '../services/authService';
+import { logNetworkRequest, logNetworkResponse, logNetworkError } from '../utils/networkDebug';
 import '../styles/PersonalInfo.css';
 
 interface UserInfo {
@@ -305,21 +307,80 @@ const PersonalInfo: React.FC = () => {
         updates.userName = editValue;
       } else if (field === 'password') {
         // 密码更新需要特殊处理
+        const currentUsername = userService.getCurrentUsername();
+        if (!currentUsername) {
+          setError('无法获取当前用户信息');
+          setEditingField(null);
+          setEditValue('');
+          return;
+        }
+
+        // 获取当前密码
         const oldPassword = prompt('请输入当前密码：');
         if (!oldPassword) {
           setEditingField(null);
           setEditValue('');
           return;
         }
-        const newPassword = prompt('请输入新密码：');
+
+        // 获取新密码
+        const newPassword = prompt('请输入新密码（至少6位）：');
         if (!newPassword) {
           setEditingField(null);
           setEditValue('');
           return;
         }
-        updates.userPassword = newPassword;
-        // 这里需要调用密码更新API，暂时跳过
-        alert('密码更新功能需要单独实现');
+
+        // 验证新密码长度
+        if (newPassword.length < 6) {
+          alert('新密码长度至少需要6位！');
+          setEditingField(null);
+          setEditValue('');
+          return;
+        }
+
+        // 确认新密码
+        const confirmPassword = prompt('请再次输入新密码：');
+        if (!confirmPassword) {
+          setEditingField(null);
+          setEditValue('');
+          return;
+        }
+
+        // 验证两次输入的新密码是否一致
+        if (newPassword !== confirmPassword) {
+          alert('两次输入的新密码不一致，请重新操作！');
+          setEditingField(null);
+          setEditValue('');
+          return;
+        }
+
+        try {
+          // 调用密码更新API
+          const passwordResponse = await userService.updatePassword({
+            username: currentUsername,
+            oldPassword: oldPassword,
+            newPassword: newPassword
+          });
+
+          if (passwordResponse.success) {
+            alert('密码更新成功！\n\n为了安全起见，您需要重新登录。\n\n点击确定后将跳转到登录页面。');
+            
+            // 清除当前认证信息
+            sessionStorage.removeItem('user');
+            sessionStorage.removeItem('isLoggedIn');
+            sessionStorage.removeItem('token');
+            
+            // 跳转到登录页面
+            navigate('/login', { replace: true });
+          } else {
+            alert(`密码更新失败：${passwordResponse.message || '未知错误'}`);
+          }
+        } catch (error: any) {
+          console.error('密码更新错误:', error);
+          alert(`密码更新失败：${error.message || '网络错误，请稍后重试'}`);
+        }
+
         setEditingField(null);
         setEditValue('');
         return;
@@ -338,6 +399,25 @@ const PersonalInfo: React.FC = () => {
           ...(field === 'introduce' && { introduce: editValue }),
           ...(field === 'name' && { name: editValue })
         }));
+        
+        // 如果更新了用户名，弹出alert提醒重新登录
+        if (field === 'name') {
+          console.log('用户名已更新，需要重新登录');
+          setSuccess('用户名更新成功');
+          
+          // 弹出alert提醒用户重新登录
+          alert('用户名已更新成功！\n\n由于安全原因，您需要重新登录以获取新的认证令牌。\n\n点击确定后将跳转到登录页面。');
+          
+          // 清除当前认证信息
+          sessionStorage.removeItem('user');
+          sessionStorage.removeItem('isLoggedIn');
+          sessionStorage.removeItem('token');
+          
+          // 跳转到登录页面
+          navigate('/login', { replace: true });
+          return; // 提前返回，不执行后续的成功提示
+        }
+        
         setSuccess('更新成功');
         setTimeout(() => setSuccess(''), 3000);
       } else {
