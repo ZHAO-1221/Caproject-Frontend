@@ -141,7 +141,7 @@ const PersonalInfo: React.FC = () => {
       console.log('头像列表长度:', list.length);
       
       // 如果后端返回的数据有问题，使用本地头像列表作为备用
-      if (!list || list.length === 0 || list.every(item => item.url === list[0].url)) {
+      if (!list || list.length === 0 || list.every((item: PresetAvatarItem) => item.url === list[0].url)) {
         console.log('后端返回的头像列表有问题，使用本地头像列表');
         const localAvatars = [
           { id: 1, url: 'image_001 .png' },
@@ -164,7 +164,7 @@ const PersonalInfo: React.FC = () => {
         return;
       }
       
-      list.forEach((item, index) => {
+      list.forEach((item: PresetAvatarItem, index: number) => {
         console.log(`头像${index + 1}:`, {
           id: item.id,
           url: item.url,
