@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import cartService from '../services/cartService';
 import '../styles/PaymentSuccess.css';
 
 interface OrderInfo {
@@ -9,6 +10,7 @@ interface OrderInfo {
   amount: number;
   paymentMethod: string;
   items: any[];
+  newWalletBalance?: number;
   timestamp: string;
 }
 
@@ -25,6 +27,12 @@ const PaymentSuccess: React.FC = () => {
         const orderData = JSON.parse(lastOrderStr);
         setOrderInfo(orderData);
         console.log('Order information:', orderData);
+        
+        // 支付成功后，从购物车中移除已购买的商品
+        if (orderData.items && Array.isArray(orderData.items)) {
+          cartService.removePurchasedItems(orderData.items);
+          console.log('Removed purchased items from cart');
+        }
       } catch (error) {
         console.error('Failed to parse order information:', error);
       }
@@ -88,6 +96,12 @@ const PaymentSuccess: React.FC = () => {
                 <span className="label">Payment Time:</span>
                 <span className="value">{new Date(orderInfo.timestamp).toLocaleString('en-US')}</span>
               </div>
+              {orderInfo.paymentMethod === 'wallet' && orderInfo.newWalletBalance !== undefined && (
+                <div className="order-info-item">
+                  <span className="label">Remaining Wallet Balance:</span>
+                  <span className="value">${orderInfo.newWalletBalance.toFixed(2)}</span>
+                </div>
+              )}
             </div>
           )}
         </div>

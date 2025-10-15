@@ -93,6 +93,12 @@ class CartService {
     localStorage.removeItem(this.cartKey);
   }
 
+  // 立即清空当前购物车（用于初始化）
+  clearCurrentCart(): void {
+    localStorage.removeItem(this.cartKey);
+    console.log('Current cart cleared');
+  }
+
   // 保存购物车数据
   private saveCartItems(items: CartItem[]): void {
     try {
@@ -114,6 +120,18 @@ class CartService {
     return cartItems
       .filter(item => item.selected)
       .reduce((total, item) => total + (item.price * item.qty), 0);
+  }
+
+  // 移除已购买的商品（支付成功后调用）
+  removePurchasedItems(purchasedItems: CartItem[]): void {
+    const cartItems = this.getCartItems();
+    const purchasedIds = purchasedItems.map(item => item.id);
+    
+    // 过滤掉已购买的商品
+    const remainingItems = cartItems.filter(item => !purchasedIds.includes(item.id));
+    
+    this.saveCartItems(remainingItems);
+    console.log(`Removed ${purchasedItems.length} purchased items from cart. Remaining items: ${remainingItems.length}`);
   }
 }
 
