@@ -288,7 +288,6 @@
   border-color: #dee2e6;
 }
 
-
 /* Product Grid */
 .product-grid {
   display: grid;
@@ -320,8 +319,8 @@
 
 .product-image {
   width: 100% !important;
-  height: 0 !important;
-  padding-bottom: 100% !important; /* Creates a square aspect ratio */
+  height: 100% !important;
+  padding-bottom: 100% !important;
   position: relative !important;
   background: #f8f9fa !important;
   border-radius: 6px !important;
@@ -373,6 +372,7 @@
   max-height: 60px !important;
   display: -webkit-box !important;
   -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
   -webkit-box-orient: vertical !important;
 }
 
