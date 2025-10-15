@@ -20,10 +20,35 @@ const OrderHistory: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [userInfo, setUserInfo] = useState({
+    name: 'User',
+    avatar: '/images/user-avatar.svg'
+  });
 
   useEffect(() => {
     loadOrders();
+    loadUserProfile();
   }, []);
+
+  const loadUserProfile = async () => {
+    try {
+      const profile = await userService.getUserProfile('');
+      let avatarUrl = '/images/user-avatar.svg';
+      if (profile.data?.userProfileUrl) {
+        let cleanUrl = profile.data.userProfileUrl.replace(/\s+/g, '');
+        if (!cleanUrl.includes('/')) {
+          cleanUrl = '/images/' + cleanUrl;
+        }
+        avatarUrl = cleanUrl.replace(/\/+/g, '/');
+      }
+      setUserInfo({
+        name: profile.data?.userName || 'User',
+        avatar: avatarUrl
+      });
+    } catch (error) {
+      console.log('加载用户信息失败:', error);
+    }
+  };
 
   const loadOrders = async () => {
     try {
@@ -66,9 +91,16 @@ const OrderHistory: React.FC = () => {
         <div className="sidebar">
           <div className="profile-section">
             <div className="profile-picture">
-              <img src="/images/user-avatar.svg" alt="User Avatar" />
+              <img 
+                key={userInfo.avatar}
+                src={userInfo.avatar} 
+                alt="User Avatar"
+                onError={(e) => {
+                  e.currentTarget.src = '/images/user-avatar.svg';
+                }}
+              />
             </div>
-            <div className="profile-name">Tina</div>
+            <div className="profile-name">{userInfo.name}</div>
           </div>
           <div className="nav-menu">
             <button className="nav-item" onClick={() => navigate('/personal-info')}>

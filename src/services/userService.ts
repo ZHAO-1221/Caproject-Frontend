@@ -1,6 +1,7 @@
 import axios from 'axios';
 import authService from './authService';
 const API_BASE_URL = '/api/users';
+const AVATAR_API = '/api/avatars';
 
 export interface UserProfile {
   userId: number;
@@ -39,6 +40,11 @@ export interface UpdatePasswordRequest {
   username: string;
   oldPassword: string;
   newPassword: string;
+}
+
+export interface PresetAvatarItem {
+  id: number;
+  url: string;
 }
 
 class UserService {
@@ -140,6 +146,35 @@ class UserService {
       }
       throw new Error('网络错误，请稍后重试');
     }
+  }
+
+  /**
+   * 获取预设头像列表
+   */
+  async listAvatars(): Promise<PresetAvatarItem[]> {
+    const response = await axios.get(AVATAR_API, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...authService.getAuthHeaders()
+      }
+    });
+    return response.data as PresetAvatarItem[];
+  }
+
+  /**
+   * 通过文件名更新头像（后端会拼接为 /avatars/<filename>）
+   */
+  async updateAvatarByFilename(filename: string): Promise<UserProfileResponse> {
+    const response = await axios.put(`${API_BASE_URL}/me/avatar`, { filename }, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...authService.getAuthHeaders()
+      }
+    });
+    if (response.data && response.data.userId) {
+      return { success: true, data: response.data };
+    }
+    return { success: false, message: '更新失败' };
   }
 
   /**

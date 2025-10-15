@@ -6,13 +6,6 @@ import productService from '../services/productService';
 import authService from '../services/authService';
 import '../styles/ProductReview.css';
 
-interface ProductInfo {
-  id: number;
-  title: string;
-  description: string;
-  price: number;
-  image: string;
-}
 
 interface ReviewForm {
   rating: number;
@@ -66,7 +59,7 @@ const ProductReview: React.FC = () => {
     // 按优先级提供多种候选
     if (imgFallbackStep === 0 && productDetail?.imageUrl) return normalizeImageUrl(productDetail.imageUrl);
     if (imgFallbackStep === 1) return `/api/images/${fileName}`; // 走后端同域代理
-    if (imgFallbackStep === 2) return `http://192.168.81.86:8080/images/${fileName}`; // 明确后端地址
+    if (imgFallbackStep === 2) return `http://172.20.10.11:8080/images/${fileName}`; // 明确后端地址
     return '/images/placeholder.svg';
   };
 

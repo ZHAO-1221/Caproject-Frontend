@@ -1,7 +1,7 @@
 .header {
   position: fixed;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 64px;
   background: #fff;
@@ -66,7 +66,7 @@
 
 .shopping-cart {
   position: absolute;
-  top: 0px;
+  top: 0;
   right: 12px;
   width: 64px;
   height: 64px;
@@ -95,7 +95,7 @@
 
 .account-circle-icon {
   position: absolute;
-  top: 0px;
+  top: 0;
   right: 72px;
   width: 64px;
   height: 64px;
@@ -114,7 +114,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0px 12px 0px 16px;
+  padding: 0 12px 0 16px;
   box-sizing: border-box;
   gap: 8px;
   border-radius: 22px;
@@ -148,7 +148,7 @@
   text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
-  mix-blend-mode: linear-burn;
+  /* mix-blend-mode: linear-burn; */
   z-index: 2;
 }
 
@@ -196,4 +196,3 @@
   max-height: 100%;
   object-fit: contain;
 }
-
