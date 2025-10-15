@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
+import Header from '../components/AdminHeader';
 import Footer from '../components/Footer';
 import '../styles/AdminLogin.css';
+import { adminLogin } from '../services/AdminService';
 
 interface AdminLoginForm {
   employeeNumber: string;
@@ -20,7 +21,7 @@ const AdminLogin: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev: AdminLoginForm) => ({
       ...prev,
       [name]: value
     }));
@@ -36,12 +37,23 @@ const AdminLogin: React.FC = () => {
     }
 
     setLoading(true);
-    // TODO: Implement admin login API call
-    setTimeout(() => {
+    try {
+      const result = await adminLogin(
+        formData.employeeNumber,
+        formData.password
+      );
+
+      if (result.success) {
+        alert('Admin login successful!');
+        navigate('/product-management');
+      } else {
+        setError(result.message || 'Login failed');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Network error');
+    } finally {
       setLoading(false);
-      // For demo purposes, redirect to admin dashboard
-      alert('Admin login successful!');
-    }, 1000);
+    }
   };
 
   return (
