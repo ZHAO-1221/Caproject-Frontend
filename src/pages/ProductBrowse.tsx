@@ -186,6 +186,12 @@ const ProductBrowse: React.FC = () => {
   // Get filtered and sorted products
   const getFilteredProducts = () => {
     let filtered = products.filter(product => {
+      // Filter by visibility - only show visible products
+      const isVisible = product.isVisible === 1;
+      
+      // Filter by stock - hide products with stock 0
+      const hasStock = product.productStockQuantity > 0;
+      
       // Filter by price range
       const inPriceRange = product.productPrice >= filters.priceRange[0] && product.productPrice <= filters.priceRange[1];
       
@@ -219,7 +225,7 @@ const ProductBrowse: React.FC = () => {
       // Filter by search query
       const searchMatch = !searchQuery || product.productName.toLowerCase().includes(searchQuery.toLowerCase());
       
-      return inPriceRange && categoryMatch && searchMatch;
+      return isVisible && hasStock && inPriceRange && categoryMatch && searchMatch;
     });
 
     // Sort products

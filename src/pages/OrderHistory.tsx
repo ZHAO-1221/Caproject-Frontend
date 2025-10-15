@@ -25,6 +25,12 @@ const OrderHistory: React.FC = () => {
     avatar: '/images/user-avatar.svg'
   });
 
+  const formatPrice = (value: number | string): string => {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    if (!isFinite(num)) return '0.00';
+    return num.toFixed(2);
+  };
+
   useEffect(() => {
     loadOrders();
     loadUserProfile();
@@ -136,7 +142,7 @@ const OrderHistory: React.FC = () => {
                     <div className="order-time">Order Time: {order.orderTime}</div>
                     <div className="order-status">Status: {order.status}</div>
                   </div>
-                  <div className="order-price">${order.price}</div>
+                  <div className="order-price">${formatPrice(order.price)}</div>
                 </div>
               ))
             )}

@@ -382,7 +382,6 @@ const ProductManagement: React.FC = () => {
   return (
     <div className="product-management-page">
       <Header 
-        hideCart={true} 
         onSearch={setLocalSearchQuery}
         searchValue={localSearchQuery}
         accountPath="/admin-login"

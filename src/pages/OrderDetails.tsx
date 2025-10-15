@@ -30,18 +30,18 @@ const OrderDetails: React.FC = () => {
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [userInfo, setUserInfo] = useState({
+    name: 'User',
+    avatar: '/images/user-avatar.svg'
+  });
 
-  const getImageCode = (url: string | undefined): string => {
-    if (!url) return '';
-    try {
-      // 提取 URL 或相对路径中的文件名，例如 200012.png
-      const pathname = url.replace(/^https?:\/\/[^/]+/, '');
-      const parts = pathname.split('?')[0].split('#')[0].split('/').filter(Boolean);
-      return parts.length ? parts[parts.length - 1] : '';
-    } catch {
-      return '';
-    }
+  const formatPrice = (value: number | string): string => {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    if (!isFinite(num)) return '0.00';
+    return num.toFixed(2);
   };
+
+  
 
   useEffect(() => {
     if (orderId) {
@@ -51,6 +51,30 @@ const OrderDetails: React.FC = () => {
       setLoading(false);
     }
   }, [orderId]);
+
+  useEffect(() => {
+    loadUserProfile();
+  }, []);
+
+  const loadUserProfile = async () => {
+    try {
+      const profile = await userService.getUserProfile('');
+      let avatarUrl = '/images/user-avatar.svg';
+      if (profile.data?.userProfileUrl) {
+        let cleanUrl = profile.data.userProfileUrl.replace(/\s+/g, '');
+        if (!cleanUrl.includes('/')) {
+          cleanUrl = '/images/' + cleanUrl;
+        }
+        avatarUrl = cleanUrl.replace(/\/+/g, '/');
+      }
+      setUserInfo({
+        name: profile.data?.userName || 'User',
+        avatar: avatarUrl
+      });
+    } catch (e) {
+      console.log('加载用户信息失败:', e);
+    }
+  };
 
   const loadOrderDetails = async (orderNumber: string) => {
     try {
@@ -107,19 +131,14 @@ const OrderDetails: React.FC = () => {
           <div className="sidebar">
             <div className="profile-section">
               <div className="profile-picture">
-                <img src="/images/user-avatar.svg" alt="User Avatar" />
+                <img
+                  key={userInfo.avatar}
+                  src={userInfo.avatar}
+                  alt="User Avatar"
+                  onError={(e) => { e.currentTarget.src = '/images/user-avatar.svg'; }}
+                />
               </div>
-              <div className="profile-name">Tina</div>
-            </div>
-            <div className="nav-menu">
-              <button className="nav-item" onClick={() => navigate('/personal-info')}>
-                Account
-              </button>
-              <button className="nav-item active" onClick={() => navigate('/order-history')}>Orders</button>
-              <button className="nav-item" onClick={() => navigate('/address-management')}>
-                Manage Addresses
-              </button>
-              <button className="nav-item" onClick={handleLogout}>Sign out</button>
+              <div className="profile-name">{userInfo.name}</div>
             </div>
           </div>
           <div className="content-area">
@@ -139,25 +158,21 @@ const OrderDetails: React.FC = () => {
           <div className="sidebar">
             <div className="profile-section">
               <div className="profile-picture">
-                <img src="/images/user-avatar.svg" alt="User Avatar" />
+                <img
+                  key={userInfo.avatar}
+                  src={userInfo.avatar}
+                  alt="User Avatar"
+                  onError={(e) => { e.currentTarget.src = '/images/user-avatar.svg'; }}
+                />
               </div>
-              <div className="profile-name">Tina</div>
-            </div>
-            <div className="nav-menu">
-              <button className="nav-item" onClick={() => navigate('/personal-info')}>
-                Account
-              </button>
-              <button className="nav-item active" onClick={() => navigate('/order-history')}>Orders</button>
-              <button className="nav-item" onClick={() => navigate('/address-management')}>
-                Manage Addresses
-              </button>
-              <button className="nav-item" onClick={handleLogout}>Sign out</button>
+              <div className="profile-name">{userInfo.name}</div>
             </div>
           </div>
           <div className="content-area">
             <div className="error-message">{error}</div>
-            <button className="back-button" onClick={handleBackToOrders}>
-              Back to Order List
+            <button className="order-back-button" onClick={handleBackToOrders}>
+              <span className="arrow">←</span>
+              back
             </button>
           </div>
         </div>
@@ -178,27 +193,23 @@ const OrderDetails: React.FC = () => {
         <div className="sidebar">
           <div className="profile-section">
             <div className="profile-picture">
-              <img src="/images/user-avatar.svg" alt="User Avatar" />
+              <img
+                key={userInfo.avatar}
+                src={userInfo.avatar}
+                alt="User Avatar"
+                onError={(e) => { e.currentTarget.src = '/images/user-avatar.svg'; }}
+              />
             </div>
-            <div className="profile-name">Tina</div>
-          </div>
-          <div className="nav-menu">
-            <button className="nav-item" onClick={() => navigate('/personal-info')}>
-              Account
-            </button>
-            <button className="nav-item active">Orders</button>
-            <button className="nav-item" onClick={() => navigate('/address-management')}>
-              Manage Addresses
-            </button>
-            <button className="nav-item" onClick={handleLogout}>Sign out</button>
+            <div className="profile-name">{userInfo.name}</div>
           </div>
         </div>
         
         <div className="content-area">
           <div className="page-header">
             <h1 className="page-title">Order Details</h1>
-            <button className="back-button" onClick={handleBackToOrders}>
-              ← Back to Order List
+            <button className="order-back-button" onClick={handleBackToOrders}>
+              <span className="arrow">←</span>
+              back
             </button>
           </div>
           
@@ -212,7 +223,7 @@ const OrderDetails: React.FC = () => {
               </div>
               <div className="order-total">
                 <div className="total-label">Total</div>
-                <div className="total-price">${order.totalPrice}</div>
+                <div className="total-price">${formatPrice(order.totalPrice)}</div>
               </div>
             </div>
 
@@ -227,10 +238,9 @@ const OrderDetails: React.FC = () => {
                     </div>
                     <div className="item-details">
                       <div className="item-name">{item.productName}</div>
-                      <div className="item-image-code">Image Code: {getImageCode(item.productImage)}</div>
                     </div>
                     <div className="item-price-quantity">
-                      <div className="item-price">${item.unitPrice}</div>
+                      <div className="item-price">${formatPrice(item.unitPrice)}</div>
                       <div className="item-quantity">Quantity: {item.quantity}</div>
                     </div>
                     <div className="item-actions">
@@ -254,7 +264,7 @@ const OrderDetails: React.FC = () => {
               </div>
               <div className="summary-row total-row">
                 <span className="summary-label">Order Total:</span>
-                <span className="summary-value total-price">${order.totalPrice}</span>
+                <span className="summary-value total-price">${formatPrice(order.totalPrice)}</span>
               </div>
             </div>
           </div>

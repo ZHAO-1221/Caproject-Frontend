@@ -264,6 +264,10 @@ const ProductDetail: React.FC = () => {
                 <div className="stock-section">
                   {!product.inStock ? (
                     <span className="stock-status">Out of Stock</span>
+                  ) : product.stockQuantity !== undefined && product.stockQuantity < 5 ? (
+                    <span className="stock-status">
+                      Low Stocks ({product.stockQuantity} available)
+                    </span>
                   ) : (
                     <span className="stock-status in-stock">
                       In Stock ({product.stockQuantity} available)

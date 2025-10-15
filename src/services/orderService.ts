@@ -12,6 +12,7 @@ class OrderService {
     try {
       const response = await axios.get(`${API_BASE_URL}/order/getOrders/${userId}`);
       return { success: true, data: response.data };
+      console.log(response.data);
     } catch (error: any) {
       console.error('Get orders error:', error);
       return { success: false, message: error.response?.data?.message || '获取订单失败' };
