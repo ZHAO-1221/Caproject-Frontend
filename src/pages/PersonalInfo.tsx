@@ -99,14 +99,13 @@ const PersonalInfo: React.FC = () => {
           password: '************',
           phone: profile.userPhone || '',
           gender: profile.userGender || 'Unknown',
-          // 只有在没有头像或头像为默认头像时才更新，并清理URL中的空格
+          // 只有在没有头像或头像为默认头像时才更新；统一使用 /avatars/ 前缀并进行 URL 编码
           avatar: profile.userProfileUrl ? 
           (() => {
-            let cleanUrl = profile.userProfileUrl.replace(/\s+/g, '');
-            if (!cleanUrl.includes('/')) {
-              cleanUrl = '/images/' + cleanUrl;
-            }
-            return cleanUrl.replace(/\/+/g, '/');
+            const raw = profile.userProfileUrl.trim();
+            const hasSlash = raw.includes('/');
+            const built = hasSlash ? encodeURI(raw) : ('/avatars/' + encodeURIComponent(raw));
+            return built.replace(/\/+/g, '/');
           })() : 
           (prev.avatar === '/images/user-avatar.svg' ? '/images/user-avatar.svg' : prev.avatar),
           introduce: profile.userIntroduce || '',
@@ -404,7 +403,7 @@ const PersonalInfo: React.FC = () => {
     // 异步更新后端
     try {
       const parts = cleanUrl.split('/');
-      const filename = parts[parts.length - 1];
+      const filename = decodeURIComponent(parts[parts.length - 1]);
       console.log('URL分割结果:', parts);
       console.log('提取的文件名:', filename);
       
@@ -413,12 +412,13 @@ const PersonalInfo: React.FC = () => {
       
       if (resp.success && resp.data?.userProfileUrl) {
         console.log('后端返回的完整URL:', resp.data.userProfileUrl);
-        // 也清理后端返回的URL
-        let cleanBackendUrl = resp.data.userProfileUrl.replace(/\s+/g, '');
+        // 规范化后端返回的 URL：编码并在为文件名时加 /avatars/
+        let cleanBackendUrl = resp.data.userProfileUrl.trim();
         if (!cleanBackendUrl.includes('/')) {
-          cleanBackendUrl = '/images/' + cleanBackendUrl;
+          cleanBackendUrl = '/avatars/' + encodeURIComponent(cleanBackendUrl);
+        } else {
+          cleanBackendUrl = encodeURI(cleanBackendUrl);
         }
-        // 修复双斜杠问题
         cleanBackendUrl = cleanBackendUrl.replace(/\/+/g, '/');
         setUserInfo(prev => ({ ...prev, avatar: cleanBackendUrl }));
         
@@ -473,11 +473,12 @@ const PersonalInfo: React.FC = () => {
                         // 清理URL中的空格
                         let displayUrl = item.url.replace(/\s+/g, '');
                         
-                        // 如果URL不包含路径分隔符，说明只是文件名，需要添加完整路径
+                        // 如果 URL 不包含路径分隔符，说明只是文件名，使用 /avatars/ 前缀；否则对整条路径进行编码
                         if (!displayUrl.includes('/')) {
-                          displayUrl = '/images/' + displayUrl;
+                          displayUrl = '/avatars/' + encodeURIComponent(displayUrl);
+                        } else {
+                          displayUrl = encodeURI(displayUrl);
                         }
-                        
                         // 修复双斜杠问题
                         displayUrl = displayUrl.replace(/\/+/g, '/');
                         
