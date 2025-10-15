@@ -156,20 +156,33 @@
   margin: 0;
 }
 
-.back-button {
-  padding: 10px 20px;
-  background: #F58220;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
+.order-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #f9fafb;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
+  white-space: nowrap;
+  height: 40px;
+  line-height: 20px;
 }
 
-.back-button:hover {
-  background: #e6731a;
+.order-back-button:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.order-back-button .arrow {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .order-details-container {

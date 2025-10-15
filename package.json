@@ -37,6 +37,7 @@
       "last 1 safari version"
     ]
   },
+  "proxy": "http://172.20.10.11:8080",
   "devDependencies": {
     "ajv": "^8.17.1"
   }
