@@ -1,11 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import userService, { UserProfile } from '../services/userService';
+import userService, { PresetAvatarItem } from '../services/userService';
 import addressService from '../services/addressService';
-import authService from '../services/authService';
-import { logNetworkRequest, logNetworkResponse, logNetworkError } from '../utils/networkDebug';
 import '../styles/PersonalInfo.css';
 
 interface UserInfo {
@@ -27,7 +25,6 @@ interface UserInfo {
 
 const PersonalInfo: React.FC = () => {
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -50,12 +47,15 @@ const PersonalInfo: React.FC = () => {
 
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [avatarList, setAvatarList] = useState<PresetAvatarItem[]>([]);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
   // 加载用户信息和第一条地址作为默认地址
   useEffect(() => {
     loadUserProfile();
     loadFirstAddress();
-  }, []);
+    loadAvatars();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 监听页面焦点变化，当从其他页面返回时重新加载地址
   useEffect(() => {
@@ -92,9 +92,6 @@ const PersonalInfo: React.FC = () => {
       
       if (response.success && response.data) {
         const profile = response.data;
-        console.log('=== 处理用户信息数据 ===');
-        console.log('原始后端数据:', profile);
-        
         setUserInfo(prev => ({
           ...prev,
           name: profile.userName || '',
@@ -102,21 +99,20 @@ const PersonalInfo: React.FC = () => {
           password: '************',
           phone: profile.userPhone || '',
           gender: profile.userGender || 'Unknown',
-          avatar: profile.userProfileUrl || '/images/user-avatar.svg',
+          // 只有在没有头像或头像为默认头像时才更新；统一使用 /avatars/ 前缀并进行 URL 编码
+          avatar: profile.userProfileUrl ? 
+          (() => {
+            const raw = profile.userProfileUrl.trim();
+            const hasSlash = raw.includes('/');
+            const built = hasSlash ? encodeURI(raw) : ('/avatars/' + encodeURIComponent(raw));
+            return built.replace(/\/+/g, '/');
+          })() : 
+          (prev.avatar === '/images/user-avatar.svg' ? '/images/user-avatar.svg' : prev.avatar),
           introduce: profile.userIntroduce || '',
           wallet: profile.wallet || 0,
           // 保留现有的地址信息，不重置
           address: prev.address
         }));
-        
-        console.log('=== 映射后的用户信息 ===');
-        console.log('用户名:', profile.userName);
-        console.log('邮箱:', profile.userEmail);
-        console.log('电话:', profile.userPhone);
-        console.log('性别:', profile.userGender);
-        console.log('头像:', profile.userProfileUrl);
-        console.log('介绍:', profile.userIntroduce);
-        console.log('钱包:', profile.wallet);
       } else {
         setError(response.message || '加载用户信息失败');
       }
@@ -133,6 +129,73 @@ const PersonalInfo: React.FC = () => {
       setError(error.message || '加载用户信息失败');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAvatars = async () => {
+    try {
+      const list = await userService.listAvatars();
+      console.log('=== 后端返回的头像列表 ===');
+      console.log('原始头像列表:', list);
+      console.log('头像列表长度:', list.length);
+      
+      // 如果后端返回的数据有问题，使用本地头像列表作为备用
+      if (!list || list.length === 0 || list.every((item: PresetAvatarItem) => item.url === list[0].url)) {
+        console.log('后端返回的头像列表有问题，使用本地头像列表');
+        const localAvatars = [
+          { id: 1, url: 'image_001 .png' },
+          { id: 2, url: 'image_002.png' },
+          { id: 3, url: 'image_003.png' },
+          { id: 4, url: 'image_004.png' },
+          { id: 5, url: 'image_005.png' },
+          { id: 6, url: 'image_006.png' },
+          { id: 7, url: 'image_007.png' },
+          { id: 8, url: 'image_008.png' },
+          { id: 9, url: 'image_009.png' },
+          { id: 10, url: 'image_010.png' },
+          { id: 11, url: 'image_011.png' },
+          { id: 12, url: 'image_012.png' },
+          { id: 13, url: 'image_013.png' },
+          { id: 14, url: 'image_014.png' },
+          { id: 15, url: 'image_015.png' }
+        ];
+        setAvatarList(localAvatars);
+        return;
+      }
+      
+      list.forEach((item: PresetAvatarItem, index: number) => {
+        console.log(`头像${index + 1}:`, {
+          id: item.id,
+          url: item.url,
+          cleanUrl: item.url.replace(/\s+/g, ''),
+          displayUrl: item.url.replace(/\s+/g, '').includes('/') ? item.url.replace(/\s+/g, '') : '/images/' + item.url.replace(/\s+/g, '')
+        });
+      });
+      setAvatarList(list);
+    } catch (e) {
+      console.warn('加载预设头像失败', e);
+      console.error('错误详情:', e);
+      
+      // 如果后端调用失败，使用本地头像列表
+      console.log('使用本地头像列表作为备用');
+      const localAvatars = [
+        { id: 1, url: 'image_001 .png' },
+        { id: 2, url: 'image_002.png' },
+        { id: 3, url: 'image_003.png' },
+        { id: 4, url: 'image_004.png' },
+        { id: 5, url: 'image_005.png' },
+        { id: 6, url: 'image_006.png' },
+        { id: 7, url: 'image_007.png' },
+        { id: 8, url: 'image_008.png' },
+        { id: 9, url: 'image_009.png' },
+        { id: 10, url: 'image_010.png' },
+        { id: 11, url: 'image_011.png' },
+        { id: 12, url: 'image_012.png' },
+        { id: 13, url: 'image_013.png' },
+        { id: 14, url: 'image_014.png' },
+        { id: 15, url: 'image_015.png' }
+      ];
+      setAvatarList(localAvatars);
     }
   };
 
@@ -153,8 +216,7 @@ const PersonalInfo: React.FC = () => {
 
       if (response.code === 200 && response.data && Array.isArray(response.data) && response.data.length > 0) {
         // 查找默认地址，如果没有默认地址则使用第一条地址
-        const defaultAddress = response.data.find((addr: any) => addr.defaultAddress === true) || response.data[0];
-        const firstAddress: any = defaultAddress;
+        const firstAddress: any = response.data.find((addr: any) => addr.defaultAddress === true) || response.data[0];
         console.log('=== 处理地址数据 ===');
         console.log('找到的默认地址数据:', firstAddress);
         console.log('是否为默认地址:', firstAddress.defaultAddress);
@@ -295,37 +357,81 @@ const PersonalInfo: React.FC = () => {
     setEditValue('');
   };
 
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // 检查文件类型
-      if (!file.type.startsWith('image/')) {
-        alert('请选择图片文件！');
-        return;
-      }
-      
-      // 检查文件大小 (限制为2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        alert('图片大小不能超过2MB！');
-        return;
-      }
-
-      // 创建FileReader来预览图片
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setUserInfo(prev => ({
-          ...prev,
-          avatar: result
-        }));
-      };
-      reader.readAsDataURL(file);
+  const handleAvatarClick = async () => {
+    // 打开头像选择弹出框并加载头像列表
+    setShowAvatarPicker(true);
+    try {
+      await loadAvatars();
+    } catch (error) {
+      console.error('加载头像列表失败:', error);
     }
   };
+
+  const handleChooseAvatar = async (avatarUrl: string) => {
+    console.log('=== 头像选择调试信息 ===');
+    console.log('选择的头像URL:', avatarUrl);
+    console.log('当前用户头像状态:', userInfo.avatar);
+    
+    // 清理URL中的空格和特殊字符
+    let cleanUrl = avatarUrl.replace(/\s+/g, ''); // 移除所有空格
+    
+    // 如果URL不包含路径分隔符，说明只是文件名，需要添加完整路径
+    if (!cleanUrl.includes('/')) {
+      cleanUrl = '/images/' + cleanUrl;
+    }
+    
+    // 修复双斜杠问题
+    cleanUrl = cleanUrl.replace(/\/+/g, '/');
+    
+    console.log('清理后的URL:', cleanUrl);
+    
+    // 立即更新前端显示
+    setUserInfo(prev => {
+      console.log('更新前头像:', prev.avatar);
+      const newState = { ...prev, avatar: cleanUrl };
+      console.log('更新后头像:', newState.avatar);
+      return newState;
+    });
+    
+    // 保存到localStorage以便Header组件同步
+    localStorage.setItem('userAvatar', cleanUrl);
+    
+    setShowAvatarPicker(false);
+    setSuccess('头像已更新');
+    setTimeout(() => setSuccess(''), 2000);
+    
+    // 异步更新后端
+    try {
+      const parts = cleanUrl.split('/');
+      const filename = decodeURIComponent(parts[parts.length - 1]);
+      console.log('URL分割结果:', parts);
+      console.log('提取的文件名:', filename);
+      
+      const resp = await userService.updateAvatarByFilename(filename);
+      console.log('后端更新响应:', resp);
+      
+      if (resp.success && resp.data?.userProfileUrl) {
+        console.log('后端返回的完整URL:', resp.data.userProfileUrl);
+        // 规范化后端返回的 URL：编码并在为文件名时加 /avatars/
+        let cleanBackendUrl = resp.data.userProfileUrl.trim();
+        if (!cleanBackendUrl.includes('/')) {
+          cleanBackendUrl = '/avatars/' + encodeURIComponent(cleanBackendUrl);
+        } else {
+          cleanBackendUrl = encodeURI(cleanBackendUrl);
+        }
+        cleanBackendUrl = cleanBackendUrl.replace(/\/+/g, '/');
+        setUserInfo(prev => ({ ...prev, avatar: cleanBackendUrl }));
+        
+        // 更新localStorage中的头像
+        localStorage.setItem('userAvatar', cleanBackendUrl);
+      } else {
+        console.log('后端更新失败或未返回URL');
+      }
+    } catch (error) {
+      console.error('后端更新异常:', error);
+    }
+  };
+
 
   return (
     <div className="personal-info-page">
@@ -335,18 +441,68 @@ const PersonalInfo: React.FC = () => {
         <div className="sidebar">
           <div className="profile-section">
             <div className="profile-picture" onClick={handleAvatarClick}>
-              <img src={userInfo.avatar} alt="User Avatar" />
+              <img 
+                key={userInfo.avatar} // 添加key强制重新渲染
+                src={userInfo.avatar} 
+                alt="User Avatar" 
+                onLoad={() => console.log('头像加载成功:', userInfo.avatar)}
+                onError={(e) => {
+                  console.log('头像加载失败:', userInfo.avatar);
+                  e.currentTarget.src = '/images/user-avatar.svg';
+                }}
+              />
               <div className="avatar-overlay">
                 <span className="change-avatar-text">点击更换头像</span>
               </div>
             </div>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleAvatarChange}
-              accept="image/*"
-              style={{ display: 'none' }}
-            />
+            {/* 头像选择弹层 */}
+            {showAvatarPicker && (
+              <div className="avatar-picker-modal">
+                <div className="avatar-picker">
+                  <div className="avatar-picker-header">
+                    <span>选择头像</span>
+                    <button className="close-button" onClick={() => setShowAvatarPicker(false)}>×</button>
+                  </div>
+                  <div className="avatar-grid">
+                    {avatarList.length === 0 ? (
+                      <div style={{ padding: '12px', color: '#999', gridColumn: '1 / -1', textAlign: 'center' }}>
+                        正在加载头像列表...
+                      </div>
+                    ) : (
+                      avatarList.map(item => {
+                        // 清理URL中的空格
+                        let displayUrl = item.url.replace(/\s+/g, '');
+                        // 标准化：若无路径则加 /avatars/，再统一编码并去重斜杠
+                        if (!displayUrl.includes('/')) {
+                          displayUrl = '/avatars/' + displayUrl;
+                        }
+                        displayUrl = encodeURI(displayUrl).replace(/\/+/g, '/');
+                        
+                        console.log(`头像${item.id}显示URL:`, displayUrl, '原始URL:', item.url);
+                        
+                        return (
+                          <button
+                            key={item.id}
+                            className="avatar-item"
+                            onClick={() => handleChooseAvatar(displayUrl)}
+                          >
+                            <img 
+                              src={displayUrl} 
+                              alt={`avatar-${item.id}`}
+                              onLoad={() => console.log(`头像${item.id}加载成功:`, displayUrl)}
+                              onError={(e) => {
+                                console.log(`头像${item.id}加载失败:`, displayUrl);
+                                e.currentTarget.src = '/images/user-avatar.svg';
+                              }}
+                            />
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="profile-name">{userInfo.name}</div>
           </div>
           <div className="nav-menu">
