@@ -1,3 +1,4 @@
+//by SunWenjing
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
@@ -50,7 +51,7 @@ const ProductDetail: React.FC = () => {
         
         if (response.success && response.data) {
           const apiProduct = response.data as any;
-                 // 如果没有提供图片URL，则返回一个默认的占位图路径
+                 // default image
                  let imageUrl = '/images/placeholder.svg';
                  if (apiProduct.imageUrl) {
                    // `package.json` 中的 `proxy` 配置会自动将开发环境中的相对路径请求
@@ -217,11 +218,11 @@ const ProductDetail: React.FC = () => {
           alert(`Added ${quantity} of ${product.name} to cart!`);
         } else {
           console.error('Failed to add to cart:', result.message);
-          alert(`添加失败: ${result.message}`);
+          alert(`add fail: ${result.message}`);
         }
       } catch (error) {
         console.error('Error adding to cart:', error);
-        alert('添加到购物车时发生错误');
+        alert('Error adding to cart');
       }
     }
   };

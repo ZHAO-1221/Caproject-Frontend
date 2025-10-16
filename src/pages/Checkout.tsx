@@ -1,3 +1,7 @@
+/**
+ * Checkout Page Component
+ * by zhou fushun
+ */
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -9,26 +13,43 @@ import paymentService from '../services/paymentService';
 import orderService from '../services/orderService';
 import '../styles/Checkout.css';
 
+/**
+ * 默认地址接口
+ */
 interface DefaultAddress {
-  street: string;
-  building: string;
-  postal: string;
-  city: string;
+  street: string;    // 街道地址
+  building: string;  // 建筑物/门牌号
+  postal: string;    // 邮政编码
+  city: string;      // 城市
 }
 
+/**
+ * 地址选项接口
+ */
 interface AddressOption {
-  id: number;
-  locationText: string;
-  isDefault: boolean;
-  parsed: DefaultAddress;
+  id: number;                    // 地址ID
+  locationText: string;          // 地址文本
+  isDefault: boolean;            // 是否为默认地址
+  parsed: DefaultAddress;        // 解析后的地址对象
 }
 
+// 货币符号常量
 const CURRENCY = '$';
 
+/**
+ * 格式化金额显示
+ * @param value 金额数值
+ * @returns 格式化后的金额字符串
+ */
 function formatMoney(value: number): string {
   return `${CURRENCY}${value.toFixed(2)}`;
 }
 
+/**
+ * 获取商品图片URL，如果没有则返回占位图
+ * @param imageUrl 图片URL
+ * @returns 有效的图片URL
+ */
 function getImageUrl(imageUrl?: string): string {
   // 如果没有提供图片URL，则返回一个默认的占位图路径
   if (!imageUrl) {
@@ -41,28 +62,37 @@ function getImageUrl(imageUrl?: string): string {
   return imageUrl;
 }
 
+/**
+ * 结算页面组件
+ * 处理订单确认、地址选择、支付方式选择和支付处理
+ */
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
   
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [defaultAddress, setDefaultAddress] = useState<DefaultAddress | null>(null);
-  const [addressOptions, setAddressOptions] = useState<AddressOption[]>([]);
-  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
-  const [showAddressDropdown, setShowAddressDropdown] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
-  const [walletBalance, setWalletBalance] = useState<number>(0);
-  const [walletLoading, setWalletLoading] = useState(false);
+  // 状态管理
+  const [items, setItems] = useState<CartItem[]>([]);                    // 购物车商品列表
+  const [defaultAddress, setDefaultAddress] = useState<DefaultAddress | null>(null);  // 默认地址
+  const [addressOptions, setAddressOptions] = useState<AddressOption[]>([]);          // 地址选项列表
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);    // 选中的地址ID
+  const [showAddressDropdown, setShowAddressDropdown] = useState(false);              // 地址下拉菜单显示状态
+  const [loading, setLoading] = useState(true);                         // 加载状态
+  const [error, setError] = useState('');                               // 错误信息
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');    // 选中的支付方式
+  const [walletBalance, setWalletBalance] = useState<number>(0);         // 钱包余额
+  const [walletLoading, setWalletLoading] = useState(false);            // 钱包加载状态
 
-  // 加载默认地址和购物车数据
+  /**
+   * 组件挂载时加载必要数据
+   */
   useEffect(() => {
     loadDefaultAddress();
     loadCartItems();
     loadWalletBalance();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 点击外部关闭下拉菜单
+  /**
+   * 点击外部关闭地址下拉菜单
+   */
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -77,6 +107,9 @@ const Checkout: React.FC = () => {
     };
   }, [showAddressDropdown]);
 
+  /**
+   * 加载购物车中选中的商品
+   */
   const loadCartItems = () => {
     // 从cartService获取选中的商品
     const allCartItems = cartService.getCartItems();
@@ -84,11 +117,15 @@ const Checkout: React.FC = () => {
     setItems(selectedItems);
   };
 
+  /**
+   * 加载用户的默认地址和地址列表
+   */
   const loadDefaultAddress = async () => {
     try {
       setLoading(true);
       setError('');
 
+      // 获取当前登录用户名
       const username = addressService.getCurrentUsername();
       if (!username) {
         console.error('User not logged in, redirecting to login page');
@@ -96,11 +133,13 @@ const Checkout: React.FC = () => {
         return;
       }
 
+      // 调试信息
       console.log('=== Loading user addresses ===');
       console.log('Current username:', username);
       console.log('User login status:', sessionStorage.getItem('isLoggedIn'));
       console.log('User full info:', sessionStorage.getItem('user'));
       
+      // 调用地址服务获取用户地址
       const response = await addressService.getAddresses(username);
       console.log('Address API response:', response);
       console.log('Response type:', typeof response);
@@ -113,6 +152,7 @@ const Checkout: React.FC = () => {
         console.log('Address data type:', typeof addressData);
         console.log('Is array:', Array.isArray(addressData));
         
+        // 验证地址数据
         console.log('Checking address data conditions:');
         console.log('- addressData exists:', !!addressData);
         console.log('- addressData is array:', Array.isArray(addressData));
@@ -131,9 +171,10 @@ const Checkout: React.FC = () => {
             return isValid;
           });
 
+          // 如果没有有效地址，使用测试数据
           if (validAddresses.length === 0) {
             console.log('❌ No valid address data found');
-            // Add some test address data for debugging
+            // 添加测试地址数据用于调试
             console.log('Adding test address data for debugging');
             const testAddresses = [
               {
@@ -161,6 +202,7 @@ const Checkout: React.FC = () => {
             return;
           }
 
+          // 处理有效地址数据
           const options: AddressOption[] = validAddresses.map((addr: any) => {
             // 获取地址ID（支持多种字段名）
             const addressId = addr.id || addr.addressId || addr.locationId;
@@ -213,14 +255,19 @@ const Checkout: React.FC = () => {
     }
   };
 
-  // 清除地址数据（不再使用硬编码的离线地址）
+  /**
+   * 清除地址数据（不再使用硬编码的离线地址）
+   */
   const clearAddressData = () => {
     setDefaultAddress(null);
     setAddressOptions([]);
     setSelectedAddressId(null);
   };
 
-  // 处理地址选择
+  /**
+   * 处理地址选择
+   * @param addressId 选中的地址ID
+   */
   const handleAddressSelect = (addressId: number) => {
     const selectedAddress = addressOptions.find(addr => addr.id === addressId);
     if (selectedAddress) {
@@ -231,23 +278,34 @@ const Checkout: React.FC = () => {
     }
   };
 
-  // 切换下拉选择器显示状态
+  /**
+   * 切换地址下拉选择器显示状态
+   */
   const toggleAddressDropdown = () => {
     setShowAddressDropdown(!showAddressDropdown);
   };
 
-  // 获取当前选中的地址
+  /**
+   * 获取当前选中的地址
+   * @returns 当前选中的地址选项
+   */
   const getCurrentAddress = (): AddressOption | null => {
     return addressOptions.find(addr => addr.id === selectedAddressId) || null;
   };
 
-  // 刷新地址列表
+  /**
+   * 刷新地址列表
+   */
   const refreshAddresses = () => {
     console.log('User manually refreshed address list');
     loadDefaultAddress();
   };
 
-  // 验证地址数据
+  /**
+   * 验证地址数据格式
+   * @param address 地址数据对象
+   * @returns 是否为有效地址数据
+   */
   const validateAddressData = (address: any): boolean => {
     console.log('Validating address data:', address);
     
@@ -256,14 +314,14 @@ const Checkout: React.FC = () => {
       return false;
     }
 
-    // Check if there is an id field (can be id, addressId, etc.)
+    // 检查是否有ID字段（支持多种字段名）
     const hasId = address.id || address.addressId || address.locationId;
     if (!hasId) {
       console.warn('Address missing ID field:', address);
       return false;
     }
 
-    // Check address text field (can be locationText, address, fullAddress, etc.)
+    // 检查地址文本字段（支持多种字段名）
     const addressText = address.locationText || address.address || address.fullAddress || address.text;
     if (!addressText) {
       console.warn('Address missing text field:', address);
@@ -279,7 +337,9 @@ const Checkout: React.FC = () => {
     return true;
   };
 
-  // 加载钱包余额
+  /**
+   * 加载用户钱包余额
+   */
   const loadWalletBalance = async () => {
     try {
       setWalletLoading(true);
@@ -290,12 +350,12 @@ const Checkout: React.FC = () => {
         console.log('Wallet balance:', response.balance);
       } else {
         console.warn('Failed to get wallet balance:', response.message);
-        // Set default balance for testing
+        // 设置默认余额用于测试
         setWalletBalance(1000);
       }
     } catch (error) {
       console.error('Error loading wallet balance:', error);
-      // Set default balance for testing
+      // 设置默认余额用于测试
       setWalletBalance(1000);
     } finally {
       setWalletLoading(false);
@@ -303,10 +363,17 @@ const Checkout: React.FC = () => {
   };
 
 
+  /**
+   * 处理支付方式选择
+   * @param method 支付方式
+   */
   const handlePaymentMethodSelect = (method: string) => {
     setSelectedPaymentMethod(method);
   };
 
+  /**
+   * 处理支付流程
+   */
   const handlePayment = async () => {
     if (!selectedPaymentMethod) {
       alert('Please select a payment method first');
@@ -333,22 +400,22 @@ const Checkout: React.FC = () => {
       let paymentResult;
 
       if (selectedPaymentMethod === 'wallet') {
-        // Check wallet balance
+        // 检查钱包余额
         if (walletBalance < grandTotal) {
           alert(`Insufficient wallet balance! Current balance: ${formatMoney(walletBalance)}, Required: ${formatMoney(grandTotal)}`);
           return;
         }
         
-        // Use wallet payment
+        // 使用钱包支付
         paymentResult = await paymentService.payWithWallet(paymentData);
       } else {
-        // Other payment methods
+        // 其他支付方式
         paymentResult = await paymentService.processPayment(paymentData);
       }
       
       if (paymentResult.success) {
         console.log('Payment successful:', paymentResult);
-        // Save order information to sessionStorage for payment success page
+        // 保存订单信息到sessionStorage用于支付成功页面
         sessionStorage.setItem('lastOrder', JSON.stringify({
           orderId: paymentResult.transactionId,
           amount: grandTotal,
@@ -356,7 +423,7 @@ const Checkout: React.FC = () => {
           items: items,
           timestamp: new Date().toISOString()
         }));
-        // Save to local order history for Order History page
+        // 保存到本地订单历史用于订单历史页面
         try {
           const orderImage = items[0]?.image || '/images/placeholder.svg';
           const userStr = sessionStorage.getItem('user');
@@ -374,47 +441,54 @@ const Checkout: React.FC = () => {
         } catch (e) {
           console.error('Failed to save order to local history', e);
         }
-        // Payment successful, redirect to success page
+        // 支付成功，跳转到成功页面
         navigate('/payment-success');
       } else {
         console.error('Payment failed:', paymentResult.message);
         alert(`Payment failed: ${paymentResult.message}`);
-        // Payment failed, redirect to failure page
+        // 支付失败，跳转到失败页面
         navigate('/payment-failed');
       }
     } catch (error) {
       console.error('Payment error:', error);
       alert('Payment processing error, please try again');
-      // Payment error, redirect to failure page
+      // 支付错误，跳转到失败页面
       navigate('/payment-failed');
     }
   };
 
-  // Increase product quantity
+  /**
+   * 增加商品数量
+   * @param itemId 商品ID
+   */
   const increaseQuantity = (itemId: number) => {
     const stockQuantity = productService.getStockQuantityById(itemId);
     const currentItem = items.find(item => item.id === itemId);
     
     if (currentItem && currentItem.qty < stockQuantity) {
       cartService.updateQuantity(itemId, currentItem.qty + 1);
-      loadCartItems(); // Reload cart data
+      loadCartItems(); // 重新加载购物车数据
     }
   };
 
-  // Decrease product quantity
+  /**
+   * 减少商品数量
+   * @param itemId 商品ID
+   */
   const decreaseQuantity = (itemId: number) => {
     const currentItem = items.find(item => item.id === itemId);
     
     if (currentItem && currentItem.qty > 1) {
       cartService.updateQuantity(itemId, currentItem.qty - 1);
-      loadCartItems(); // Reload cart data
+      loadCartItems(); // 重新加载购物车数据
     }
   };
 
-  const subtotal = useMemo(() => items.reduce((sum, i) => sum + i.price * i.qty, 0), [items]);
-  const shipping = useMemo(() => (subtotal > 0 ? 5 : 0), [subtotal]);
-  const tax = useMemo(() => +(subtotal * 0.09).toFixed(2), [subtotal]);
-  const grandTotal = useMemo(() => subtotal + shipping + tax, [subtotal, shipping, tax]);
+  // 计算订单金额
+  const subtotal = useMemo(() => items.reduce((sum, i) => sum + i.price * i.qty, 0), [items]);  // 小计
+  const shipping = useMemo(() => (subtotal > 0 ? 5 : 0), [subtotal]);                          // 运费
+  const tax = useMemo(() => +(subtotal * 0.09).toFixed(2), [subtotal]);                        // 税费
+  const grandTotal = useMemo(() => subtotal + shipping + tax, [subtotal, shipping, tax]);      // 总金额
 
   return (
     <div className="checkout-page">
@@ -422,14 +496,17 @@ const Checkout: React.FC = () => {
 
       <div className="checkout-container">
         <div className="checkout-grid">
+          {/* 地址确认区域 */}
           <section className="address-section">
             <div className="section-title center">Confirm Delivery Address</div>
+            {/* 地址管理控制按钮 */}
             <div className="address-controls">
               <button className="manage-btn" onClick={() => navigate('/address-management')}>Manage Addresses</button>
               <button className="refresh-btn" onClick={refreshAddresses} disabled={loading}>
                 {loading ? 'Loading...' : 'Refresh'}
               </button>
             </div>
+            {/* 地址列表显示区域 */}
             <div className="address-list">
               {loading ? (
                 <div className="address-card loading">Loading addresses...</div>
@@ -446,6 +523,7 @@ const Checkout: React.FC = () => {
                       <div className="address-label">
                         {getCurrentAddress()?.isDefault ? 'Default Address' : 'Delivery Address'}
                       </div>
+                      {/* 地址切换按钮（当有多个地址时显示） */}
                       {addressOptions.length > 1 && (
                         <button 
                           className="change-address-btn"
@@ -455,6 +533,7 @@ const Checkout: React.FC = () => {
                         </button>
                       )}
                     </div>
+                    {/* 地址详细信息 */}
                     <div className="address-details">
                       <div className="address-line">{defaultAddress?.street}</div>
                       <div className="address-line">{defaultAddress?.building}</div>
@@ -463,10 +542,11 @@ const Checkout: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* 下拉选择器 */}
+                  {/* 地址下拉选择器 */}
                   {showAddressDropdown && addressOptions.length > 1 && (
                     <div className="address-dropdown">
                       <div className="dropdown-title">Select Other Address</div>
+                      {/* 其他地址选项列表 */}
                       {addressOptions
                         .filter(addr => addr.id !== selectedAddressId)
                         .map((address) => (
@@ -490,6 +570,7 @@ const Checkout: React.FC = () => {
                   )}
                 </div>
               ) : defaultAddress ? (
+                // 单个默认地址显示
                 <div className="address-card default-address">
                   <div className="address-label">Default Address</div>
                   <div className="address-details">
@@ -500,6 +581,7 @@ const Checkout: React.FC = () => {
                   </div>
                 </div>
               ) : (
+                // 无地址时的提示
                 <div className="address-card no-address">
                   <div className="no-address-text">No available addresses</div>
                   <button className="add-address-btn" onClick={() => navigate('/address-management')}>
@@ -510,19 +592,25 @@ const Checkout: React.FC = () => {
             </div>
           </section>
 
+          {/* 订单确认区域 */}
           <section className="order-section">
             <div className="section-title center">Confirm Order Information</div>
             <div className="order-wrapper">
+              {/* 订单商品列表 */}
               {items.map(item => (
                 <div key={item.id} className="order-card">
+                  {/* 商品缩略图 */}
                   <div className="order-thumb">
                     <img src={getImageUrl(item.image) || "/images/placeholder.svg"} alt={item.name} />
                   </div>
+                  {/* 商品信息 */}
                   <div className="order-info">
                     <div className="order-name">{item.name}</div>
                     <div className="order-price">{formatMoney(item.price)}</div>
                   </div>
+                  {/* 商品操作区域 */}
                   <div className="order-actions">
+                    {/* 减少数量按钮 */}
                     <button 
                       className="qty-btn" 
                       onClick={() => decreaseQuantity(item.id)}
@@ -530,7 +618,9 @@ const Checkout: React.FC = () => {
                     >
                       -
                     </button>
+                    {/* 当前数量显示 */}
                     <div className="qty-value">{item.qty}</div>
+                    {/* 增加数量按钮 */}
                     <button 
                       className="qty-btn" 
                       onClick={() => increaseQuantity(item.id)}
@@ -538,6 +628,7 @@ const Checkout: React.FC = () => {
                     >
                       +
                     </button>
+                    {/* 商品小计 */}
                     <div className="order-subtotal">{formatMoney(item.price * item.qty)}</div>
                   </div>
                 </div>
@@ -545,17 +636,24 @@ const Checkout: React.FC = () => {
             </div>
           </section>
 
+          {/* 订单摘要和支付区域 */}
           <aside className="summary-section">
             <div className="summary-card">
               <div className="summary-title">Order Summary</div>
+              {/* 小计 */}
               <div className="summary-row"><span>Subtotal</span><span>{formatMoney(subtotal)}</span></div>
+              {/* 运费估算 */}
               <div className="summary-row"><span>Shopping Estimate</span><span>{formatMoney(shipping)}</span></div>
+              {/* 税费估算 */}
               <div className="summary-row"><span>Tax Estimate</span><span>{formatMoney(tax)}</span></div>
               <div className="summary-divider" />
+              {/* 总金额 */}
               <div className="summary-row grand"><span>Grand Total</span><span>{formatMoney(grandTotal)}</span></div>
+              {/* 支付方式选择 */}
               <div className="pay-methods">
                 <div className="pay-title">select payment method</div>
                 <div className="pay-icons">
+                  {/* 钱包支付 */}
                   <span 
                     className={`pm wallet ${selectedPaymentMethod === 'wallet' ? 'selected' : ''} ${walletBalance < grandTotal ? 'insufficient' : ''}`}
                     onClick={() => handlePaymentMethodSelect('wallet')}
@@ -568,6 +666,7 @@ const Checkout: React.FC = () => {
                       </div>
                     )}
                   </span>
+                  {/* 信用卡支付方式 */}
                   <span 
                     className={`pm visa ${selectedPaymentMethod === 'visa' ? 'selected' : ''}`}
                     onClick={() => handlePaymentMethodSelect('visa')}
@@ -576,6 +675,7 @@ const Checkout: React.FC = () => {
                     className={`pm mc ${selectedPaymentMethod === 'mc' ? 'selected' : ''}`}
                     onClick={() => handlePaymentMethodSelect('mc')}
                   >MC</span>
+                  {/* 第三方支付方式 */}
                   <span 
                     className={`pm alipay ${selectedPaymentMethod === 'alipay' ? 'selected' : ''}`}
                     onClick={() => handlePaymentMethodSelect('alipay')}
@@ -594,6 +694,7 @@ const Checkout: React.FC = () => {
                   >WeChat</span>
                 </div>
               </div>
+              {/* 支付按钮 */}
               <button 
                 className="pay-btn" 
                 onClick={handlePayment}
