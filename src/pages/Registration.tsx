@@ -29,10 +29,25 @@ const Registration: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // 对电话号码输入进行特殊处理，只允许数字且最多8位
+    if (name === 'phone') {
+      // 只保留数字
+      const numericValue = value.replace(/\D/g, '');
+      // 限制为最多8位
+      const limitedValue = numericValue.slice(0, 8);
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: limitedValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+    
     if (error) setError('');
   };
 
@@ -50,6 +65,12 @@ const Registration: React.FC = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setError('Please enter a valid email address');
+      return;
+    }
+
+    // Phone number validation
+    if (formData.phone.length !== 8) {
+      setError('Phone number must be exactly 8 digits');
       return;
     }
 
@@ -149,7 +170,9 @@ const Registration: React.FC = () => {
                 value={formData.phone}
                 onChange={handleInputChange}
                 className="input-value"
-                placeholder="Enter your phone number"
+                placeholder="Enter 8-digit phone number"
+                maxLength={8}
+                pattern="[0-9]{8}"
                 required
                 disabled={loading}
               />
