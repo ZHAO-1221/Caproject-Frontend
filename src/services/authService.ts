@@ -1,3 +1,4 @@
+//By (HU XINTIAN)
 import axios from 'axios';
 
 export interface LoginRequest {
@@ -127,7 +128,7 @@ class AuthService {
         }
         return error.response.data;
       }
-      throw new Error('网络错误，请稍后重试');
+      throw new Error('Network error, please try again later');
     }
   }
 
