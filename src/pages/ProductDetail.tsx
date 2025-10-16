@@ -145,12 +145,21 @@ const ProductDetail: React.FC = () => {
 
           const mapped: Review[] = sorted.map((rv: any) => {
             const dateText = formatDateYMD(rv?.reviewCreateTime);
+            // 使用后端直接返回的 userName 字段
+            const userName = rv.userName || 'Anonymous';
+            console.log('商品详情页评论数据映射:', { 
+              reviewId: rv.reviewId, 
+              title: rv.title,
+              userName: rv.userName, 
+              finalUserName: userName 
+            });
+            
             return {
               id: rv.reviewId,
-              title: 'Review',
+              title: rv.title || '评论',
               body: rv.comment || '',
               rating: typeof rv.reviewRank === 'number' ? rv.reviewRank : 0,
-              reviewerName: rv.user?.userName || 'Anonymous',
+              reviewerName: userName,
               date: dateText,
               avatar: '/images/user-avatar.svg'
             };

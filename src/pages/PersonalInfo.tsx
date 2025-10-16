@@ -62,7 +62,7 @@ const PersonalInfo: React.FC = () => {
   // 监听页面焦点变化，当从其他页面返回时重新加载地址
   useEffect(() => {
     const handleFocus = () => {
-      console.log('页面获得焦点，重新加载地址信息');
+      console.log('Refetch address data on page focus');
       loadFirstAddress();
     };
 
@@ -84,13 +84,13 @@ const PersonalInfo: React.FC = () => {
         return;
       }
 
-      console.log('=== 获取用户个人信息 ===');
-      console.log('前端发送给后端的数据:', { username });
-      console.log('请求URL:', `/api/users/me?`);
+      console.log('=== Getting user profile ===');
+      console.log('Frontend data sent to backend:', { username });
+      console.log('Request URL:', `/api/users/me?`);
       
       const response = await userService.getUserProfile(username);
       
-      console.log('后端返回给前端的数据:', response);
+      console.log('Backend response to frontend:', response);
       
       if (response.success && response.data) {
         const profile = response.data;
@@ -116,19 +116,19 @@ const PersonalInfo: React.FC = () => {
           address: prev.address
         }));
       } else {
-        setError(response.message || '加载用户信息失败');
+        setError(response.message || 'Could not load user information.');
       }
     } catch (error: any) {
-      console.log('=== 获取用户信息错误 ===');
-      console.log('错误对象:', error);
-      console.log('错误消息:', error.message);
-      console.log('错误响应:', error.response);
+      console.log('=== Error getting user information ===');
+      console.log('Error object:', error);
+      console.log('Error message:', error.message);
+      console.log('Error response:', error.response);
       if (error.response) {
-        console.log('错误状态码:', error.response.status);
-        console.log('错误响应数据:', error.response.data);
-        console.log('错误响应头:', error.response.headers);
+        console.log('Error status code:', error.response.status);
+        console.log('Error response data:', error.response.data);
+        console.log('Error response headers:', error.response.headers);
       }
-      setError(error.message || '加载用户信息失败');
+      setError(error.message || 'Could not load user information.');
     } finally {
       setLoading(false);
     }
@@ -137,13 +137,13 @@ const PersonalInfo: React.FC = () => {
   const loadAvatars = async () => {
     try {
       const list = await userService.listAvatars();
-      console.log('=== 后端返回的头像列表 ===');
-      console.log('原始头像列表:', list);
-      console.log('头像列表长度:', list.length);
+      console.log('=== Backend returned avatar list ===');
+      console.log('Original avatar list:', list);
+      console.log('Avatar list length:', list.length);
       
       // 如果后端返回的数据有问题，使用本地头像列表作为备用
       if (!list || list.length === 0 || list.every((item: PresetAvatarItem) => item.url === list[0].url)) {
-        console.log('后端返回的头像列表有问题，使用本地头像列表');
+        console.log('Backend avatar list has issues, using local avatar list');
         const localAvatars = [
           { id: 1, url: 'image_001 .png' },
           { id: 2, url: 'image_002.png' },
@@ -166,7 +166,7 @@ const PersonalInfo: React.FC = () => {
       }
       
       list.forEach((item: PresetAvatarItem, index: number) => {
-        console.log(`头像${index + 1}:`, {
+        console.log(`Avatar ${index + 1}:`, {
           id: item.id,
           url: item.url,
           cleanUrl: item.url.replace(/\s+/g, ''),
@@ -175,11 +175,11 @@ const PersonalInfo: React.FC = () => {
       });
       setAvatarList(list);
     } catch (e) {
-      console.warn('加载预设头像失败', e);
-      console.error('错误详情:', e);
+      console.warn('Failed to load preset avatars', e);
+      console.error('Error details:', e);
       
       // 如果后端调用失败，使用本地头像列表
-      console.log('使用本地头像列表作为备用');
+      console.log('Using local avatar list as backup');
       const localAvatars = [
         { id: 1, url: 'image_001 .png' },
         { id: 2, url: 'image_002.png' },
@@ -208,23 +208,23 @@ const PersonalInfo: React.FC = () => {
         return;
       }
 
-      console.log('=== 获取用户地址信息 ===');
-      console.log('前端发送给后端的数据:', { username });
-      console.log('请求URL:', `/api/location/getLocation/?username=${username}`);
+      console.log('=== Getting user address information ===');
+      console.log('Frontend data sent to backend:', { username });
+      console.log('Request URL:', `/api/location/getLocation/?username=${username}`);
       
       const response = await addressService.getAddresses(username);
       
-      console.log('后端返回给前端的数据:', response);
+      console.log('Backend response to frontend:', response);
 
       if (response.code === 200 && response.data && Array.isArray(response.data) && response.data.length > 0) {
         // 查找默认地址，如果没有默认地址则使用第一条地址
         const firstAddress: any = response.data.find((addr: any) => addr.defaultAddress === true) || response.data[0];
-        console.log('=== 处理地址数据 ===');
-        console.log('找到的默认地址数据:', firstAddress);
-        console.log('是否为默认地址:', firstAddress.defaultAddress);
+        console.log('=== Processing address data ===');
+        console.log('Found default address data:', firstAddress);
+        console.log('Is default address:', firstAddress.defaultAddress);
         
         const parsed = addressService.parseAddressText(firstAddress.locationText);
-        console.log('解析后的地址:', parsed);
+        console.log('Parsed address:', parsed);
         
         setUserInfo(prev => ({
           ...prev,
@@ -236,35 +236,35 @@ const PersonalInfo: React.FC = () => {
           }
         }));
         
-        console.log('=== 地址设置完成 ===');
-        console.log('设置的地址信息:', {
+        console.log('=== Address setup completed ===');
+        console.log('Set address information:', {
           street: parsed.street,
           building: parsed.building,
           postal: parsed.postal,
           country: parsed.city
         });
       } else {
-        console.log('=== 地址数据为空 ===');
-        console.log('响应成功:', response.success);
-        console.log('响应数据:', response.data);
-        console.log('是否为数组:', Array.isArray(response.data));
-        console.log('数组长度:', response.data && Array.isArray(response.data) ? response.data.length : 0);
+        console.log('=== Address data is empty ===');
+        console.log('Response success:', response.success);
+        console.log('Response data:', response.data);
+        console.log('Is array:', Array.isArray(response.data));
+        console.log('Array length:', response.data && Array.isArray(response.data) ? response.data.length : 0);
       }
     } catch (error: any) {
-      console.log('=== 获取地址信息错误 ===');
-      console.log('错误对象:', error);
-      console.log('错误消息:', error.message);
-      console.log('错误响应:', error.response);
+      console.log('=== Error getting address information ===');
+      console.log('Error object:', error);
+      console.log('Error message:', error.message);
+      console.log('Error response:', error.response);
       if (error.response) {
-        console.log('错误状态码:', error.response.status);
-        console.log('错误响应数据:', error.response.data);
-        console.log('错误响应头:', error.response.headers);
+        console.log('Error status code:', error.response.status);
+        console.log('Error response data:', error.response.data);
+        console.log('Error response headers:', error.response.headers);
       }
     }
   };
 
   const handleLogout = async () => {
-    if (window.confirm('确定要退出登录吗？')) {
+    if (window.confirm('Are you sure you want to log out?')) {
       sessionStorage.removeItem('user');
       sessionStorage.removeItem('isLoggedIn');
       navigate('/logout-success');
@@ -278,7 +278,7 @@ const PersonalInfo: React.FC = () => {
 
   const handleSave = async (field: string) => {
     if (!editValue.trim()) {
-      alert('请输入有效值！');
+      alert('Invalid input！');
       return;
     }
 
@@ -309,14 +309,14 @@ const PersonalInfo: React.FC = () => {
         // 密码更新需要特殊处理
         const currentUsername = userService.getCurrentUsername();
         if (!currentUsername) {
-          setError('无法获取当前用户信息');
+          setError('Unable to get current user information');
           setEditingField(null);
           setEditValue('');
           return;
         }
 
         // 获取当前密码
-        const oldPassword = prompt('请输入当前密码：');
+        const oldPassword = prompt('Enter current password:');
         if (!oldPassword) {
           setEditingField(null);
           setEditValue('');
@@ -324,7 +324,7 @@ const PersonalInfo: React.FC = () => {
         }
 
         // 获取新密码
-        const newPassword = prompt('请输入新密码（至少6位）：');
+        const newPassword = prompt('New password (6+ characters):');
         if (!newPassword) {
           setEditingField(null);
           setEditValue('');
@@ -333,14 +333,14 @@ const PersonalInfo: React.FC = () => {
 
         // 验证新密码长度
         if (newPassword.length < 6) {
-          alert('新密码长度至少需要6位！');
+          alert('Password must be 6+ characters');
           setEditingField(null);
           setEditValue('');
           return;
         }
 
         // 确认新密码
-        const confirmPassword = prompt('请再次输入新密码：');
+        const confirmPassword = prompt('Confirm new password:');
         if (!confirmPassword) {
           setEditingField(null);
           setEditValue('');
@@ -349,7 +349,7 @@ const PersonalInfo: React.FC = () => {
 
         // 验证两次输入的新密码是否一致
         if (newPassword !== confirmPassword) {
-          alert('两次输入的新密码不一致，请重新操作！');
+          alert('The new passwords do not match. Please try again!');
           setEditingField(null);
           setEditValue('');
           return;
@@ -364,7 +364,7 @@ const PersonalInfo: React.FC = () => {
           });
 
           if (passwordResponse.success) {
-            alert('密码更新成功！\n\n为了安全起见，您需要重新登录。\n\n点击确定后将跳转到登录页面。');
+            alert('Password updated successfully!\n\nPlease log in again for security.\n\nClick OK to redirect to login page.');
             
             // 清除当前认证信息
             sessionStorage.removeItem('user');
@@ -374,11 +374,11 @@ const PersonalInfo: React.FC = () => {
             // 跳转到登录页面
             navigate('/login', { replace: true });
           } else {
-            alert(`密码更新失败：${passwordResponse.message || '未知错误'}`);
+            alert(`Failed to update password: ${passwordResponse.message || 'Unknown error'}`);
           }
         } catch (error: any) {
-          console.error('密码更新错误:', error);
-          alert(`密码更新失败：${error.message || '网络错误，请稍后重试'}`);
+          console.error('Failed to update password:', error);
+          alert(`Failed to update password: ${error.message || 'Network error. Please try again later.'}`);
         }
 
         setEditingField(null);
@@ -402,11 +402,11 @@ const PersonalInfo: React.FC = () => {
         
         // 如果更新了用户名，弹出alert提醒重新登录
         if (field === 'name') {
-          console.log('用户名已更新，需要重新登录');
-          setSuccess('用户名更新成功');
+          console.log('Username updated. Please re-login.');
+          setSuccess('Username updated successfully.');
           
           // 弹出alert提醒用户重新登录
-          alert('用户名已更新成功！\n\n由于安全原因，您需要重新登录以获取新的认证令牌。\n\n点击确定后将跳转到登录页面。');
+          alert('Username updated successfully!\n\nPlease log in again for security.\n\nClick OK to redirect to login page.');
           
           // 清除当前认证信息
           sessionStorage.removeItem('user');
@@ -418,14 +418,14 @@ const PersonalInfo: React.FC = () => {
           return; // 提前返回，不执行后续的成功提示
         }
         
-        setSuccess('更新成功');
+        setSuccess('Update successful');
         setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError(response.message || '更新失败');
+        setError(response.message || 'Update Failed');
       }
     } catch (error: any) {
       console.error('Update profile error:', error);
-      setError(error.message || '更新失败');
+      setError(error.message || 'Update Failed');
     } finally {
       setEditingField(null);
       setEditValue('');
@@ -443,14 +443,14 @@ const PersonalInfo: React.FC = () => {
     try {
       await loadAvatars();
     } catch (error) {
-      console.error('加载头像列表失败:', error);
+      console.error('Failed to load avatar list:', error);
     }
   };
 
   const handleChooseAvatar = async (avatarUrl: string) => {
-    console.log('=== 头像选择调试信息 ===');
-    console.log('选择的头像URL:', avatarUrl);
-    console.log('当前用户头像状态:', userInfo.avatar);
+    console.log('=== Avatar selection debug info ===');
+    console.log('Selected avatar URL:', avatarUrl);
+    console.log('Current user avatar status:', userInfo.avatar);
     
     // 清理URL中的空格和特殊字符
     let cleanUrl = avatarUrl.replace(/\s+/g, ''); // 移除所有空格
@@ -463,13 +463,13 @@ const PersonalInfo: React.FC = () => {
     // 修复双斜杠问题
     cleanUrl = cleanUrl.replace(/\/+/g, '/');
     
-    console.log('清理后的URL:', cleanUrl);
+    console.log('Cleaned URL:', cleanUrl);
     
     // 立即更新前端显示
     setUserInfo(prev => {
-      console.log('更新前头像:', prev.avatar);
+      console.log('Avatar before update:', prev.avatar);
       const newState = { ...prev, avatar: cleanUrl };
-      console.log('更新后头像:', newState.avatar);
+      console.log('Avatar after update:', newState.avatar);
       return newState;
     });
     
@@ -477,21 +477,21 @@ const PersonalInfo: React.FC = () => {
     localStorage.setItem('userAvatar', cleanUrl);
     
     setShowAvatarPicker(false);
-    setSuccess('头像已更新');
+    setSuccess('Avatar updated');
     setTimeout(() => setSuccess(''), 2000);
     
     // 异步更新后端
     try {
       const parts = cleanUrl.split('/');
       const filename = decodeURIComponent(parts[parts.length - 1]);
-      console.log('URL分割结果:', parts);
-      console.log('提取的文件名:', filename);
+      console.log('URL split result:', parts);
+      console.log('Extracted filename:', filename);
       
       const resp = await userService.updateAvatarByFilename(filename);
-      console.log('后端更新响应:', resp);
+      console.log('Backend update response:', resp);
       
       if (resp.success && resp.data?.userProfileUrl) {
-        console.log('后端返回的完整URL:', resp.data.userProfileUrl);
+        console.log('Backend returned complete URL:', resp.data.userProfileUrl);
         // 规范化后端返回的 URL：编码并在为文件名时加 /avatars/
         let cleanBackendUrl = resp.data.userProfileUrl.trim();
         if (!cleanBackendUrl.includes('/')) {
@@ -505,10 +505,10 @@ const PersonalInfo: React.FC = () => {
         // 更新localStorage中的头像
         localStorage.setItem('userAvatar', cleanBackendUrl);
       } else {
-        console.log('后端更新失败或未返回URL');
+        console.log('Backend update failed or no URL returned');
       }
     } catch (error) {
-      console.error('后端更新异常:', error);
+      console.error('Backend update exception:', error);
     }
   };
 
@@ -525,14 +525,14 @@ const PersonalInfo: React.FC = () => {
                 key={userInfo.avatar} // 添加key强制重新渲染
                 src={userInfo.avatar} 
                 alt="User Avatar" 
-                onLoad={() => console.log('头像加载成功:', userInfo.avatar)}
+                onLoad={() => console.log('Avatar loaded successfully:', userInfo.avatar)}
                 onError={(e) => {
-                  console.log('头像加载失败:', userInfo.avatar);
+                  console.log('Avatar failed to load:', userInfo.avatar);
                   e.currentTarget.src = '/images/user-avatar.svg';
                 }}
               />
               <div className="avatar-overlay">
-                <span className="change-avatar-text">点击更换头像</span>
+                <span className="change-avatar-text">Change Avatar</span>
               </div>
             </div>
             {/* 头像选择弹层 */}
@@ -540,13 +540,13 @@ const PersonalInfo: React.FC = () => {
               <div className="avatar-picker-modal">
                 <div className="avatar-picker">
                   <div className="avatar-picker-header">
-                    <span>选择头像</span>
+                    <span>Select Profile Photo</span>
                     <button className="close-button" onClick={() => setShowAvatarPicker(false)}>×</button>
                   </div>
                   <div className="avatar-grid">
                     {avatarList.length === 0 ? (
                       <div style={{ padding: '12px', color: '#999', gridColumn: '1 / -1', textAlign: 'center' }}>
-                        正在加载头像列表...
+                        Loading avatar list...
                       </div>
                     ) : (
                       avatarList.map(item => {
@@ -558,7 +558,7 @@ const PersonalInfo: React.FC = () => {
                         }
                         displayUrl = encodeURI(displayUrl).replace(/\/+/g, '/');
                         
-                        console.log(`头像${item.id}显示URL:`, displayUrl, '原始URL:', item.url);
+                        console.log(`Avatar ${item.id} display URL:`, displayUrl, 'Original URL:', item.url);
                         
                         return (
                           <button
@@ -569,9 +569,9 @@ const PersonalInfo: React.FC = () => {
                             <img 
                               src={displayUrl} 
                               alt={`avatar-${item.id}`}
-                              onLoad={() => console.log(`头像${item.id}加载成功:`, displayUrl)}
+                              onLoad={() => console.log(`Avatar ${item.id} loaded successfully:`, displayUrl)}
                               onError={(e) => {
-                                console.log(`头像${item.id}加载失败:`, displayUrl);
+                                console.log(`Avatar ${item.id} failed to load:`, displayUrl);
                                 e.currentTarget.src = '/images/user-avatar.svg';
                               }}
                             />
@@ -598,7 +598,7 @@ const PersonalInfo: React.FC = () => {
         <div className="content-area">
           <h1 className="page-title">Personal Information</h1>
           
-          {loading && <div className="message info-message">加载中...</div>}
+          {loading && <div className="message info-message">Loading...</div>}
           {error && <div className="message error-message">{error}</div>}
           {success && <div className="message success-message">{success}</div>}
           

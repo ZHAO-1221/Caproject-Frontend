@@ -83,15 +83,22 @@ class ProductService {
   // Get product reviews
   async getProductReviews(productId: number): Promise<any> {
     try {
+      console.log('=== 获取商品评论调试信息 ===');
+      console.log('商品ID:', productId);
+      console.log('请求URL:', `${API_BASE_URL}/products/getReviewsByProductId/${productId}`);
+      
       // 先尝试路径参数形式
       try {
         const response = await axios.get(`${API_BASE_URL}/products/getReviewsByProductId/${productId}`);
+        console.log('评论数据响应:', response.data);
         return { success: true, data: response.data };
       } catch (errPath: any) {
+        console.log('路径参数请求失败，尝试query参数:', errPath.message);
         // 再尝试 query 参数形式
         const response = await axios.get(`${API_BASE_URL}/products/getReviewsByProductId`, {
           params: { productId }
         });
+        console.log('Query参数评论数据响应:', response.data);
         return { success: true, data: response.data };
       }
     } catch (error: any) {

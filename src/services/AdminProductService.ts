@@ -23,21 +23,21 @@ export interface ProductResponse {
 
 class ProductService {
   // Get all visible products
-  async getVisibleProducts(): Promise<ProductResponse> {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/products/getVisibleProducts`);
-      return {
-        success: true,
-        data: response.data
-      };
-    } catch (error: any) {
-      console.error('Get visible products error:', error);
-      return {
-        success: false,
-        message: error.response?.data?.message || '获取商品失败'
-      };
-    }
-  }
+  // async getVisibleProducts(): Promise<ProductResponse> {
+  //   try {
+  //     const response = await axios.get(`${API_BASE_URL}/products/getVisibleProducts`);
+  //     return {
+  //       success: true,
+  //       data: response.data
+  //     };
+  //   } catch (error: any) {
+  //     console.error('Get visible products error:', error);
+  //     return {
+  //       success: false,
+  //       message: error.response?.data?.message || '获取商品失败'
+  //     };
+  //   }
+  // }
 
   // Get paginated products
   async getProductsPaged(page: number = 0, size: number = 10): Promise<ProductResponse> {
@@ -93,54 +93,54 @@ class ProductService {
   }
 
   // Add product to cart
-  async addToCart(productId: number, quantity: number, userId?: number): Promise<any> {
-    try {
-      const url = userId 
-        ? `${API_BASE_URL}/products/addToCart/${productId}?userId=${userId}`
-        : `${API_BASE_URL}/products/test/addToCart/${productId}`;
+  // async addToCart(productId: number, quantity: number, userId?: number): Promise<any> {
+  //   try {
+  //     const url = userId 
+  //       ? `${API_BASE_URL}/products/addToCart/${productId}?userId=${userId}`
+  //       : `${API_BASE_URL}/products/test/addToCart/${productId}`;
       
-      const response = await axios.post(url, { quantity });
-      return {
-        success: true,
-        data: response.data
-      };
-    } catch (error: any) {
-      console.error('Add to cart error:', error);
-      return {
-        success: false,
-        message: error.response?.data?.message || '添加到购物车失败'
-      };
-    }
-  }
+  //     const response = await axios.post(url, { quantity });
+  //     return {
+  //       success: true,
+  //       data: response.data
+  //     };
+  //   } catch (error: any) {
+  //     console.error('Add to cart error:', error);
+  //     return {
+  //       success: false,
+  //       message: error.response?.data?.message || '添加到购物车失败'
+  //     };
+  //   }
+  // }
 
   // Add a review for a product
-  async addReview(productId: number, comment: string, reviewRank: number, userId?: number): Promise<any> {
-    try {
-      const url = userId 
-        ? `${API_BASE_URL}/products/addReviewToProduct/${productId}`
-        : `${API_BASE_URL}/products/test/addReviewToProduct/${productId}`;
+  // async addReview(productId: number, comment: string, reviewRank: number, userId?: number): Promise<any> {
+  //   try {
+  //     const url = userId 
+  //       ? `${API_BASE_URL}/products/addReviewToProduct/${productId}`
+  //       : `${API_BASE_URL}/products/test/addReviewToProduct/${productId}`;
       
-      const headers = {
-        'Content-Type': 'application/json',
-        ...authService.getAuthHeaders()
-      };
-      const payload: any = { comment, reviewRank };
-      if (userId) {
-        payload.userId = userId;
-      }
-      const response = await axios.post(url, payload, { headers });
-      return {
-        success: true,
-        data: response.data
-      };
-    } catch (error: any) {
-      console.error('Add review error:', error);
-      return {
-        success: false,
-        message: error.response?.data?.message || error.response?.data?.error || `添加评论失败（${error.response?.status || '未知状态'}）`
-      };
-    }
-  }
+  //     const headers = {
+  //       'Content-Type': 'application/json',
+  //       ...authService.getAuthHeaders()
+  //     };
+  //     const payload: any = { comment, reviewRank };
+  //     if (userId) {
+  //       payload.userId = userId;
+  //     }
+  //     const response = await axios.post(url, payload, { headers });
+  //     return {
+  //       success: true,
+  //       data: response.data
+  //     };
+  //   } catch (error: any) {
+  //     console.error('Add review error:', error);
+  //     return {
+  //       success: false,
+  //       message: error.response?.data?.message || error.response?.data?.error || `添加评论失败（${error.response?.status || '未知状态'}）`
+  //     };
+  //   }
+  // }
 
   // Check whether a product is in stock
   isInStock(product: Product): boolean {

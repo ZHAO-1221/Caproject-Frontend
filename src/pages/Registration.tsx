@@ -1,3 +1,4 @@
+// By (HU XINTIAN)
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -132,7 +133,7 @@ const Registration: React.FC = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 className="input-value"
-                placeholder="Enter your email"
+                placeholder="Enter your email (e.g., user@example.com)"
                 required
                 disabled={loading}
               />
@@ -164,7 +165,7 @@ const Registration: React.FC = () => {
                 value={formData.password}
                 onChange={handleInputChange}
                 className="input-value"
-                placeholder="Enter your password"
+                placeholder="Enter your password (at least 6 characters)"
                 required
                 disabled={loading}
               />

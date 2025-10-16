@@ -98,7 +98,9 @@ const ProductBrowse: React.FC = () => {
         
         if (response.success && Array.isArray(response.data)) {
           // Transform API data to match our interface
-          const transformedProducts = response.data.map((product: any) => {
+          const transformedProducts = response.data
+          .filter((product: any) => product.productStockQuantity > 0) 
+          .map((product: any) => {
                    // 如果没有提供图片URL，则返回一个默认的占位图路径
                    let imageUrl = '/images/placeholder.svg';
                    if (product.imageUrl) {

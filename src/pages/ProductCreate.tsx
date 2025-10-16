@@ -30,81 +30,8 @@ const ProductCreate: React.FC = () => {
   // Additional product fields
   const [category, setCategory] = useState('');
   
-  // Reviews
-  const [reviews, setReviews] = useState<Review[]>([
-    {
-      id: 1,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 3,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    },
-    {
-      id: 2,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 3,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    },
-    {
-      id: 3,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 3,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    },
-    {
-      id: 4,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 4,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    },
-    {
-      id: 5,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 5,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    },
-    {
-      id: 6,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 2,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    },
-    {
-      id: 7,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 4,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    },
-    {
-      id: 8,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 3,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    }
-  ]);
+  // Reviews - 新商品没有评价数据
+  const [reviews, setReviews] = useState<Review[]>([]);
   
   // Review pagination
   const [currentReviewPage, setCurrentReviewPage] = useState(1);

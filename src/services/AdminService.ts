@@ -41,7 +41,7 @@ export const adminLogin = async (username: string, password: string): Promise<Lo
         }
       }
     );
-    
+
     console.log('API Response - adminLogin:', response.data);
 
     // 兼容不同后端返回格式：有的只返回 { token }
@@ -69,7 +69,7 @@ export const adminLogin = async (username: string, password: string): Promise<Lo
     };
   } catch (error: any) {
     console.error('Error during admin login:', error);
-    
+
     // 返回错误信息
     return {
       success: false,
@@ -355,6 +355,36 @@ export const getAllProductsAllPages = async (pageSize: number = 100): Promise<Pr
   return all;
 };
 
+/**
+ * 更新商品图片（管理员接口）
+ * 对应API: POST /api/admin/products/updateImage/{id}
+ * form-data 字段：image 或 file 或 picture
+ */
+export const updateProductImage = async (
+  productId: number,
+  imageFile: File
+): Promise<Product> => {
+  try {
+    const form = new FormData();
+    form.append('image', imageFile);
+
+    const response = await axios.post<Product>(
+      `${API_BASE_URL}/admin/products/updateImage/${productId}`,
+      form,
+      {
+        headers: {
+          ...getAdminAuthHeaders(),
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error('Error updating product image:', error);
+    throw new Error(error.response?.data?.message || '更新商品图片失败');
+  }
+};
+
 // 导出所有API函数
 export default {
   // 认证相关
@@ -371,6 +401,7 @@ export default {
   setVisibility,
   getProductsPaged,
   getAllProductsAllPages,
-  createProductWithImage
+  createProductWithImage,
+  updateProductImage
 };
 
