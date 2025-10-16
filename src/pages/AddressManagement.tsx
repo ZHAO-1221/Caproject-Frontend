@@ -1,3 +1,4 @@
+//By (HU XINTIAN)
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -56,7 +57,7 @@ const AddressManagement: React.FC = () => {
         avatar: avatarUrl
       });
     } catch (error) {
-      console.log('加载用户信息失败:', error);
+      console.log('Failed to load user information:', error);
     }
   };
 
@@ -85,12 +86,12 @@ const AddressManagement: React.FC = () => {
         });
         setAddresses(addressList);
       } else {
-        setError(response.message || '获取地址列表失败');
+        setError(response.message || 'Failed to get address list');
         setAddresses([]);
       }
     } catch (error: any) {
       console.error('Load addresses error:', error);
-      setError('网络错误，请稍后重试');
+      setError('Network error, please try again later');
       setAddresses([]);
     } finally {
       setLoading(false);
@@ -116,14 +117,14 @@ const AddressManagement: React.FC = () => {
 
         if (response.code === 200) {
           setAddresses(prev => prev.filter(addr => addr.id !== id));
-          setSuccess('地址删除成功！');
+          setSuccess('Address deleted successfully!');
           setTimeout(() => setSuccess(''), 3000);
         } else {
-          setError(response.message || '删除失败');
+          setError(response.message || 'Delete failed');
         }
       } catch (error: any) {
         console.error('Delete address error:', error);
-        setError(error.message || '删除失败');
+        setError(error.message || 'Delete failed');
       }
     }
   };
@@ -147,25 +148,25 @@ const AddressManagement: React.FC = () => {
           ...addr,
           isDefault: addr.id === id
         })));
-        setSuccess('默认地址设置成功！');
+        setSuccess('Default address set successfully!');
         setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError(response.message || '设置默认地址失败');
+        setError(response.message || 'Failed to set default address');
       }
     } catch (error: any) {
       console.error('Set default address error:', error);
-      setError(error.message || '设置默认地址失败');
+      setError(error.message || 'Failed to set default address');
     }
   };
 
   const handleAddAddress = async () => {
     if (!newAddress.street || !newAddress.building || !newAddress.postal || !newAddress.city) {
-      setError('请填写所有必填字段！');
+      setError('Please fill in all required fields!');
       return;
     }
 
     if (!/^\d{6}$/.test(newAddress.postal)) {
-      setError('请输入有效的6位邮政编码！');
+      setError('Please enter a valid 6-digit postal code!');
       return;
     }
 
@@ -175,17 +176,17 @@ const AddressManagement: React.FC = () => {
 
       const userId = addressService.getCurrentUserId();
       if (!userId) {
-        setError('无法获取用户ID，请重新登录');
+        setError('Unable to get user ID, please log in again');
         navigate('/login');
         return;
       }
 
       const locationText = addressService.formatAddressText(newAddress);
 
-      console.log('=== 地址添加调试信息 ===');
-      console.log('用户ID:', userId);
-      console.log('地址信息:', newAddress);
-      console.log('格式化地址文本:', locationText);
+      console.log('=== Address addition debug info ===');
+      console.log('User ID:', userId);
+      console.log('Address info:', newAddress);
+      console.log('Formatted address text:', locationText);
       
       // 发送后端期望的数据格式
       const addressData = {
@@ -194,26 +195,26 @@ const AddressManagement: React.FC = () => {
         postal: Number(newAddress.postal) // 后端期望postal是整数类型
       };
       
-      console.log('发送给后端的数据:', addressData);
+      console.log('Data sent to backend:', addressData);
 
       const response = await addressService.addAddress(addressData);
 
-      console.log('后端响应:', response);
+      console.log('Backend response:', response);
 
       // 检查后端返回的格式：{code: 200, data: locationId, message: "地址添加成功"}
       if (response.code === 200) {
-        setSuccess(response.message || '地址添加成功！');
+        setSuccess(response.message || 'Address added successfully!');
         // 重新加载地址列表
         await loadAddresses();
         setShowModal(false);
         setNewAddress({ street: '', building: '', postal: '', city: '' });
         setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError(response.message || '添加失败');
+        setError(response.message || 'Add failed');
       }
     } catch (error: any) {
       console.error('Add address error:', error);
-      setError(error.message || '添加失败');
+      setError(error.message || 'Add failed');
     }
   };
 
@@ -249,7 +250,7 @@ const AddressManagement: React.FC = () => {
         <div className="content-area">
           <h1 className="page-title">Address management</h1>
           
-          {loading && <div className="message info-message">加载中...</div>}
+          {loading && <div className="message info-message">Loading...</div>}
           {error && <div className="message error-message">{error}</div>}
           {success && <div className="message success-message">{success}</div>}
           

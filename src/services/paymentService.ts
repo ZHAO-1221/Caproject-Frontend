@@ -1,91 +1,124 @@
+/**
+ * 支付服务
+ * 负责处理各种支付方式，包括钱包支付、第三方支付等
+ * by zhou fushun
+ */
 import axios from 'axios';
 import authService from './authService';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = '/api'; // API基础URL
 
+/**
+ * 支付请求接口
+ */
 export interface PaymentRequest {
-  paymentMethod: string;
-  amount: number;
-  orderItems: Array<{
-    productId: number;
-    quantity: number;
-    price: number;
+  paymentMethod: string;  // 支付方式
+  amount: number;         // 支付金额
+  orderItems: Array<{     // 订单商品列表
+    productId: number;    // 商品ID
+    quantity: number;     // 商品数量
+    price: number;        // 商品价格
   }>;
-  shippingAddress?: string;
-  orderId?: string;
+  shippingAddress?: string; // 收货地址
+  orderId?: string;        // 订单ID
 }
 
+/**
+ * 支付响应接口
+ */
 export interface PaymentResponse {
-  success: boolean;
-  message?: string;
-  transactionId?: string;
-  data?: {
-    userId: number;
-    totalPrice: number;
-    orderId?: string;
-    paymentMethod?: string;
-    newWalletBalance?: number;
-    timestamp?: string;
+  success: boolean;       // 是否成功
+  message?: string;       // 响应消息
+  transactionId?: string; // 交易ID
+  data?: {               // 响应数据
+    userId: number;       // 用户ID
+    totalPrice: number;   // 总价格
+    orderId?: string;     // 订单ID
+    paymentMethod?: string; // 支付方式
+    newWalletBalance?: number; // 新钱包余额
+    timestamp?: string;   // 时间戳
   };
 }
 
+/**
+ * 钱包余额响应接口
+ */
 export interface WalletBalanceResponse {
-  success: boolean;
-  message?: string;
-  balance?: number;
+  success: boolean;  // 是否成功
+  message?: string;  // 响应消息
+  balance?: number;  // 钱包余额
 }
 
+/**
+ * 钱包扣款请求接口
+ */
 export interface WalletDeductionRequest {
-  amount: number;
-  orderId: string;
-  description?: string;
+  amount: number;        // 扣款金额
+  orderId: string;       // 订单ID
+  description?: string;  // 扣款描述
 }
 
+/**
+ * 钱包扣款响应接口
+ */
 export interface WalletDeductionResponse {
-  success: boolean;
-  message?: string;
-  newBalance?: number;
-  transactionId?: string;
+  success: boolean;      // 是否成功
+  message?: string;      // 响应消息
+  newBalance?: number;   // 新余额
+  transactionId?: string; // 交易ID
 }
 
+/**
+ * 钱包退款请求接口
+ */
 export interface WalletRefundRequest {
-  amount: number;
-  orderId: string;
-  reason?: string;
+  amount: number;        // 退款金额
+  orderId: string;       // 订单ID
+  reason?: string;       // 退款原因
 }
 
+/**
+ * 钱包退款响应接口
+ */
 export interface WalletRefundResponse {
-  success: boolean;
-  message?: string;
-  newBalance?: number;
-  refundId?: string;
+  success: boolean;      // 是否成功
+  message?: string;      // 响应消息
+  newBalance?: number;   // 新余额
+  refundId?: string;     // 退款ID
 }
 
+/**
+ * 支付服务类
+ * 提供各种支付相关的方法
+ */
 class PaymentService {
-  private readonly WALLET_BALANCE_KEY = 'user_wallet_balance';
+  private readonly WALLET_BALANCE_KEY = 'user_wallet_balance'; // 钱包余额存储键名
 
   /**
    * 获取当前用户ID
+   * @returns 用户ID
    */
   private getCurrentUserId(): number {
     const userStr = sessionStorage.getItem('user');
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
-        console.log('=== 获取用户ID调试信息 ===');
-        console.log('用户数据:', user);
-        console.log('用户ID字段:', user.userId || user.id);
-        return user.userId || user.id || 100052; // 默认用户ID
+        console.log('=== Get User ID Debug Info ===');
+        console.log('User data:', user);
+        console.log('User ID field:', user.userId || user.id);
+        return user.userId || user.id || 100052; // Default user ID
       } catch (error) {
         console.error('Error parsing user data:', error);
       }
     }
-    console.log('未找到用户数据，使用默认用户ID: 100052');
-    return 100052; // 默认用户ID
+    console.log('User data not found, using default user ID: 100052');
+    return 100052; // Default user ID
   }
 
   /**
    * 获取用户钱包余额
+   * @param forceRefresh 是否强制刷新
+   * @returns 钱包余额响应
    */
   async getWalletBalance(forceRefresh = false): Promise<WalletBalanceResponse> {
     try {
@@ -111,12 +144,12 @@ class PaymentService {
       
       const userId = this.getCurrentUserId();
       console.log('=== PaymentService.getWalletBalance Debug Info ===');
-      console.log('=== 前端发送给后端的信息 ===');
-      console.log('请求方法:', 'GET');
-      console.log('请求URL:', `${API_BASE_URL}/order/getWallet`);
-      console.log('请求参数:', { userId: userId });
-      console.log('请求头:', headers);
-      console.log('完整请求URL:', `${API_BASE_URL}/order/getWallet?userId=${userId}`);
+      console.log('=== Frontend to Backend Request Info ===');
+      console.log('Request method:', 'GET');
+      console.log('Request URL:', `${API_BASE_URL}/order/getWallet`);
+      console.log('Request params:', { userId: userId });
+      console.log('Request headers:', headers);
+      console.log('Full request URL:', `${API_BASE_URL}/order/getWallet?userId=${userId}`);
       
       const response = await axios.get(`${API_BASE_URL}/order/getWallet`, {
         headers,
@@ -125,26 +158,26 @@ class PaymentService {
         }
       });
       
-      console.log('=== 后端返回给前端的信息 ===');
-      console.log('响应状态码:', response.status);
-      console.log('响应状态文本:', response.statusText);
-      console.log('响应头:', response.headers);
-      console.log('响应数据:', response.data);
-      console.log('响应数据类型:', typeof response.data);
-      console.log('响应数据结构:', JSON.stringify(response.data, null, 2));
+      console.log('=== Backend to Frontend Response Info ===');
+      console.log('Response status:', response.status);
+      console.log('Response status text:', response.statusText);
+      console.log('Response headers:', response.headers);
+      console.log('Response data:', response.data);
+      console.log('Response data type:', typeof response.data);
+      console.log('Response data structure:', JSON.stringify(response.data, null, 2));
       
-      // 解析后端DataResult格式的响应
+      // Parse backend DataResult format response
       let walletBalance: number | null = null;
       
       if (response.data) {
         console.log('Response data structure:', response.data);
         
-        // 后端返回格式: { code: number, data: Float, message: string }
+        // Backend response format: { code: number, data: Float, message: string }
         if (response.data.code === 200 && response.data.data !== null) {
           walletBalance = parseFloat(response.data.data);
           console.log('Parsed wallet balance from DataResult:', walletBalance);
         }
-        // 兼容其他格式
+        // Compatible with other formats
         else if (typeof response.data.wallet === 'number') {
           walletBalance = response.data.wallet;
         }
@@ -160,7 +193,7 @@ class PaymentService {
       }
       
       if (walletBalance !== null) {
-        // 存储到sessionStorage
+        // Store to sessionStorage
         sessionStorage.setItem(this.WALLET_BALANCE_KEY, walletBalance.toString());
         
         return {
@@ -183,16 +216,16 @@ class PaymentService {
         statusText: error.response?.statusText
       });
       
-      // 检查是否是网络错误或CORS问题
+      // Check if it's a network error or CORS issue
       if (error.code === 'ERR_NETWORK' || error.message.includes('CORS')) {
         console.error('Network or CORS error detected');
         return {
           success: false,
-          message: '网络连接失败或跨域问题，请检查后端服务是否运行'
+          message: 'Network connection failed or CORS issue, please check if backend service is running'
         };
       }
       
-      // 如果API失败，尝试使用存储的余额
+      // If API fails, try using stored balance
       const storedBalance = sessionStorage.getItem(this.WALLET_BALANCE_KEY);
       if (storedBalance !== null) {
         const balance = parseFloat(storedBalance);
@@ -214,12 +247,12 @@ class PaymentService {
 
   /**
    * 更新本地钱包余额
+   * @param newBalance 新的余额
    */
   updateWalletBalance(newBalance: number): void {
     sessionStorage.setItem(this.WALLET_BALANCE_KEY, newBalance.toString());
     console.log('Updated stored wallet balance:', newBalance);
   }
-
 
   /**
    * 清除钱包余额存储
@@ -231,6 +264,7 @@ class PaymentService {
 
   /**
    * 同步钱包余额（强制从后端获取最新数据）
+   * @returns 钱包余额响应
    */
   async syncWalletBalance(): Promise<WalletBalanceResponse> {
     console.log('=== Syncing wallet balance from backend ===');
@@ -240,21 +274,22 @@ class PaymentService {
 
   /**
    * 强制刷新钱包余额（清除缓存并重新获取）
+   * @returns 钱包余额响应
    */
   async forceRefreshWalletBalance(): Promise<WalletBalanceResponse> {
-    console.log('=== 强制刷新钱包余额 ===');
-    // 清除所有相关缓存
+    console.log('=== Force Refresh Wallet Balance ===');
+    // Clear all related cache
     this.clearWalletBalanceCache();
     sessionStorage.removeItem('user_wallet_balance');
     localStorage.removeItem('user_wallet_balance');
     
-    // 强制从后端获取最新数据
+    // Force get latest data from backend
     const result = await this.getWalletBalance(true);
     
     if (result.success && result.balance !== undefined) {
-      console.log('✅ 钱包余额刷新成功:', result.balance);
+      console.log('✅ Wallet balance refresh successful:', result.balance);
     } else {
-      console.error('❌ 钱包余额刷新失败:', result.message);
+      console.error('❌ Wallet balance refresh failed:', result.message);
     }
     
     return result;
@@ -262,6 +297,7 @@ class PaymentService {
 
   /**
    * 测试后端连接
+   * @returns 连接是否成功
    */
   async testBackendConnection(): Promise<boolean> {
     try {
@@ -273,12 +309,12 @@ class PaymentService {
         ...authService.getAuthHeaders()
       };
       
-      console.log('=== 测试连接 - 前端发送给后端的信息 ===');
-      console.log('请求方法:', 'GET');
-      console.log('请求URL:', `${API_BASE_URL}/order/getWallet`);
-      console.log('请求参数:', { userId: userId });
-      console.log('请求头:', headers);
-      console.log('完整请求URL:', `${API_BASE_URL}/order/getWallet?userId=${userId}`);
+      console.log('=== Test Connection - Frontend to Backend Request Info ===');
+      console.log('Request method:', 'GET');
+      console.log('Request URL:', `${API_BASE_URL}/order/getWallet`);
+      console.log('Request params:', { userId: userId });
+      console.log('Request headers:', headers);
+      console.log('Full request URL:', `${API_BASE_URL}/order/getWallet?userId=${userId}`);
       
       const response = await axios.get(`${API_BASE_URL}/order/getWallet`, {
         headers,
@@ -288,13 +324,13 @@ class PaymentService {
         timeout: 5000 // 5秒超时
       });
       
-      console.log('=== 测试连接 - 后端返回给前端的信息 ===');
-      console.log('响应状态码:', response.status);
-      console.log('响应状态文本:', response.statusText);
-      console.log('响应头:', response.headers);
-      console.log('响应数据:', response.data);
-      console.log('响应数据类型:', typeof response.data);
-      console.log('响应数据结构:', JSON.stringify(response.data, null, 2));
+      console.log('=== Test Connection - Backend to Frontend Response Info ===');
+      console.log('Response status:', response.status);
+      console.log('Response status text:', response.statusText);
+      console.log('Response headers:', response.headers);
+      console.log('Response data:', response.data);
+      console.log('Response data type:', typeof response.data);
+      console.log('Response data structure:', JSON.stringify(response.data, null, 2));
       
       return true;
     } catch (error: any) {
@@ -312,18 +348,20 @@ class PaymentService {
 
   /**
    * 从钱包扣款
+   * @param deductionData 扣款数据
+   * @returns 扣款响应
    */
   async deductFromWallet(deductionData: WalletDeductionRequest): Promise<WalletDeductionResponse> {
     try {
       console.log('=== PaymentService.deductFromWallet Debug Info ===');
       console.log('Deduction data:', deductionData);
       
-      // 先获取当前钱包余额（强制从后端获取最新数据）
+      // First get current wallet balance (force get latest data from backend)
       const balanceResponse = await this.getWalletBalance(true);
       if (!balanceResponse.success || balanceResponse.balance === undefined) {
         return {
           success: false,
-          message: '无法获取钱包余额'
+          message: 'Unable to get wallet balance'
         };
       }
       
@@ -331,18 +369,18 @@ class PaymentService {
       if (currentBalance < deductionData.amount) {
         return {
           success: false,
-          message: `余额不足，当前余额：$${currentBalance.toFixed(2)}，需要：$${deductionData.amount.toFixed(2)}`
+          message: `Insufficient balance, current balance: $${currentBalance.toFixed(2)}, required: $${deductionData.amount.toFixed(2)}`
         };
       }
       
-      // 模拟API调用延迟
+      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // 计算新余额
+      // Calculate new balance
       const newBalance = currentBalance - deductionData.amount;
       const transactionId = 'TXN-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
       
-      // 更新本地缓存
+      // Update local cache
       this.updateWalletBalance(newBalance);
       
       console.log('Wallet deduction successful:', {
@@ -356,44 +394,46 @@ class PaymentService {
         success: true,
         newBalance: newBalance,
         transactionId: transactionId,
-        message: '钱包扣款成功'
+        message: 'Wallet deduction successful'
       };
     } catch (error: any) {
       console.error('Failed to deduct from wallet:', error);
       return {
         success: false,
-        message: '钱包扣款失败，请稍后重试'
+        message: 'Wallet deduction failed, please try again later'
       };
     }
   }
 
   /**
    * 钱包退款（支付失败时回滚）
+   * @param refundData 退款数据
+   * @returns 退款响应
    */
   async refundToWallet(refundData: WalletRefundRequest): Promise<WalletRefundResponse> {
     try {
       console.log('=== PaymentService.refundToWallet Debug Info ===');
       console.log('Refund data:', refundData);
       
-      // 先获取当前钱包余额（强制从后端获取最新数据）
+      // First get current wallet balance (force get latest data from backend)
       const balanceResponse = await this.getWalletBalance(true);
       if (!balanceResponse.success || balanceResponse.balance === undefined) {
         return {
           success: false,
-          message: '无法获取钱包余额'
+          message: 'Unable to get wallet balance'
         };
       }
       
       const currentBalance = balanceResponse.balance;
       
-      // 模拟API调用延迟
+      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      // 计算新余额（退款）
+      // Calculate new balance (refund)
       const newBalance = currentBalance + refundData.amount;
       const refundId = 'REF-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
       
-      // 更新本地缓存
+      // Update local cache
       this.updateWalletBalance(newBalance);
       
       console.log('Wallet refund successful:', {
@@ -404,27 +444,29 @@ class PaymentService {
         reason: refundData.reason
       });
       
-      // 注意：退款钱包余额更新已通过本地处理
-      // 如果后端需要额外的钱包更新，可以在这里添加
+      // Note: Refund wallet balance update handled locally
+      // If backend needs additional wallet updates, add here
       console.log('✅ Refund wallet balance update handled locally');
       
       return {
         success: true,
         newBalance: newBalance,
         refundId: refundId,
-        message: '钱包退款成功'
+        message: 'Wallet refund successful'
       };
     } catch (error: any) {
       console.error('Failed to refund to wallet:', error);
       return {
         success: false,
-        message: '钱包退款失败，请稍后重试'
+        message: 'Wallet refund failed, please try again later'
       };
     }
   }
 
   /**
-   * Use wallet payment
+   * 使用钱包支付
+   * @param paymentData 支付数据
+   * @returns 支付响应
    */
   async payWithWallet(paymentData: PaymentRequest): Promise<PaymentResponse> {
     let orderId: string | undefined = undefined;
@@ -444,62 +486,62 @@ class PaymentService {
       if (!orderId) {
         return {
           success: false,
-          message: '订单创建失败，未获取到订单ID'
+          message: 'Order creation failed, order ID not obtained'
         };
       }
       
       console.log('Order created successfully, Order ID:', orderId);
       
-      // 从钱包扣款
+      // Deduct from wallet
       const deductionResult = await this.deductFromWallet({
         amount: paymentData.amount,
         orderId: orderId,
-        description: `订单支付 - ${orderId}`
+        description: `Order payment - ${orderId}`
       });
       
       if (!deductionResult.success) {
         console.log('Wallet deduction failed:', deductionResult.message);
         return {
           success: false,
-          message: deductionResult.message || '钱包扣款失败'
+          message: deductionResult.message || 'Wallet deduction failed'
         };
       }
       
       deductionSuccess = true;
       console.log('Wallet deduction successful, new balance:', deductionResult.newBalance);
       
-      // 模拟订单处理过程，如果失败需要回滚
+      // Simulate order processing, rollback if failed
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // 模拟订单处理结果（95%成功率）
+      // Simulate order processing result (95% success rate)
       const orderProcessSuccess = Math.random() > 0.05;
       
       if (!orderProcessSuccess) {
         console.log('Order processing failed, attempting refund...');
         
-        // 订单处理失败，回滚钱包扣款
+        // Order processing failed, rollback wallet deduction
         const refundResult = await this.refundToWallet({
           amount: paymentData.amount,
           orderId: orderId,
-          reason: '订单处理失败，自动退款'
+          reason: 'Order processing failed, automatic refund'
         });
         
         if (refundResult.success) {
           console.log('Refund successful, new balance:', refundResult.newBalance);
           return {
             success: false,
-            message: '订单处理失败，已自动退款到钱包'
+            message: 'Order processing failed, automatically refunded to wallet'
           };
         } else {
           console.error('Refund failed:', refundResult.message);
           return {
             success: false,
-            message: '订单处理失败，退款失败，请联系客服'
+            message: 'Order processing failed, refund failed, please contact customer service'
           };
         }
       }
       
-      // 调用后端payOrder接口更新数据库余额
+      // Call backend payOrder interface to update database balance
       const payOrderResult = await this.processPaymentWithBackend({
         orderId: orderId,
         paymentMethod: 'wallet',
@@ -513,8 +555,8 @@ class PaymentService {
         console.log('✅ Backend database updated successfully via payOrder');
       }
       
-      // 注意：钱包余额更新已通过 /api/order/payOrder 接口处理
-      // 如果后端需要额外的钱包更新，可以在这里添加
+      // Note: Wallet balance update handled by /api/order/payOrder interface
+      // If backend needs additional wallet updates, add here
       console.log('✅ Wallet balance update handled by payOrder interface');
       
       return {
@@ -532,21 +574,21 @@ class PaymentService {
     } catch (error: any) {
       console.error('Wallet payment failed:', error);
       
-      // 如果已经扣款但出现异常，尝试回滚
+      // If deduction was successful but exception occurred, try rollback
       if (deductionSuccess && orderId) {
         console.log('Payment failed after deduction, attempting refund...');
         try {
           const refundResult = await this.refundToWallet({
             amount: paymentData.amount,
             orderId: orderId,
-            reason: '支付异常，自动退款'
+            reason: 'Payment exception, automatic refund'
           });
           
           if (refundResult.success) {
             console.log('Refund successful after error, new balance:', refundResult.newBalance);
             return {
               success: false,
-              message: '支付异常，已自动退款到钱包'
+              message: 'Payment exception, automatically refunded to wallet'
             };
           }
         } catch (refundError) {
@@ -556,13 +598,15 @@ class PaymentService {
       
       return {
         success: false,
-        message: error.response?.data?.message || '钱包支付失败'
+        message: error.response?.data?.message || 'Wallet payment failed'
       };
     }
   }
 
   /**
-   * Create order using backend API
+   * 使用后端API创建订单
+   * @param paymentData 支付数据
+   * @returns 支付响应
    */
   async createOrder(paymentData: PaymentRequest): Promise<PaymentResponse> {
     try {
@@ -629,78 +673,80 @@ class PaymentService {
   }
 
   /**
-   * Process payment using backend API
+   * 使用后端API处理支付
+   * @param paymentData 支付数据
+   * @returns 支付响应
    */
   async processPaymentWithBackend(paymentData: PaymentRequest): Promise<PaymentResponse> {
     try {
       console.log('=== PaymentService.processPaymentWithBackend Debug Info ===');
-      console.log('=== 前端发送给后端的信息 ===');
-      console.log('请求方法:', 'POST');
-      console.log('请求URL:', `${API_BASE_URL}/order/payOrder`);
-      console.log('支付数据:', paymentData);
+      console.log('=== Frontend to Backend Request Info ===');
+      console.log('Request method:', 'POST');
+      console.log('Request URL:', `${API_BASE_URL}/order/payOrder`);
+      console.log('Payment data:', paymentData);
       
       const headers = {
         'Content-Type': 'application/json',
         ...authService.getAuthHeaders()
       };
       
-      // 尝试多种可能的请求格式
+      // Try multiple possible request formats
       const paymentRequest = {
-        // 格式1: 基础字段
+        // Format 1: Basic fields
         orderId: paymentData.orderId,
         paymentMethod: paymentData.paymentMethod,
         amount: parseFloat(paymentData.amount.toString()),
         userId: parseInt(this.getCurrentUserId().toString()),
         
-        // 格式2: 下划线命名
+        // Format 2: Underscore naming
         order_id: paymentData.orderId,
         payment_method: paymentData.paymentMethod,
         payment_amount: parseFloat(paymentData.amount.toString()),
         user_id: parseInt(this.getCurrentUserId().toString()),
         
-        // 格式3: 可能的金额字段
+        // Format 3: Possible amount fields
         orderAmount: parseFloat(paymentData.amount.toString()),
         paymentAmount: parseFloat(paymentData.amount.toString()),
         totalAmount: parseFloat(paymentData.amount.toString()),
         price: parseFloat(paymentData.amount.toString()),
         cost: parseFloat(paymentData.amount.toString()),
         
-        // 格式4: 可能的其他字段
+        // Format 4: Possible other fields
         orderNumber: paymentData.orderId,
         paymentType: paymentData.paymentMethod,
         totalPrice: parseFloat(paymentData.amount.toString()),
         customerId: parseInt(this.getCurrentUserId().toString()),
         
-        // 格式5: 时间相关
+        // Format 5: Time related
         timestamp: new Date().toISOString(),
         paymentTime: new Date().toISOString(),
         createTime: new Date().toISOString(),
         
-        // 格式6: 状态相关
+        // Format 6: Status related
         status: 1,
         paymentStatus: 'completed',
         orderStatus: 'paid'
       };
       
-      console.log('请求头:', headers);
-      console.log('请求数据:', paymentRequest);
-      console.log('完整请求URL:', `${API_BASE_URL}/order/payOrder`);
+      console.log('Request headers:', headers);
+      console.log('Request data:', paymentRequest);
+      console.log('Full request URL:', `${API_BASE_URL}/order/payOrder`);
       
       const response = await axios.post(`${API_BASE_URL}/order/payOrder`, paymentRequest, {
         headers,
-        timeout: 10000 // 10秒超时
+        timeout: 10000 // 10 second timeout
       });
       
-      console.log('=== 后端返回给前端的信息 ===');
-      console.log('响应状态码:', response.status);
-      console.log('响应状态文本:', response.statusText);
-      console.log('响应头:', response.headers);
-      console.log('响应数据:', response.data);
-      console.log('响应数据类型:', typeof response.data);
-      console.log('响应数据结构:', JSON.stringify(response.data, null, 2));
+      console.log('=== Backend to Frontend Response Info ===');
+      console.log('Response status:', response.status);
+      console.log('Response status text:', response.statusText);
+      console.log('Response headers:', response.headers);
+      console.log('Response data:', response.data);
+      console.log('Response data type:', typeof response.data);
+      console.log('Response data structure:', JSON.stringify(response.data, null, 2));
       
       if (response.data && response.data.code === 200) {
-        console.log('✅ payOrder接口调用成功');
+        console.log('✅ payOrder interface call successful');
         return {
           success: true,
           transactionId: paymentData.orderId,
@@ -713,34 +759,34 @@ class PaymentService {
           }
         };
       } else {
-        console.error('❌ payOrder接口返回失败状态');
-        console.error('响应代码:', response.data?.code);
-        console.error('响应消息:', response.data?.message);
+        console.error('❌ payOrder interface returned failure status');
+        console.error('Response code:', response.data?.code);
+        console.error('Response message:', response.data?.message);
         return {
           success: false,
           message: response.data?.message || 'Payment processing failed'
         };
       }
     } catch (error: any) {
-      console.error('=== payOrder接口调用失败 ===');
-      console.error('错误类型:', error.name);
-      console.error('错误消息:', error.message);
-      console.error('错误代码:', error.code);
-      console.error('请求配置:', error.config);
-      console.error('响应数据:', error.response?.data);
-      console.error('响应状态:', error.response?.status);
-      console.error('响应头:', error.response?.headers);
+      console.error('=== payOrder interface call failed ===');
+      console.error('Error type:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error code:', error.code);
+      console.error('Request config:', error.config);
+      console.error('Response data:', error.response?.data);
+      console.error('Response status:', error.response?.status);
+      console.error('Response headers:', error.response?.headers);
       
       if (error.code === 'ERR_NETWORK') {
-        console.error('❌ 网络错误：无法连接到后端服务');
+        console.error('❌ Network error: Unable to connect to backend service');
       } else if (error.code === 'ECONNREFUSED') {
-        console.error('❌ 连接被拒绝：后端服务可能未启动');
+        console.error('❌ Connection refused: Backend service may not be started');
       } else if (error.code === 'ETIMEDOUT') {
-        console.error('❌ 请求超时：后端响应时间过长');
+        console.error('❌ Request timeout: Backend response time too long');
       } else if (error.response) {
-        console.error('❌ 后端返回错误状态码:', error.response.status);
+        console.error('❌ Backend returned error status code:', error.response.status);
       } else {
-        console.error('❌ 未知错误:', error);
+        console.error('❌ Unknown error:', error);
       }
       
       return {
@@ -751,7 +797,9 @@ class PaymentService {
   }
 
   /**
-   * Simulate other payment methods
+   * 模拟其他支付方式
+   * @param paymentData 支付数据
+   * @returns 支付响应
    */
   async processPayment(paymentData: PaymentRequest): Promise<PaymentResponse> {
     try {

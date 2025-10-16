@@ -72,18 +72,18 @@ class UserService {
         ...authService.getAuthHeaders()
       };
       
-      console.log('=== UserService.getUserProfile 调试信息 ===');
-      console.log('请求参数:', { username });
-      console.log('请求头:', headers);
-      console.log('完整URL:', `${API_BASE_URL}/me`);
+      console.log('=== UserService.getUserProfile Debug Info ===');
+      console.log('Request parameters:', { username });
+      console.log('Request headers:', headers);
+      console.log('Full URL:', `${API_BASE_URL}/me`);
       
       const response = await axios.get(`${API_BASE_URL}/me`, {
         headers
       });
       
-      console.log('响应状态:', response.status);
-      console.log('响应头:', response.headers);
-      console.log('响应数据:', response.data);
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      console.log('Response data:', response.data);
       
       // 后端直接返回 User 对象，这里规范为 { success, data }
       const user = response.data as UserProfile;
@@ -97,10 +97,10 @@ class UserService {
         const backend = error.response.data;
         return {
           success: false,
-          message: (backend && (backend.message || backend.error)) || '加载用户信息失败'
+          message: (backend && (backend.message || backend.error)) || 'Failed to load user information'
         };
       }
-      return { success: false, message: '网络错误，请稍后重试' };
+      return { success: false, message: 'Network error, please try again later' };
     }
   }
 
@@ -120,7 +120,7 @@ class UserService {
       if (response.data && response.data.userId) {
         // 用户名更新完成，不需要重新登录
         if (updates.userName) {
-          console.log('用户名已更新，更新完成');
+          console.log('Username updated successfully');
         }
         
         return {
@@ -130,19 +130,19 @@ class UserService {
       } else {
         return {
           success: false,
-          message: '更新失败'
+          message: 'Update failed'
         };
       }
     } catch (error: any) {
       if (error.response) {
         return {
           success: false,
-          message: error.response.data?.message || '更新失败'
+          message: error.response.data?.message || 'Update failed'
         };
       }
       return {
         success: false,
-        message: '网络错误，请稍后重试'
+        message: 'Network error, please try again later'
       };
     }
   }
@@ -152,8 +152,8 @@ class UserService {
    */
   async updatePassword(passwordData: UpdatePasswordRequest): Promise<UserProfileResponse> {
     try {
-      console.log('=== UserService.updatePassword 调试信息 ===');
-      console.log('密码更新数据:', { username: passwordData.username, oldPassword: '***', newPassword: '***' });
+      console.log('=== UserService.updatePassword Debug Info ===');
+      console.log('Password update data:', { username: passwordData.username, oldPassword: '***', newPassword: '***' });
       
       // 使用 /api/users/me 端点更新密码
       const response = await axios.put(`${API_BASE_URL}/me`, {
@@ -165,32 +165,32 @@ class UserService {
         }
       });
       
-      console.log('密码更新响应:', response.data);
+      console.log('Password update response:', response.data);
       
       // 后端直接返回用户对象，需要包装为期望的格式
       if (response.data && response.data.userId) {
         return {
           success: true,
           data: response.data,
-          message: '密码更新成功'
+          message: 'Password updated successfully'
         };
       } else {
         return {
           success: false,
-          message: '密码更新失败'
+          message: 'Password update failed'
         };
       }
     } catch (error: any) {
-      console.error('密码更新错误:', error);
+      console.error('Password update error:', error);
       if (error.response) {
         return {
           success: false,
-          message: error.response.data?.message || '密码更新失败'
+          message: error.response.data?.message || 'Password update failed'
         };
       }
       return {
         success: false,
-        message: '网络错误，请稍后重试'
+        message: 'Network error, please try again later'
       };
     }
   }
@@ -221,14 +221,14 @@ class UserService {
       } else {
         return {
           success: false,
-          message: response.data?.message || '钱包余额更新失败'
+          message: response.data?.message || 'Wallet balance update failed'
         };
       }
     } catch (error: any) {
       console.error('Failed to update wallet balance:', error);
       return {
         success: false,
-        message: error.response?.data?.message || '钱包余额更新失败，请稍后重试'
+        message: error.response?.data?.message || 'Wallet balance update failed, please try again later'
       };
     }
   }
@@ -238,17 +238,17 @@ class UserService {
    */
   async listAvatars(): Promise<PresetAvatarItem[]> {
     try {
-      console.log('=== 调用头像API ===');
+      console.log('=== Calling avatar API ===');
       console.log('API URL:', AVATAR_API);
       
       const authHeaders = authService.getAuthHeaders();
-      console.log('请求头:', authHeaders);
+      console.log('Request headers:', authHeaders);
       
       // 检查是否有有效的认证信息
       const token = sessionStorage.getItem('token');
       const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
-      console.log('登录状态:', isLoggedIn);
-      console.log('Token存在:', !!token);
+      console.log('Login status:', isLoggedIn);
+      console.log('Token exists:', !!token);
       
       const response = await axios.get(AVATAR_API, {
         headers: {
@@ -257,7 +257,7 @@ class UserService {
         }
       });
       
-      console.log('后端返回的头像数据:', response.data);
+      console.log('Backend returned avatar data:', response.data);
       
       if (response.data && Array.isArray(response.data)) {
         // 规范化后端返回的URL：去空格，缺少路径则补 /avatars/
@@ -271,12 +271,12 @@ class UserService {
       }
       
       // 如果后端返回格式不对，使用本地备用
-      console.log('后端返回格式不对，使用本地备用头像');
+      console.log('Backend returned incorrect format, using local backup avatars');
       return this.getLocalAvatars();
     } catch (error: any) {
-      console.error('获取头像列表失败:', error);
-      console.error('错误详情:', error.response?.data);
-      console.log('使用本地备用头像');
+      console.error('Failed to get avatar list:', error);
+      console.error('Error details:', error.response?.data);
+      console.log('Using local backup avatars');
       return this.getLocalAvatars();
     }
   }
@@ -317,7 +317,7 @@ class UserService {
     if (response.data && response.data.userId) {
       return { success: true, data: response.data };
     }
-    return { success: false, message: '更新失败' };
+    return { success: false, message: 'Update failed' };
   }
 
   /**

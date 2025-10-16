@@ -36,10 +36,10 @@ class AddressService {
       ...authService.getAuthHeaders()
     };
     
-    console.log('=== AddressService.getAddresses 调试信息 ===');
-    console.log('请求参数:', { username });
-    console.log('请求头:', headers);
-    console.log('完整URL:', `/api/location/getLocation`);
+    console.log('=== AddressService.getAddresses Debug Info ===');
+    console.log('Request parameters:', { username });
+    console.log('Request headers:', headers);
+    console.log('Full URL:', `/api/location/getLocation`);
     
     try {
       const response = await axios.get(`/api/location/getLocation`, {
@@ -47,21 +47,21 @@ class AddressService {
         headers
       });
       
-      console.log('响应状态:', response.status);
-      console.log('响应头:', response.headers);
-      console.log('响应数据:', response.data);
-      console.log('响应数据类型:', typeof response.data);
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      console.log('Response data:', response.data);
+      console.log('Response data type:', typeof response.data);
       
       // 确保返回的数据有正确的格式
       if (response.data) {
-        console.log('原始API响应数据:', response.data);
+        console.log('Original API response data:', response.data);
         // 如果后端返回的数据已经有code、data、message结构，直接返回
         if (response.data.code && response.data.data) {
-          console.log('后端返回标准格式，直接返回');
+          console.log('Backend returned standard format, returning directly');
           return response.data;
         } else {
           // 否则包装成标准格式
-          console.log('包装成标准格式');
+          console.log('Wrapping into standard format');
           return {
             success: true,
             code: response.status,
@@ -77,9 +77,9 @@ class AddressService {
         };
       }
     } catch (error: any) {
-      console.error('地址API调用失败:', error);
-      console.error('错误响应:', error.response?.data);
-      console.error('错误状态:', error.response?.status);
+      console.error('Address API call failed:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
       
       return {
         success: false,
@@ -93,10 +93,10 @@ class AddressService {
    * 添加新地址
    */
   async addAddress(data: AddAddressRequest): Promise<AddressResponse> {
-    console.log('=== AddressService.addAddress 调试信息 ===');
-    console.log('请求数据:', data);
-    console.log('用户ID:', data.userId);
-    console.log('地址文本:', data.locationText);
+    console.log('=== AddressService.addAddress Debug Info ===');
+    console.log('Request data:', data);
+    console.log('User ID:', data.userId);
+    console.log('Address text:', data.locationText);
     
     const response = await axios.post(`/api/location/addLocation`, data, {
       headers: {
@@ -123,7 +123,7 @@ class AddressService {
       if (error.response) {
         return error.response.data;
       }
-      throw new Error('网络错误，请稍后重试');
+      throw new Error('Network error, please try again later');
     }
   }
 
@@ -143,7 +143,7 @@ class AddressService {
       if (error.response) {
         return error.response.data;
       }
-      throw new Error('网络错误，请稍后重试');
+      throw new Error('Network error, please try again later');
     }
   }
 
@@ -164,7 +164,7 @@ class AddressService {
       if (error.response) {
         return error.response.data;
       }
-      throw new Error('网络错误，请稍后重试');
+      throw new Error('Network error, please try again later');
     }
   }
 
@@ -207,11 +207,11 @@ class AddressService {
    */
   parseAddressText(locationText: string): { street: string; building: string; postal: string; city: string } {
     if (!locationText || typeof locationText !== 'string') {
-      console.warn('地址文本为空或格式错误:', locationText);
+      console.warn('Address text is empty or format error:', locationText);
       return { street: '', building: '', postal: '', city: '' };
     }
 
-    console.log('解析地址文本:', locationText);
+    console.log('Parsing address text:', locationText);
     
     // 尝试多种分隔符：逗号、分号、换行符
     let parts: string[] = [];
@@ -227,7 +227,7 @@ class AddressService {
       parts = locationText.split(/\s+/).filter(p => p);
     }
     
-    console.log('分割后的地址部分:', parts);
+    console.log('Split address parts:', parts);
     
     // 智能解析地址部分
     let street = '';
@@ -281,7 +281,7 @@ class AddressService {
     }
     
     const result = { street, building, postal, city };
-    console.log('解析结果:', result);
+    console.log('Parse result:', result);
     return result;
   }
 }
