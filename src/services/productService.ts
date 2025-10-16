@@ -132,7 +132,7 @@ class ProductService {
   }
 
   // Add a review for a product
-  async addReview(productId: number, comment: string, reviewRank: number, userId?: number): Promise<any> {
+  async addReview(productId: number, comment: string, reviewRank: number, userId?: number, title?: string): Promise<any> {
     try {
       const url = userId 
         ? `${API_BASE_URL}/products/addReviewToProduct/${productId}`
@@ -145,6 +145,9 @@ class ProductService {
       const payload: any = { comment, reviewRank };
       if (userId) {
         payload.userId = userId;
+      }
+      if (title) {
+        payload.title = title;
       }
       const response = await axios.post(url, payload, { headers });
       return {

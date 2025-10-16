@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -18,19 +18,15 @@ interface ReviewForm {
   rating: number;
   title: string;
   content: string;
-  images: File[];
 }
 
 const ProductReview: React.FC = () => {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
   const [reviewForm, setReviewForm] = useState<ReviewForm>({
     rating: 0,
     title: '',
-    content: '',
-    images: []
+    content: ''
   });
   
   const [loading, setLoading] = useState(false);
@@ -117,23 +113,6 @@ const ProductReview: React.FC = () => {
     }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const newImages = Array.from(files).slice(0, 5 - reviewForm.images.length); // 最多5张图片
-      setReviewForm(prev => ({
-        ...prev,
-        images: [...prev.images, ...newImages]
-      }));
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setReviewForm(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,7 +159,8 @@ const ProductReview: React.FC = () => {
         id,
         reviewForm.content,
         reviewForm.rating,
-        currentUser.userId
+        currentUser.userId,
+        reviewForm.title
       );
 
       console.log('评价提交结果:', result);
@@ -320,52 +300,6 @@ const ProductReview: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 图片上传 */}
-                <div className="image-upload-section">
-                  <label className="form-label">Image</label>
-                  <div className="image-upload-area">
-                    <div className="image-preview">
-                      {reviewForm.images.length > 0 ? (
-                        <div className="image-grid">
-                          {reviewForm.images.map((image, index) => (
-                            <div key={index} className="preview-item">
-                              <img 
-                                src={URL.createObjectURL(image)} 
-                                alt={`Preview ${index + 1}`}
-                                className="preview-image"
-                              />
-                              <button
-                                type="button"
-                                className="remove-image"
-                                onClick={() => removeImage(index)}
-                              >
-                                ×
-                              </button>
-                            </div>
-                          ))}
-                          {reviewForm.images.length < 5 && (
-                            <div className="upload-placeholder" onClick={() => fileInputRef.current?.click()}>
-                              <div className="upload-icon">+</div>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="upload-placeholder" onClick={() => fileInputRef.current?.click()}>
-                          <img src="/images/placeholder.svg" alt="Upload" className="placeholder-image" />
-                          <div className="upload-icon">+</div>
-                        </div>
-                      )}
-                    </div>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleImageUpload}
-                      accept="image/*"
-                      multiple
-                      style={{ display: 'none' }}
-                    />
-                  </div>
-                </div>
 
                 {/* 错误和成功消息 */}
                 {error && <div className="error-message">{error}</div>}
