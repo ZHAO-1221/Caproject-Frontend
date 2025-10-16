@@ -1,3 +1,4 @@
+//by team 6
 import React, { useState, useEffect } from 'react';
 import '../styles/EasterEgg.css';
 

@@ -1,3 +1,4 @@
+//by Moyundi
 import axios from 'axios';
 import authService from './authService';
 
@@ -53,7 +54,7 @@ class ProductService {
       console.error('Get products paged error:', error);
       return {
         success: false,
-        message: error.response?.data?.message || '获取商品失败'
+        message: error.response?.data?.message || 'Failed to get products'
       };
     }
   }
@@ -70,7 +71,7 @@ class ProductService {
       console.error('Get product by ID error:', error);
       return {
         success: false,
-        message: error.response?.data?.message || '获取商品详情失败'
+        message: error.response?.data?.message || 'Failed to get product details'
       };
     }
   }
@@ -87,7 +88,7 @@ class ProductService {
       console.error('Get product reviews error:', error);
       return {
         success: false,
-        message: error.response?.data?.message || '获取商品评论失败'
+        message: error.response?.data?.message || 'Failed to get product reviews'
       };
     }
   }

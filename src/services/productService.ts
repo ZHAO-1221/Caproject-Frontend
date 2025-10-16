@@ -1,3 +1,4 @@
+//by SunWenjing
 import axios from 'axios';
 import authService from './authService';
 const API_BASE_URL = '/api';
@@ -33,7 +34,7 @@ class ProductService {
       console.error('Get visible products error:', error);
       return {
         success: false,
-        message: error.response?.data?.message || '获取商品失败'
+        message: error.response?.data?.message || 'fail to get product'
       };
     }
   }
@@ -52,7 +53,7 @@ class ProductService {
       console.error('Get products paged error:', error);
       return {
         success: false,
-        message: error.response?.data?.message || '获取商品失败'
+        message: error.response?.data?.message || 'fail to get product'
       };
     }
   }
@@ -75,7 +76,7 @@ class ProductService {
       console.error('Get product by ID error:', error);
       return {
         success: false,
-        message: error.response?.data?.message || '获取商品详情失败'
+        message: error.response?.data?.message || 'fail to get product detail'
       };
     }
   }
@@ -83,29 +84,29 @@ class ProductService {
   // Get product reviews
   async getProductReviews(productId: number): Promise<any> {
     try {
-      console.log('=== 获取商品评论调试信息 ===');
-      console.log('商品ID:', productId);
-      console.log('请求URL:', `${API_BASE_URL}/products/getReviewsByProductId/${productId}`);
+      console.log('=== get review ===');
+      console.log('ID:', productId);
+      console.log('URL:', `${API_BASE_URL}/products/getReviewsByProductId/${productId}`);
       
       // 先尝试路径参数形式
       try {
         const response = await axios.get(`${API_BASE_URL}/products/getReviewsByProductId/${productId}`);
-        console.log('评论数据响应:', response.data);
+        console.log('review response:', response.data);
         return { success: true, data: response.data };
       } catch (errPath: any) {
-        console.log('路径参数请求失败，尝试query参数:', errPath.message);
+        console.log('path error try to use query:', errPath.message);
         // 再尝试 query 参数形式
         const response = await axios.get(`${API_BASE_URL}/products/getReviewsByProductId`, {
           params: { productId }
         });
-        console.log('Query参数评论数据响应:', response.data);
+        console.log('Query response:', response.data);
         return { success: true, data: response.data };
       }
     } catch (error: any) {
       console.error('Get product reviews error:', error);
       return {
         success: false,
-        message: error.response?.data?.message || '获取商品评论失败'
+        message: error.response?.data?.message || 'fail to get product review'
       };
     }
   }
@@ -126,7 +127,7 @@ class ProductService {
       console.error('Add to cart error:', error);
       return {
         success: false,
-        message: error.response?.data?.message || '添加到购物车失败'
+        message: error.response?.data?.message || 'fail to add in cart'
       };
     }
   }
@@ -158,7 +159,7 @@ class ProductService {
       console.error('Add review error:', error);
       return {
         success: false,
-        message: error.response?.data?.message || error.response?.data?.error || `添加评论失败（${error.response?.status || '未知状态'}）`
+        message: error.response?.data?.message || error.response?.data?.error || `fail to add review（${error.response?.status || 'unknown state'}）`
       };
     }
   }

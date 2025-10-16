@@ -1,3 +1,4 @@
+//by SunWenjing
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
@@ -62,7 +63,7 @@ const ProductReviewsList: React.FC = () => {
           const mapped: ReviewItem[] = sorted.map((rv: any) => {
             // 使用后端直接返回的 userName 字段
             const userName = rv.userName || 'Anonymous';
-            console.log('评论数据映射:', { 
+            console.log('Review data mapping:', { 
               reviewId: rv.reviewId, 
               title: rv.title,
               userName: rv.userName, 
@@ -71,7 +72,7 @@ const ProductReviewsList: React.FC = () => {
             
             return {
               id: rv.reviewId,
-              title: rv.title || '评论',
+              title: rv.title || 'Review',
               body: rv.comment || '',
               rating: typeof rv.reviewRank === 'number' ? rv.reviewRank : 0,
               reviewerName: userName,

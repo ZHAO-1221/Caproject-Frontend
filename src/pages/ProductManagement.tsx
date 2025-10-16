@@ -1,3 +1,4 @@
+//by MoYundi
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import Header from '../components/AdminHeader';
@@ -176,7 +177,7 @@ const ProductManagement: React.FC = () => {
       console.error('Error loading products from API:', error);
       setLoading(false);
       // 如果API调用失败，可以选择显示错误消息或使用本地mock数据
-      alert('无法从服务器加载商品数据。请确保后端服务正在运行。');
+      alert('Failed to load product data from server. Please ensure the backend service is running.');
     }
   }, []);
 
@@ -280,10 +281,10 @@ const ProductManagement: React.FC = () => {
           prevProducts.filter(product => product.id !== productId)
         );
         
-        alert('商品删除成功！');
+        alert('Product deleted successfully!');
       } catch (error) {
         console.error('Error deleting product:', error);
-        alert('删除商品失败。请稍后重试。');
+        alert('Failed to delete product. Please try again later.');
       }
     }
   };
@@ -292,7 +293,7 @@ const ProductManagement: React.FC = () => {
   const handleToggleVisibility = async (productId: number, currentVisibility: number) => {
     try {
       const newVisibility = currentVisibility === 1 ? 0 : 1;
-      const action = newVisibility === 1 ? '显示' : '隐藏';
+      const action = newVisibility === 1 ? 'Show' : 'Hide';
       
       console.log(`Toggling visibility for product ${productId}: ${currentVisibility} -> ${newVisibility}`);
       
@@ -309,10 +310,10 @@ const ProductManagement: React.FC = () => {
         )
       );
       
-      alert(`商品已${action}！`);
+      alert(`Product has been ${action}!`);
     } catch (error) {
       console.error('Error toggling product visibility:', error);
-      alert('切换商品可见性失败。请稍后重试。');
+      alert('Failed to toggle product visibility. Please try again later.');
     }
   };
 

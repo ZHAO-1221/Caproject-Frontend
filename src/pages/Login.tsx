@@ -1,3 +1,4 @@
+//by HuXintian
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authService, { LoginRequest } from '../services/authService';
@@ -41,7 +42,7 @@ const Login: React.FC = () => {
 
     // 验证输入
     if (!formData.username.trim() || !formData.password.trim()) {
-      setError('请填写用户名和密码');
+      setError('Please fill in the username and password');
       return;
     }
 
@@ -55,7 +56,7 @@ const Login: React.FC = () => {
       const response = await authService.login(credentials);
       
       if (response.success && response.user) {
-        setSuccess('登录成功！正在跳转...');
+        setSuccess('Successfully logged in! Redirecting...');
         
         // authService.login() 已经自动保存了认证信息，无需重复调用setUserSession
         
@@ -64,11 +65,11 @@ const Login: React.FC = () => {
           navigate('/personal-info');
         }, 1500);
       } else {
-        setError(response.message || '登录失败，请检查用户名和密码');
+        setError(response.message || 'Login failed, please check the username and password');
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      setError(error.message || '网络错误，请稍后重试');
+      setError(error.message || 'Web error, please try again later');
     } finally {
       setLoading(false);
     }

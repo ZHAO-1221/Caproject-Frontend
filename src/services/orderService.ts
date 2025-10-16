@@ -1,3 +1,4 @@
+//by WengYuhao
 import axios from 'axios';
 const API_BASE_URL = '/api';
 
@@ -15,7 +16,7 @@ class OrderService {
       console.log(response.data);
     } catch (error: any) {
       console.error('Get orders error:', error);
-      return { success: false, message: error.response?.data?.message || '获取订单失败' };
+      return { success: false, message: error.response?.data?.message || 'Failed to get order' };
     }
   }
 

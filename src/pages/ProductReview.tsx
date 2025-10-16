@@ -1,9 +1,11 @@
+//by SunWenjing
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import productService from '../services/productService';
 import authService from '../services/authService';
+import userService from '../services/userService';
 import '../styles/ProductReview.css';
 
 interface ProductInfo {
@@ -36,6 +38,7 @@ const ProductReview: React.FC = () => {
   const [productExists, setProductExists] = useState<boolean>(true);
   const [productDetail, setProductDetail] = useState<any>(null);
   const [imgFallbackStep, setImgFallbackStep] = useState<number>(0);
+  const [userAvatar, setUserAvatar] = useState<string>('/images/user-avatar.svg');
   
   const normalizeImageUrl = (raw: any): string => {
     if (!raw) return '/images/placeholder.svg';
@@ -70,7 +73,32 @@ const ProductReview: React.FC = () => {
   useEffect(() => {
     const user = authService.getCurrentUser();
     setCurrentUser(user);
-    console.log('ProductReview - 当前用户:', user);
+    console.log('ProductReview - Current user:', user);
+  }, []);
+
+  // 加载用户头像，保持与 PersonalInfo 页面一致
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const username = userService.getCurrentUsername() || '';
+        const resp = await userService.getUserProfile(username);
+        if (resp.success && resp.data) {
+          const profile = resp.data;
+          if (profile.userProfileUrl) {
+            const raw = profile.userProfileUrl.trim();
+            const hasSlash = raw.includes('/');
+            const built = hasSlash ? encodeURI(raw) : ('/avatars/' + encodeURIComponent(raw));
+            setUserAvatar(built.replace(/\/+/g, '/'));
+          } else {
+            setUserAvatar('/images/user-avatar.svg');
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load user avatar, using default avatar', e);
+        setUserAvatar('/images/user-avatar.svg');
+      }
+    };
+    loadProfile();
   }, []);
 
   // 从后端获取真实商品信息
@@ -78,7 +106,7 @@ const ProductReview: React.FC = () => {
     const id = parseInt(productId || '0');
     if (!id) {
       setProductExists(false);
-      setError('无效的商品ID');
+      setError('Invalid product ID');
       return;
     }
     (async () => {
@@ -88,7 +116,7 @@ const ProductReview: React.FC = () => {
         setProductDetail(res.data);
       } else {
         setProductExists(false);
-        setError(res.message || `商品不存在（ID: ${id}）`);
+        setError(res.message || `Product does not exist (ID: ${id})`);
       }
     })();
     // 清理提示
@@ -118,7 +146,7 @@ const ProductReview: React.FC = () => {
     e.preventDefault();
     
     if (!productExists) {
-      setError('商品不存在或已下架，无法提交评价');
+      setError('Product does not exist or has been removed, cannot submit review');
       return;
     }
 
@@ -147,12 +175,12 @@ const ProductReview: React.FC = () => {
       setError('');
       setSuccess('');
 
-      console.log('=== 提交评价调试信息 ===');
+      console.log('=== Submit Review Debug Info ===');
       const id = parseInt(productId || '0');
-      console.log('商品ID:', id);
-      console.log('评价内容:', reviewForm.content);
-      console.log('评价等级:', reviewForm.rating);
-      console.log('当前用户:', currentUser);
+      console.log('Product ID:', id);
+      console.log('Review content:', reviewForm.content);
+      console.log('Review rating:', reviewForm.rating);
+      console.log('Current user:', currentUser);
 
       // 调用真实API提交评价
       const result = await productService.addReview(
@@ -163,7 +191,7 @@ const ProductReview: React.FC = () => {
         reviewForm.title
       );
 
-      console.log('评价提交结果:', result);
+      console.log('Review submission result:', result);
 
       if (result.success) {
         setSuccess('Review submitted successfully! Thank you for your feedback.');
@@ -199,7 +227,7 @@ const ProductReview: React.FC = () => {
         <div className="sidebar">
           <div className="profile-section">
             <div className="profile-picture">
-              <img src="/images/user-avatar.svg" alt="User Avatar" />
+              <img src={userAvatar} alt="User Avatar" />
             </div>
             <div className="profile-name">{currentUser?.userName || 'User'}</div>
           </div>
@@ -292,7 +320,7 @@ const ProductReview: React.FC = () => {
                 {/* 用户信息显示 */}
                 <div className="user-info-section">
                   <div className="user-avatar">
-                    <img src="/images/user-avatar.svg" alt="User Avatar" />
+                    <img src={userAvatar} alt="User Avatar" />
                   </div>
                   <div className="user-details">
                     <div className="user-name">{currentUser?.userName || 'User Name'}</div>
