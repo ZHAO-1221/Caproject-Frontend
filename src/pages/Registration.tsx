@@ -14,6 +14,12 @@ interface RegistrationForm {
   phone: string;
 }
 
+interface PasswordStrength {
+  score: number;
+  label: string;
+  color: string;
+}
+
 const Registration: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<RegistrationForm>({
@@ -26,6 +32,50 @@ const Registration: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
+    score: 0,
+    label: '',
+    color: ''
+  });
+
+  // 计算密码强度
+  const calculatePasswordStrength = (password: string): PasswordStrength => {
+    let score = 0;
+    let label = '';
+    let color = '';
+
+    if (password.length === 0) {
+      return { score: 0, label: '', color: '' };
+    }
+
+    // 长度检查
+    if (password.length >= 6) score += 1;
+    if (password.length >= 8) score += 1;
+    if (password.length >= 12) score += 1;
+
+    // 字符类型检查
+    if (/[a-z]/.test(password)) score += 1; // 小写字母
+    if (/[A-Z]/.test(password)) score += 1; // 大写字母
+    if (/[0-9]/.test(password)) score += 1; // 数字
+    if (/[^A-Za-z0-9]/.test(password)) score += 1; // 特殊字符
+
+    // 根据分数确定强度和颜色
+    if (score <= 2) {
+      label = 'Weak';
+      color = '#ff4444';
+    } else if (score <= 4) {
+      label = 'Medium';
+      color = '#ffaa00';
+    } else if (score <= 6) {
+      label = 'Strong';
+      color = '#00aa44';
+    } else {
+      label = 'Very Strong';
+      color = '#0066cc';
+    }
+
+    return { score, label, color };
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -46,6 +96,12 @@ const Registration: React.FC = () => {
         ...prev,
         [name]: value
       }));
+    }
+
+    // 如果是密码字段，计算密码强度
+    if (name === 'password') {
+      const strength = calculatePasswordStrength(value);
+      setPasswordStrength(strength);
     }
     
     if (error) setError('');
@@ -77,6 +133,11 @@ const Registration: React.FC = () => {
     // Password validation
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters');
+      return;
+    }
+
+    if (formData.password.length > 28) {
+      setError('Password must be 28 characters or less');
       return;
     }
 
@@ -188,11 +249,32 @@ const Registration: React.FC = () => {
                 value={formData.password}
                 onChange={handleInputChange}
                 className="input-value"
-                placeholder="Enter your password (at least 6 characters)"
+                placeholder="Enter your password (6-28 characters)"
+                maxLength={28}
                 required
                 disabled={loading}
               />
             </div>
+            {/* 密码强度指示器 */}
+            {formData.password && (
+              <div className="password-strength-container">
+                <div className="password-strength-bar">
+                  <div 
+                    className="password-strength-fill"
+                    style={{
+                      width: `${(passwordStrength.score / 7) * 100}%`,
+                      backgroundColor: passwordStrength.color
+                    }}
+                  ></div>
+                </div>
+                <div 
+                  className="password-strength-label"
+                  style={{ color: passwordStrength.color }}
+                >
+                  {passwordStrength.label}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="input-field">
