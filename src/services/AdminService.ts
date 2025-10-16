@@ -41,7 +41,7 @@ export const adminLogin = async (username: string, password: string): Promise<Lo
         }
       }
     );
-
+    
     console.log('API Response - adminLogin:', response.data);
 
     // 兼容不同后端返回格式：有的只返回 { token }
@@ -65,15 +65,15 @@ export const adminLogin = async (username: string, password: string): Promise<Lo
 
     return {
       success: false,
-      message: data?.message || '登录失败，请检查用户名和密码'
+      message: data?.message || 'Login failed, please check username and password'
     };
   } catch (error: any) {
     console.error('Error during admin login:', error);
-
+    
     // 返回错误信息
     return {
       success: false,
-      message: error.response?.data?.message || '登录失败，请检查用户名和密码'
+      message: error.response?.data?.message || 'Login failed, please check username and password'
     };
   }
 };
@@ -156,7 +156,7 @@ export const getAllProducts = async (): Promise<ProductDTO[]> => {
     return response.data;
   } catch (error: any) {
     console.error('Error fetching all products:', error);
-    throw new Error(error.response?.data?.message || '获取商品列表失败');
+    throw new Error(error.response?.data?.message || 'Failed to get product list');
   }
 };
 
@@ -181,7 +181,7 @@ export const createProduct = async (productDTO: ProductDTO): Promise<Product> =>
     return response.data;
   } catch (error: any) {
     console.error('Error creating product:', error);
-    throw new Error(error.response?.data?.message || '创建商品失败');
+    throw new Error(error.response?.data?.message || 'Failed to create product');
   }
 };
 
@@ -207,7 +207,7 @@ export const updateProduct = async (productId: number, productDTO: ProductDTO): 
     return response.data;
   } catch (error: any) {
     console.error('Error updating product:', error);
-    throw new Error(error.response?.data?.message || '更新商品失败');
+    throw new Error(error.response?.data?.message || 'Failed to update product');
   }
 };
 
@@ -225,7 +225,7 @@ export const deleteProduct = async (productId: number): Promise<void> => {
     console.log('Product deleted successfully:', productId);
   } catch (error: any) {
     console.error('Error deleting product:', error);
-    throw new Error(error.response?.data?.message || '删除商品失败');
+    throw new Error(error.response?.data?.message || 'Failed to delete product');
   }
 };
 
@@ -251,7 +251,7 @@ export const updateStock = async (productId: number, stockQuantity: number): Pro
     return response.data;
   } catch (error: any) {
     console.error('Error updating stock:', error);
-    throw new Error(error.response?.data?.message || '更新库存失败');
+    throw new Error(error.response?.data?.message || 'Failed to update stock');
   }
 };
 
@@ -277,7 +277,7 @@ export const setVisibility = async (productId: number, isVisible: boolean): Prom
     return response.data;
   } catch (error: any) {
     console.error('Error setting visibility:', error);
-    throw new Error(error.response?.data?.message || '设置可见性失败');
+    throw new Error(error.response?.data?.message || 'Failed to set visibility');
   }
 };
 
@@ -297,7 +297,7 @@ export const getProductsPaged = async (page: number = 0, size: number = 10): Pro
     return response.data;
   } catch (error: any) {
     console.error('Error fetching products paged:', error);
-    throw new Error(error.response?.data?.message || '获取分页商品列表失败');
+    throw new Error(error.response?.data?.message || 'Failed to get paginated product list');
   }
 };
 
@@ -332,7 +332,7 @@ export const createProductWithImage = async (
     return response.data;
   } catch (error: any) {
     console.error('Error creating product with image:', error);
-    throw new Error(error.response?.data?.message || '创建商品图片失败');
+    throw new Error(error.response?.data?.message || 'Failed to create product with image');
   }
 };
 
@@ -355,36 +355,6 @@ export const getAllProductsAllPages = async (pageSize: number = 100): Promise<Pr
   return all;
 };
 
-/**
- * 更新商品图片（管理员接口）
- * 对应API: POST /api/admin/products/updateImage/{id}
- * form-data 字段：image 或 file 或 picture
- */
-export const updateProductImage = async (
-  productId: number,
-  imageFile: File
-): Promise<Product> => {
-  try {
-    const form = new FormData();
-    form.append('image', imageFile);
-
-    const response = await axios.post<Product>(
-      `${API_BASE_URL}/admin/products/updateImage/${productId}`,
-      form,
-      {
-        headers: {
-          ...getAdminAuthHeaders(),
-          'Content-Type': 'multipart/form-data'
-        }
-      }
-    );
-    return response.data;
-  } catch (error: any) {
-    console.error('Error updating product image:', error);
-    throw new Error(error.response?.data?.message || '更新商品图片失败');
-  }
-};
-
 // 导出所有API函数
 export default {
   // 认证相关
@@ -401,7 +371,6 @@ export default {
   setVisibility,
   getProductsPaged,
   getAllProductsAllPages,
-  createProductWithImage,
-  updateProductImage
+  createProductWithImage
 };
 

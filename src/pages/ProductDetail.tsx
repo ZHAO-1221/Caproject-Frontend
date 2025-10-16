@@ -148,7 +148,7 @@ const ProductDetail: React.FC = () => {
             const dateText = formatDateYMD(rv?.reviewCreateTime);
             // 使用后端直接返回的 userName 字段
             const userName = rv.userName || 'Anonymous';
-            console.log('商品详情页评论数据映射:', { 
+            console.log('Product detail page review data mapping:', { 
               reviewId: rv.reviewId, 
               title: rv.title,
               userName: rv.userName, 
@@ -157,7 +157,7 @@ const ProductDetail: React.FC = () => {
             
             return {
               id: rv.reviewId,
-              title: rv.title || '评论',
+              title: rv.title || 'Review',
               body: rv.comment || '',
               rating: typeof rv.reviewRank === 'number' ? rv.reviewRank : 0,
               reviewerName: userName,

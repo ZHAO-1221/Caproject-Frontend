@@ -70,7 +70,7 @@ const ProductReview: React.FC = () => {
   useEffect(() => {
     const user = authService.getCurrentUser();
     setCurrentUser(user);
-    console.log('ProductReview - 当前用户:', user);
+    console.log('ProductReview - Current user:', user);
   }, []);
 
   // 从后端获取真实商品信息
@@ -78,7 +78,7 @@ const ProductReview: React.FC = () => {
     const id = parseInt(productId || '0');
     if (!id) {
       setProductExists(false);
-      setError('无效的商品ID');
+      setError('Invalid product ID');
       return;
     }
     (async () => {
@@ -88,7 +88,7 @@ const ProductReview: React.FC = () => {
         setProductDetail(res.data);
       } else {
         setProductExists(false);
-        setError(res.message || `商品不存在（ID: ${id}）`);
+        setError(res.message || `Product does not exist (ID: ${id})`);
       }
     })();
     // 清理提示
@@ -118,7 +118,7 @@ const ProductReview: React.FC = () => {
     e.preventDefault();
     
     if (!productExists) {
-      setError('商品不存在或已下架，无法提交评价');
+      setError('Product does not exist or has been removed, cannot submit review');
       return;
     }
 
@@ -147,12 +147,12 @@ const ProductReview: React.FC = () => {
       setError('');
       setSuccess('');
 
-      console.log('=== 提交评价调试信息 ===');
+      console.log('=== Submit Review Debug Info ===');
       const id = parseInt(productId || '0');
-      console.log('商品ID:', id);
-      console.log('评价内容:', reviewForm.content);
-      console.log('评价等级:', reviewForm.rating);
-      console.log('当前用户:', currentUser);
+      console.log('Product ID:', id);
+      console.log('Review content:', reviewForm.content);
+      console.log('Review rating:', reviewForm.rating);
+      console.log('Current user:', currentUser);
 
       // 调用真实API提交评价
       const result = await productService.addReview(
@@ -163,7 +163,7 @@ const ProductReview: React.FC = () => {
         reviewForm.title
       );
 
-      console.log('评价提交结果:', result);
+      console.log('Review submission result:', result);
 
       if (result.success) {
         setSuccess('Review submitted successfully! Thank you for your feedback.');

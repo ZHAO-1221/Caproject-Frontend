@@ -78,12 +78,12 @@ const ProductCreate: React.FC = () => {
   const handleSubmit = async () => {
     // 验证必填字段
     if (!productName.trim()) {
-      alert('请输入商品名称！');
+      alert('Please enter product name!');
       return;
     }
     
     if (!price || parseFloat(price) <= 0) {
-      alert('请输入有效的价格！');
+      alert('Please enter a valid price!');
       return;
     }
     
@@ -117,13 +117,13 @@ const ProductCreate: React.FC = () => {
       }
       console.log('Product created successfully:', result);
       
-      alert('新商品创建成功！');
+      alert('New product created successfully!');
       
       // 跳转回ProductManagement页面
       navigate('/product-management');
     } catch (error) {
       console.error('Error creating product:', error);
-      alert('创建商品失败。请稍后重试。');
+      alert('Failed to create product. Please try again later.');
     }
   };
   
