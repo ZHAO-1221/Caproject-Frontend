@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import '../styles/ProductEdit.css';
 import * as productApi from '../services/AdminService';
 import { ProductDTO } from '../services/AdminService';
+import productService from '../services/productService';
 
 interface Review {
   id: number;
@@ -32,81 +33,8 @@ const ProductEdit: React.FC = () => {
   // Additional product fields
   const [category, setCategory] = useState('');
 
-  // Reviews
-  const [reviews, setReviews] = useState<Review[]>([
-    {
-      id: 1,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 3,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    },
-    {
-      id: 2,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 3,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    },
-    {
-      id: 3,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 3,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    },
-    {
-      id: 4,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 4,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    },
-    {
-      id: 5,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 5,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    },
-    {
-      id: 6,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 2,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    },
-    {
-      id: 7,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 4,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    },
-    {
-      id: 8,
-      title: 'Review title',
-      body: 'Review body',
-      rating: 3,
-      reviewerName: 'Reviewer name',
-      date: 'Date',
-      avatar: '/images/user-avatar.svg'
-    }
-  ]);
+  // Reviews - 默认空，避免占位评论
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   // Review pagination
   const [currentReviewPage, setCurrentReviewPage] = useState(1);
@@ -149,6 +77,75 @@ const ProductEdit: React.FC = () => {
     };
 
     loadProduct();
+  }, [urlProductId]);
+
+  // 加载商品评论（根据产品ID从后端获取并映射到本地结构）
+  useEffect(() => {
+    const loadReviews = async () => {
+      try {
+        if (!urlProductId) {
+          setReviews([]);
+          return;
+        }
+        const currentProductId = parseInt(urlProductId);
+        const res = await productService.getProductReviews(currentProductId);
+        if (res?.success && Array.isArray(res.data)) {
+          const formatDateYMD = (input: any): string => {
+            if (!input) return '';
+            const dateObj = new Date(input);
+            if (isNaN(dateObj.getTime())) {
+              const parts = String(input).split(/\D+/).filter(Boolean);
+              if (parts.length >= 3) {
+                const [y, m, d] = parts.map(Number);
+                const mm = String(m).padStart(2, '0');
+                const dd = String(d).padStart(2, '0');
+                return `${y}-${mm}-${dd}`;
+              }
+              return String(input);
+            }
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+          };
+          const toTimestamp = (input: any): number => {
+            const d = new Date(input);
+            if (!isNaN(d.getTime())) return d.getTime();
+            const parts = String(input).split(/\D+/).filter(Boolean);
+            if (parts.length >= 3) {
+              const [y, m, day] = parts.map(Number);
+              return new Date(y, (m || 1) - 1, day || 1).getTime();
+            }
+            return 0;
+          };
+
+          const sorted = [...res.data].sort((a: any, b: any) =>
+            toTimestamp(b?.reviewCreateTime) - toTimestamp(a?.reviewCreateTime)
+          );
+
+          const mapped: Review[] = sorted.map((rv: any) => {
+            const dateText = formatDateYMD(rv?.reviewCreateTime);
+            return {
+              id: rv.reviewId,
+              title: 'Review',
+              body: rv.comment || '',
+              rating: typeof rv.reviewRank === 'number' ? rv.reviewRank : 0,
+              reviewerName: rv.user?.userName || 'Anonymous',
+              date: dateText,
+              avatar: '/images/user-avatar.svg'
+            };
+          });
+          setReviews(mapped);
+        } else {
+          setReviews([]);
+        }
+      } catch (e) {
+        console.error('Error loading reviews:', e);
+        setReviews([]);
+      }
+    };
+
+    loadReviews();
   }, [urlProductId]);
 
   // Handle delete review
@@ -408,30 +405,33 @@ const ProductEdit: React.FC = () => {
         <div className="right-sidebar">
           <h3 className="reviews-title">Latest reviews</h3>
           <div className="reviews-list">
-            {currentReviews.map((review) => (
-              <div key={review.id} className="review-card">
-                <div className="review-header">
-                  <div className="review-stars">
-                    {renderStars(review.rating)}
+            {currentReviews.length === 0 ? (
+              <div className="no-reviews">暂无评论</div>
+            ) : (
+              currentReviews.map((review) => (
+                <div key={review.id} className="review-card">
+                  <div className="review-header">
+                    <div className="review-stars">
+                      {renderStars(review.rating)}
+                    </div>
+                    <button
+                      className="review-delete-btn"
+                      onClick={() => handleDeleteReview(review.id)}
+                    >
+                      Delete
+                    </button>
                   </div>
-                  <button
-                    className="review-delete-btn"
-                    onClick={() => handleDeleteReview(review.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-                <h4 className="review-title">{review.title}</h4>
-                <p className="review-body">{review.body}</p>
-                <div className="reviewer-info">
-                  <img src={review.avatar} alt="Reviewer" className="reviewer-avatar" />
-                  <div className="reviewer-details">
-                    <div className="reviewer-name">{review.reviewerName}</div>
-                    <div className="review-date">{review.date}</div>
+                  <h4 className="review-title">{review.title}</h4>
+                  <p className="review-body">{review.body}</p>
+                  <div className="reviewer-info">
+                    <div className="reviewer-details">
+                      <div className="reviewer-name">{review.reviewerName}</div>
+                      <div className="review-date">{review.date}</div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           {/* Review Pagination */}
