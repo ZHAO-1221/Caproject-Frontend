@@ -4,7 +4,6 @@ import Header from '../components/AdminHeader';
 import Footer from '../components/Footer';
 import '../styles/ProductManagement.css';
 import * as adminApi from '../services/AdminService';
-import productService, { Product as ApiProduct } from '../services/AdminProductService';
 
 interface Product {
   id: number;
@@ -16,6 +15,7 @@ interface Product {
   productId?: string;
   description?: string;
   stock?: number;
+  isVisible?: number; // 1: 可见, 0: 隐藏
 }
 
 interface FilterState {
@@ -123,8 +123,8 @@ const ProductManagement: React.FC = () => {
     }
   }, [categoryParam, searchQuery]);
 
-  // 将可见商品接口(ApiProduct)转换为本页展示用的Product格式
-  const convertVisibleToProduct = (api: ApiProduct): Product => {
+  // 将商品接口(ProductDTO)转换为本页展示用的Product格式
+  const convertVisibleToProduct = (api: any): Product => {
     // 将后端返回的绝对图片URL转换为相对路径，便于前端代理
     const imageUrl = api.imageUrl
       ? api.imageUrl.replace(/http:\/\/[^:]+:8080/, '')
@@ -138,7 +138,8 @@ const ProductManagement: React.FC = () => {
       category: api.productCategory, // 如 'daily necessities' 等
       productId: String(api.productId),
       description: api.productDescription,
-      stock: api.productStockQuantity
+      stock: api.productStockQuantity,
+      isVisible: api.isVisible // 1: 可见, 0: 隐藏
     };
   };
 
@@ -146,11 +147,11 @@ const ProductManagement: React.FC = () => {
   const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('Fetching visible products from backend API...');
-      // 使用与 ProductBrowse 相同的服务获取可见商品
-      const res = await productService.getVisibleProducts();
-      const fetchedProducts: Product[] = (res.success && Array.isArray(res.data))
-        ? (res.data as ApiProduct[]).map(convertVisibleToProduct)
+      console.log('Fetching all products from backend API...');
+      // 使用管理员API获取所有商品（包括隐藏的）
+      const allProducts = await adminApi.getAllProducts();
+      const fetchedProducts: Product[] = Array.isArray(allProducts)
+        ? allProducts.map(convertVisibleToProduct)
         : [];
       console.log('Received products from API:', fetchedProducts.length);
       console.log('Converted products:', fetchedProducts);
@@ -284,6 +285,34 @@ const ProductManagement: React.FC = () => {
         console.error('Error deleting product:', error);
         alert('删除商品失败。请稍后重试。');
       }
+    }
+  };
+
+  // Handle toggle product visibility
+  const handleToggleVisibility = async (productId: number, currentVisibility: number) => {
+    try {
+      const newVisibility = currentVisibility === 1 ? 0 : 1;
+      const action = newVisibility === 1 ? '显示' : '隐藏';
+      
+      console.log(`Toggling visibility for product ${productId}: ${currentVisibility} -> ${newVisibility}`);
+      
+      // 调用后端API设置商品可见性
+      await adminApi.setVisibility(productId, newVisibility === 1);
+      console.log('Product visibility updated successfully');
+      
+      // 更新本地状态
+      setProducts(prevProducts => 
+        prevProducts.map(product => 
+          product.id === productId 
+            ? { ...product, isVisible: newVisibility }
+            : product
+        )
+      );
+      
+      alert(`商品已${action}！`);
+    } catch (error) {
+      console.error('Error toggling product visibility:', error);
+      alert('切换商品可见性失败。请稍后重试。');
     }
   };
 
@@ -498,7 +527,7 @@ const ProductManagement: React.FC = () => {
               currentProducts.map((product) => (
                 <div 
                   key={product.id} 
-                  className="product-card"
+                  className={`product-card ${product.isVisible === 0 ? 'product-hidden' : ''}`}
                 >
                   <div className="product-image">
                     <img src={product.image} alt={product.name} />
@@ -512,6 +541,22 @@ const ProductManagement: React.FC = () => {
                     </div>
                     <div className="product-actions-wrapper">
                       <div className="product-actions">
+                        <button 
+                          className={`visibility-btn ${
+                            (product.stock || 0) <= 0 ? 'out-of-stock' : 
+                            product.isVisible === 1 ? 'visible' : 'invisible'
+                          }`}
+                          onClick={() => handleToggleVisibility(product.id, product.isVisible || 0)}
+                          disabled={(product.stock || 0) <= 0}
+                          title={
+                            (product.stock || 0) <= 0 ? 'Product is invisible to users (Out of stock)' :
+                            product.isVisible === 1 ? 'Click to hide product from users' : 
+                            'Click to show product to users'
+                          }
+                        >
+                          {(product.stock || 0) <= 0 ? 'Out of Stock' : 
+                           product.isVisible === 1 ? 'Visible' : 'Invisible'}
+                        </button>
                         <button 
                           className="edit-btn"
                           onClick={() => {

@@ -19,7 +19,7 @@ interface Review {
 const ProductEdit: React.FC = () => {
   const navigate = useNavigate();
   const { productId: urlProductId } = useParams<{ productId: string }>();
-  
+
   // Form states
   const [productName, setProductName] = useState('Text Heading');
   const [price, setPrice] = useState('');
@@ -28,10 +28,10 @@ const ProductEdit: React.FC = () => {
   const [stock, setStock] = useState('0');
   const [discount, setDiscount] = useState('0');
   const [productImage, setProductImage] = useState<string | null>(null);
-  
+
   // Additional product fields
   const [category, setCategory] = useState('');
-  
+
   // Reviews
   const [reviews, setReviews] = useState<Review[]>([
     {
@@ -107,22 +107,22 @@ const ProductEdit: React.FC = () => {
       avatar: '/images/user-avatar.svg'
     }
   ]);
-  
+
   // Review pagination
   const [currentReviewPage, setCurrentReviewPage] = useState(1);
   const reviewsPerPage = 3;
-  
+
   // Load product data from localStorage on mount
   useEffect(() => {
     const loadProduct = async () => {
       if (urlProductId) {
         try {
           console.log(`Loading product with ID: ${urlProductId}`);
-          
+
           // 从API获取所有商品，然后找到对应的商品
           const products = await productApi.getAllProducts();
           const product = products.find((p: ProductDTO) => p.productId === parseInt(urlProductId));
-          
+
           if (product) {
             console.log('Loading product for editing:', product);
             setProductName(product.productName || '');
@@ -147,17 +147,17 @@ const ProductEdit: React.FC = () => {
         }
       }
     };
-    
+
     loadProduct();
   }, [urlProductId]);
-  
+
   // Handle delete review
   const handleDeleteReview = (reviewId: number) => {
     const confirmDelete = window.confirm('Are you sure you want to delete this review?');
     if (confirmDelete) {
       const newReviews = reviews.filter(review => review.id !== reviewId);
       setReviews(newReviews);
-      
+
       // If current page becomes empty after deletion, go to previous page
       const newTotalPages = Math.ceil(newReviews.length / reviewsPerPage);
       if (currentReviewPage > newTotalPages && newTotalPages > 0) {
@@ -165,7 +165,7 @@ const ProductEdit: React.FC = () => {
       }
     }
   };
-  
+
   // Handle image upload
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -191,13 +191,13 @@ const ProductEdit: React.FC = () => {
   // Handle submit
   const handleSubmit = async () => {
     const productIdNum = parseInt(urlProductId || '0');
-    
+
     // 验证必填字段
     if (!productName || !price) {
       alert('请填写商品名称和价格！');
       return;
     }
-    
+
     try {
       // 创建符合后端API格式的商品对象（文本部分）
       const updatedProductDTO: ProductDTO = {
@@ -213,24 +213,26 @@ const ProductEdit: React.FC = () => {
       };
 
       console.log('Updating product:', updatedProductDTO);
-      
+
       // 调用后端API更新商品
       let result = await productApi.updateProduct(productIdNum, updatedProductDTO);
 
-      // 如果选择了图片文件，同时调用上传图片接口以覆盖图片
+      // 如果选择了图片文件，同时调用“更新图片”接口以覆盖旧图
       const fileInput = document.getElementById('image-upload-input') as HTMLInputElement | null;
       const file = fileInput?.files?.[0] || null;
       if (file) {
         try {
-          await productApi.createProductWithImage(updatedProductDTO, file);
+          const updated = await productApi.updateProductImage(productIdNum, file);
+          const newUrl = (updated?.imageUrl || '').replace(/http:\/\/[^:]+:8080/, '');
+          setProductImage(newUrl ? `${newUrl}?v=${Date.now()}` : productImage);
         } catch (e) {
           console.error('Uploading image failed, product text updated already:', e);
         }
       }
       console.log('Product updated successfully:', result);
-      
+
       alert('商品信息更新成功！');
-      
+
       // 跳转回ProductManagement页面
       navigate('/product-management');
     } catch (error) {
@@ -238,7 +240,7 @@ const ProductEdit: React.FC = () => {
       alert('更新商品失败。请稍后重试。');
     }
   };
-  
+
   // Render stars
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, index) => (
@@ -247,26 +249,26 @@ const ProductEdit: React.FC = () => {
       </span>
     ));
   };
-  
+
   // Calculate reviews for current page
   const totalReviewPages = Math.ceil(reviews.length / reviewsPerPage);
   const startReviewIndex = (currentReviewPage - 1) * reviewsPerPage;
   const currentReviews = reviews.slice(startReviewIndex, startReviewIndex + reviewsPerPage);
-  
+
   // Handle review page change
   const handleReviewPageChange = (page: number) => {
     setCurrentReviewPage(page);
   };
-  
+
   return (
     <div className="product-edit-page">
       <Header accountPath="/admin-login" />
-      
+
       {/* Back Button */}
       <button className="back-button" onClick={() => navigate('/product-management')}>
         <span className="back-arrow">←</span>
       </button>
-      
+
       <div className="main-content">
         {/* Center Content */}
         <div className="center-content">
@@ -279,8 +281,8 @@ const ProductEdit: React.FC = () => {
               onChange={handleImageUpload}
               style={{ display: 'none' }}
             />
-            <div 
-              className="product-image-placeholder" 
+            <div
+              className="product-image-placeholder"
               onClick={handleImageClick}
               style={{
                 backgroundImage: productImage ? `url(${productImage})` : 'none',
@@ -297,7 +299,7 @@ const ProductEdit: React.FC = () => {
               )}
             </div>
           </div>
-          
+
           {/* Product Info Form */}
           <div className="product-info-form">
             <input
@@ -337,7 +339,7 @@ const ProductEdit: React.FC = () => {
               className="product-description editable-description"
               placeholder="Enter description"
             />
-            
+
             {/* Label Dropdowns Grid */}
             <div className="dropdowns-grid">
               {/* Stock Input */}
@@ -353,7 +355,7 @@ const ProductEdit: React.FC = () => {
                   step="1"
                 />
               </div>
-              
+
               {/* Discount Input */}
               <div className="dropdown-group">
                 <label className="dropdown-label">Discount</label>
@@ -376,7 +378,7 @@ const ProductEdit: React.FC = () => {
                   <span className="discount-percent">%</span>
                 </div>
               </div>
-              
+
               {/* Category Select */}
               <div className="dropdown-group">
                 <label className="dropdown-label">Category</label>
@@ -394,14 +396,14 @@ const ProductEdit: React.FC = () => {
                 </select>
               </div>
             </div>
-            
+
             {/* Submit Button */}
             <button className="submit-btn" onClick={handleSubmit}>
               Submit
             </button>
           </div>
         </div>
-        
+
         {/* Right Sidebar - Latest Reviews */}
         <div className="right-sidebar">
           <h3 className="reviews-title">Latest reviews</h3>
@@ -412,7 +414,7 @@ const ProductEdit: React.FC = () => {
                   <div className="review-stars">
                     {renderStars(review.rating)}
                   </div>
-                  <button 
+                  <button
                     className="review-delete-btn"
                     onClick={() => handleDeleteReview(review.id)}
                   >
@@ -431,7 +433,7 @@ const ProductEdit: React.FC = () => {
               </div>
             ))}
           </div>
-          
+
           {/* Review Pagination */}
           {totalReviewPages > 1 && (
             <div className="review-pagination">
@@ -456,7 +458,7 @@ const ProductEdit: React.FC = () => {
           )}
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );

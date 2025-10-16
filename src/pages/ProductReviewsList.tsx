@@ -7,6 +7,7 @@ import '../styles/ProductReviewsList.css';
 
 interface ReviewItem {
   id: number;
+  title: string;
   body: string;
   rating: number;
   reviewerName: string;
@@ -59,11 +60,21 @@ const ProductReviewsList: React.FC = () => {
           );
 
           const mapped: ReviewItem[] = sorted.map((rv: any) => {
+            // 使用后端直接返回的 userName 字段
+            const userName = rv.userName || 'Anonymous';
+            console.log('评论数据映射:', { 
+              reviewId: rv.reviewId, 
+              title: rv.title,
+              userName: rv.userName, 
+              finalUserName: userName 
+            });
+            
             return {
               id: rv.reviewId,
+              title: rv.title || '评论',
               body: rv.comment || '',
               rating: typeof rv.reviewRank === 'number' ? rv.reviewRank : 0,
-              reviewerName: rv.user?.userName || 'Anonymous',
+              reviewerName: userName,
               date: formatDateYMD(rv?.reviewCreateTime)
             };
           });
@@ -107,6 +118,7 @@ const ProductReviewsList: React.FC = () => {
                     <span className="date">{r.date}</span>
                   </div>
                 </div>
+                <div className="review-title">{r.title}</div>
                 <div className="review-body">{r.body}</div>
               </div>
             ))}
